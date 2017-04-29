@@ -1,8 +1,15 @@
 ---
 name: analysis
 display-name: anaLYsis
+short-description: Graphical highlighing for musical analysis with GNU LilyPond
+description: >
+  To be done.
 maintainers:
-  - Klaus Blum <todo=>email>
-  - Urs Liska <ul@openlilylib.org>
+- Klaus Blum 
+    email: <todo=>email>
+- Urs Liska
+    email: ul@openlilylib.org
+    website: https://openlilylib.org
 version: 0.0.1
+license: 
 ---
