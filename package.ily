@@ -41,3 +41,5 @@
   short-description = "Graphical highlighing for musical analysis with GNU LilyPond"
   description = "TODO!"
 }
+
+\registerModule analysis.arrows
