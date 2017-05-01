@@ -51,33 +51,6 @@
 }
 
 
-colBackColor =    #(rgb-color 0.99 0.96 0.8)
-
-colLightRed =     #(rgb-color 1.0  0.7  0.7)
-colDarkRed =      #(rgb-color 0.8  0.2  0.2)
-
-colLightOrange =  #(rgb-color 1.0  0.8  0.6)
-colDarkOrange =   #(rgb-color 0.65 0.3  0.1)
-
-colLightYellow =  #(rgb-color 1.0  0.95 0.6)
-colDarkYellow =   #(rgb-color 0.8  0.65 0.2)
-
-colLightBrown =   #(rgb-color 0.92 0.82 0.6)
-colDarkBrown =    #(rgb-color 0.7  0.5  0.1)
-
-colLightGreen =   #(rgb-color 0.7  0.9  0.7)
-colDarkGreen =    #(rgb-color 0.2  0.5  0.3)
-
-colLightBlue =    #(rgb-color 0.8  0.8  1.0)
-colDarkBlue =     #(rgb-color 0.3  0.3  0.9)
-
-colLightPurple =  #(rgb-color 0.95 0.7  0.85)
-colDarkPurple =   #(rgb-color 0.7  0.3  0.7)
-
-colLightViolet =  #(rgb-color 0.9  0.8  1.0)
-colDarkViolet =   #(rgb-color 0.6  0.3  0.9)
-
-
 % The "central" drawing procedure:
 
 #(define (makeDeltaSpan
