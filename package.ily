@@ -43,3 +43,4 @@
 }
 
 \registerModule analysis.arrows
+\registerModule analysis.frames
