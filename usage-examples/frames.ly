@@ -63,47 +63,153 @@ colDarkPurple =   #(rgb-color 0.7  0.3  0.7)
 colLightViolet =  #(rgb-color 0.9  0.8  1.0)
 colDarkViolet =   #(rgb-color 0.6  0.3  0.9)
 
-
+pspc = \markup \vspace #0.25
+spc = \markup \vspace #1
 
 \markup \fill-line {\bold \huge "Frames & Rectangles - Showcase"}
-\markup \vspace #1
-\markup "Ingredients: two polygons"
+\spc
+\markup \justify {
+  The \typewriter frames module of \typewriter anaLYsis provides numerous
+  functions to draw differently looking frames/rectangles. The basic function
+  is \typewriter "\\genericFrame" which takes and - horizontally - surrounds a
+  music expression as its mandatory argument. The appearance of the frame
+  can be specified either persistently with openLilyLib options in the
+  \typewriter "\setOption analysis.frames" tree or individually by overriding
+  properties in a \typewriter "\\with {}" block (for details see below).
+}
+
+\spc
+\markup \bold { Generic frames }
+
+\pspc
+
+\markup \justify {
+  A frame has a body and a border, which by default are printed both. The
+  color of both elements is controlled with the properties \typewriter
+  color and \typewriter border-color, and they can be suppressed by setting
+  this property to \typewriter white or \typewriter "##f" (for example \typewriter 
+  "\\setOption analysis.frames.border-color #green").
+}
+\spc
 
 \score {
   \relative c' {
-    \setOption analysis.frames.r-zigzag-width 2
 
-    \override HorizontalBracket.line-thickness = #0.25
     \genericFrame {
-      c8 ^"outer and inner polygon:"
-      %    \startGroup
+      c8 ^"Default: fill and frame"
       e g c g e
     }
     r4
     \genericFrame \with {
-      y-l-lower = -5
-      y-r-lower = -3
-      fill-color = ##f
-      padding = -5
-      border-radius = 0
-      shorten-pair = 1
+      color = ##f
     } {
-      c8 ^"outer polygon only:"
-      %    \startGroup
+      c8 ^"Frame only"
       e g c g e
     }
 
     r4
     \genericFrame \with {
-      frame-color = ##f
+      border-color = ##f
     } {
-      c8 ^"inner polygon only:"
-      e g c
+      c8 ^"Fill only"
+      e g c g e
     }
-    g e
     r4
   }
 }
+
+\markup \column {
+  \concat { - " " \typewriter border-width " " (0.25) }
+  \concat { - " " \typewriter border-radius " " (0.5) }
+  \concat { - " " \typewriter shorten-pair " " "#'(0 . 0)" }
+}
+\pspc
+\markup \justify {
+  The width (or thickness) of the frame border is controlled with the
+  \typewriter border-width Property. \typewriter border-radius applies
+  a rounded effect on the frame. Setting this to \typewriter 0 will 
+  produce a sharply angled frame. With \typewriter shorten-pair the right
+  and left padding can be modified. Positive values will make the frame
+  narrower while negative values will make it wider. This property should
+  be handled with specific care.
+}
+
+\spc
+
+\score {
+  \relative c' {
+
+    \genericFrame \with {
+      border-width = 0.7
+    } {
+      c8 ^"Increased border-width"
+      e g c g e
+    }
+    r4
+    \genericFrame \with {
+      border-radius = 1.5
+      border-width = 0.7
+    } {
+      c8 ^"Rounded border"
+      e g c g e
+    }
+
+    r4
+    \genericFrame \with {
+      shorten-pair = #'(-1.5 . 1)
+    } {
+      c8 ^"Modified left/right padding"
+      e g c g e
+    }
+    r4
+  }
+}
+
+\markup \column {
+  \concat { - " " \typewriter l-zigzag-width " " (0) }
+  \concat { - " " \typewriter r-zigzag-width " " (0) }
+}
+\pspc
+\markup \justify {
+  The left and right edges of the frame can be decorated with a zig-zag
+  line-thickness. This is achieved by setting \typewriter l-zigzag-width or
+  \typewriter r-zigzag-width to a value greater than zero. Usually it will
+  be practical to use multiples of \typewriter 1 as values.
+}
+
+\spc
+
+\score {
+  \relative c' {
+
+    \genericFrame \with {
+      l-zigzag-width = 2
+    } {
+      c8 ^"Left zigzag 2"
+      e g c g e
+    }
+    r4
+    \genericFrame \with {
+      r-zigzag-width = 1
+    } {
+      c8 ^"Right zigzag 1"
+      e g c g e
+    }
+
+    r4
+    \genericFrame \with {
+      l-zigzag-width = 4
+      r-zigzag-width = 2
+    } {
+      c8 ^"Mixed zigzag 4 / 2"
+      e g c g e
+    }
+    r4
+  }
+}
+
+\spc
+\markup \bold { TODO: -layer, -open-on-bottom (-top), manual Y positions, padding }
 
 %{
 \markup \vspace #1
