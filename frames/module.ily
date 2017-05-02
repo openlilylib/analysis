@@ -381,6 +381,25 @@
 
 % The following music functions will use makeDeltaSpan:
 
+#(define (get-properties grob)
+   (let*
+    ((area (ly:horizontal-bracket::print grob))
+     (thick (ly:grob-property grob 'line-thickness 1))
+     (pad (ly:grob-property grob 'broken-bound-padding 0))
+     (radius (ly:grob-property grob 'hair-thickness 0))
+     (X-ext-param (ly:stencil-extent area X))
+     (open-on-left  (=  1 (ly:item-break-dir (ly:spanner-bound grob LEFT ))))
+     (open-on-right (= -1 (ly:item-break-dir (ly:spanner-bound grob RIGHT))))
+     )
+    `((area . ,area)
+      (thick . ,thick)
+      (pad . ,pad)
+      (radius . ,radius)
+      (X-ext-param . ,X-ext-param)
+      (open-on-left . ,open-on-left)
+      (open-on-right . ,open-on-right))
+    ))
+
 genericSpan =
 #(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color stepLeft stepRight open-on-bottom open-on-top)
    (number? number? number? number? scheme? scheme? number? number? boolean? boolean?)
@@ -389,17 +408,20 @@ genericSpan =
    #{
      \once\override HorizontalBracket.stencil =
      $(lambda (grob)
-        (let* (
-                (area (ly:horizontal-bracket::print grob))
-                (thick (ly:grob-property grob 'line-thickness 1))
-                (pad (ly:grob-property grob 'broken-bound-padding 0))
-                (radius (ly:grob-property grob 'hair-thickness 0))
-                (X-ext-param (ly:stencil-extent area X))
-                (open-on-left  (=  1 (ly:item-break-dir (ly:spanner-bound grob LEFT ))))
-                (open-on-right (= -1 (ly:item-break-dir (ly:spanner-bound grob RIGHT))))
-                )
-          (makeDeltaSpan  y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color stepLeft stepRight open-on-bottom open-on-top
-            thick pad X-ext-param open-on-left open-on-right radius)
+        (let*
+         ((props (get-properties grob)))
+          (makeDeltaSpan
+           y-l-lower y-l-upper y-r-lower y-r-upper
+           frame-color fill-color
+           stepLeft stepRight
+           (assq-ref props 'open-on-bottom)
+           (assq-ref props 'open-on-top)
+           (assq-ref props 'thick)
+           (assq-ref props 'pad)
+           (assq-ref props 'X-ext-param)
+           (assq-ref props 'open-on-left)
+           (assq-ref props 'open-on-right)
+           (assq-ref props 'radius))
           ))
      \once\override HorizontalBracket.Y-offset = #0
    #})
