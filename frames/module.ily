@@ -382,7 +382,7 @@
 % The following music functions will use makeDeltaSpan:
 
 genericSpan =
-#(define-music-function (parser location y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color stepLeft stepRight open-on-bottom open-on-top)
+#(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color stepLeft stepRight open-on-bottom open-on-top)
    (number? number? number? number? scheme? scheme? number? number? boolean? boolean?)
    ; Calling this procedure IMMEDIATELY before \startGroup will replace the stencil of HorizontalBracket.
    ; Some parameters are taken out of HorizontalBracket's properties
@@ -405,7 +405,7 @@ genericSpan =
    #})
 
 roundedRectangleSpan =
-#(define-music-function (parser location y-lower y-upper frame-color fill-color radius)
+#(define-music-function (y-lower y-upper frame-color fill-color radius)
    (number? number? scheme? scheme? number?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -453,7 +453,7 @@ roundedRectangleSpan =
      %\once\override HorizontalBracket.shorten-pair = #'(-0.6 . -0.6)
    #})
 
-tornSpan = #(define-music-function (parser location y-lower y-upper frame-color fill-color stepLeft stepRight)
+tornSpan = #(define-music-function (y-lower y-upper frame-color fill-color stepLeft stepRight)
               (number? number? scheme? scheme? number? number?)
               #{  \genericSpan $y-lower $y-upper $y-lower $y-upper $frame-color $fill-color $stepLeft $stepRight ##f ##f  #})
 
@@ -462,7 +462,7 @@ tornSpan = #(define-music-function (parser location y-lower y-upper frame-color 
 % They read out the property HorizontalBracket.zigzag-width and automatically round it to the nearest sensible value
 
 leftZZSpan =
-#(define-music-function (parser location y-lower y-upper frame-color fill-color)
+#(define-music-function (y-lower y-upper frame-color fill-color)
    (number? number? scheme? scheme?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -490,7 +490,7 @@ leftZZSpan =
    #})
 
 rightZZSpan =
-#(define-music-function (parser location y-lower y-upper frame-color fill-color)
+#(define-music-function (y-lower y-upper frame-color fill-color)
    (number? number? scheme? scheme?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -518,7 +518,7 @@ rightZZSpan =
    #})
 
 ZZSpan =
-#(define-music-function (parser location y-lower y-upper frame-color fill-color)
+#(define-music-function (y-lower y-upper frame-color fill-color)
    (number? number? scheme? scheme?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -552,23 +552,23 @@ ZZSpan =
      \once\override HorizontalBracket.Y-offset = #0
    #})
 
-tornDYSpan = #(define-music-function (parser location y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color stepLeft stepRight)
+tornDYSpan = #(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color stepLeft stepRight)
                 (number? number? number? number? scheme? scheme? number? number?)
                 #{  \genericSpan $y-l-lower $y-l-upper $y-r-lower $y-r-upper $frame-color $fill-color $stepLeft $stepRight ##f ##f  #})
 
-DYSpan = #(define-music-function (parser location y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color)
+DYSpan = #(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color fill-color)
             (number? number? number? number? scheme? scheme?)
             #{  \genericSpan $y-l-lower $y-l-upper $y-r-lower $y-r-upper $frame-color $fill-color #0 #0 ##f ##f  #})
 
-colorSpan = #(define-music-function (parser location y-lower y-upper fill-color)
+colorSpan = #(define-music-function (y-lower y-upper fill-color)
                (number? number? scheme?)
                #{  \genericSpan $y-lower $y-upper $y-lower $y-upper ##f $fill-color #0 #0 ##f ##f  #})
 
-framedSpan = #(define-music-function (parser location y-lower y-upper frame-color fill-color)
+framedSpan = #(define-music-function (y-lower y-upper frame-color fill-color)
                 (number? number? scheme? scheme?)
                 #{  \genericSpan $y-lower $y-upper $y-lower $y-upper $frame-color $fill-color #0 #0 ##f ##f  #})
 
-roundRectSpan = #(define-music-function (parser location y-lower y-upper frame-color fill-color radius)
+roundRectSpan = #(define-music-function (y-lower y-upper frame-color fill-color radius)
                    (number? number? scheme? scheme? number?)
                    #{  \roundedRectangleSpan $y-lower $y-upper $frame-color $fill-color $radius  #})
 
@@ -956,7 +956,7 @@ roundRectSpan = #(define-music-function (parser location y-lower y-upper frame-c
 % The following music functions will use the above makeDeltaFrame:
 
 genericFrame =
-#(define-music-function (parser location y-l-lower y-l-upper y-r-lower y-r-upper frame-color stepLeft stepRight open-on-bottom open-on-top)
+#(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color stepLeft stepRight open-on-bottom open-on-top)
    (number? number? number? number? scheme? number? number? boolean? boolean?)
    ; Calling this procedure IMMEDIATELY before \startGroup will replace the stencil of HorizontalBracket.
    ; Some parameters are taken out of HorizontalBracket's properties
@@ -978,7 +978,7 @@ genericFrame =
    #})
 
 
-tornFrame = #(define-music-function (parser location y-lower y-upper frame-color stepLeft stepRight)
+tornFrame = #(define-music-function (y-lower y-upper frame-color stepLeft stepRight)
                (number? number? scheme? number? number?)
                #{  \genericFrame $y-lower $y-upper $y-lower $y-upper $frame-color $stepLeft $stepRight ##f ##f  #})
 
@@ -987,7 +987,7 @@ tornFrame = #(define-music-function (parser location y-lower y-upper frame-color
 % They read out the property HorizontalBracket.zigzag-width and automatically round it to the nearest sensible value
 
 leftZZFrame =
-#(define-music-function (parser location y-lower y-upper frame-color)
+#(define-music-function (y-lower y-upper frame-color)
    (number? number? scheme?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -1014,7 +1014,7 @@ leftZZFrame =
    #})
 
 rightZZFrame =
-#(define-music-function (parser location y-lower y-upper frame-color)
+#(define-music-function (y-lower y-upper frame-color)
    (number? number? scheme?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -1041,7 +1041,7 @@ rightZZFrame =
    #})
 
 ZZFrame =
-#(define-music-function (parser location y-lower y-upper frame-color)
+#(define-music-function (y-lower y-upper frame-color)
    (number? number? scheme?)
    #{
      \once\override HorizontalBracket.stencil =
@@ -1074,15 +1074,15 @@ ZZFrame =
      \once\override HorizontalBracket.Y-offset = #0
    #})
 
-tornDYFrame = #(define-music-function (parser location y-l-lower y-l-upper y-r-lower y-r-upper frame-color stepLeft stepRight)
+tornDYFrame = #(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color stepLeft stepRight)
                  (number? number? number? number? scheme? number? number?)
                  #{  \genericFrame $y-l-lower $y-l-upper $y-r-lower $y-r-upper $frame-color $stepLeft $stepRight ##f ##f  #})
 
-DYFrame = #(define-music-function (parser location y-l-lower y-l-upper y-r-lower y-r-upper frame-color)
+DYFrame = #(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper frame-color)
              (number? number? number? number? scheme?)
              #{  \genericFrame $y-l-lower $y-l-upper $y-r-lower $y-r-upper $frame-color #0 #0 ##f ##f  #})
 
-colorFrame = #(define-music-function (parser location y-lower y-upper frame-color)
+colorFrame = #(define-music-function (y-lower y-upper frame-color)
                 (number? number? scheme? scheme?)
                 #{  \genericFrame $y-lower $y-upper $y-lower $y-upper $frame-color #0 #0 ##f ##f  #})
 

@@ -36,7 +36,7 @@
 % --------------------------------------------------------------------------
 
 
-forwardArrow = #(define-music-function (parser location color)
+forwardArrow = #(define-music-function (color)
                   (color?)
                   #{ % Cross-staff arrows are made using the VoiceFollower:
                     % \once \override VoiceFollower.layer = #-2
