@@ -71,16 +71,37 @@ colDarkViolet =   #(rgb-color 0.6  0.3  0.9)
 
 \score {
   \relative c' {
-    \override HorizontalBracket.line-thickness = #1.8
-    \genericSpan #-4 #4 #-4 #4 \colDarkBlue ##f #0 #2 ##f ##f
-    c8 ^"outer polygon only:"
-    \startGroup e g c g e \stopGroup r4
-    \genericSpan #-4 #4 #-4 #4 \colDarkBlue \colLightBlue #0 #2 ##f ##f
-    c8 ^"outer and inner polygon:"
-    \startGroup e g c g e \stopGroup r4
-    \genericSpan #-4 #4 #-4 #4 ##f \colLightBlue #0 #2 ##f ##f
-    c8 ^"inner polygon only:"
-    \startGroup e g c g e \stopGroup r4
+    \setOption analysis.frames.r-zigzag-width 2
+
+    \override HorizontalBracket.line-thickness = #0.25
+    \genericFrame {
+      c8 ^"outer and inner polygon:"
+      %    \startGroup
+      e g c g e
+    }
+    r4
+    \genericFrame \with {
+      y-l-lower = -5
+      y-r-lower = -3
+      fill-color = ##f
+      padding = -5
+      border-radius = 0
+      shorten-pair = 1
+    } {
+      c8 ^"outer polygon only:"
+      %    \startGroup
+      e g c g e
+    }
+
+    r4
+    \genericFrame \with {
+      frame-color = ##f
+    } {
+      c8 ^"inner polygon only:"
+      e g c
+    }
+    g e
+    r4
   }
 }
 
