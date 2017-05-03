@@ -34,10 +34,8 @@
 \registerOption analysis.frames.padding -4
 \registerOption analysis.frames.border-radius 0.5
 \registerOption analysis.frames.shorten-pair #'(0 . 0)
-\registerOption analysis.frames.y-l-lower -4
-\registerOption analysis.frames.y-l-upper 4
-\registerOption analysis.frames.y-r-lower -4
-\registerOption analysis.frames.y-r-upper 4
+\registerOption analysis.frames.y-lower -4
+\registerOption analysis.frames.y-upper 4
 \registerOption analysis.frames.l-zigzag-width 0
 \registerOption analysis.frames.r-zigzag-width 0
 \registerOption analysis.frames.open-on-bottom ##f
@@ -435,19 +433,20 @@
              (getOption '(analysis frames shorten-pair)))))
        (if (pair? sp)
            sp (cons sp sp))))
+     (y-lower
+      (or (assq-ref props 'y-lower)
+          (getOption '(analysis frames y-lower))))
+     (y-upper
+      (or (assq-ref props 'y-upper)
+          (getOption '(analysis frames y-upper))))
      (y-l-lower
-      (let ((val (assq 'y-l-lower props)))
-        (if val (cdr val)
-            (getOption '(analysis frames y-l-lower)))))
-     (y-l-upper
-      (or (assq-ref props 'y-l-upper)
-          (getOption '(analysis frames y-l-upper))))
+      (if (number? y-lower) y-lower (car y-lower)))
      (y-r-lower
-      (or (assq-ref props 'y-r-lower)
-          (getOption '(analysis frames y-r-lower))))
+      (if (number? y-lower) y-lower (cdr y-lower)))
+     (y-l-upper
+      (if (number? y-upper) y-upper (car y-upper)))
      (y-r-upper
-      (or (assq-ref props 'y-r-upper)
-          (getOption '(analysis frames y-r-upper))))
+      (if (number? y-upper) y-upper (cdr y-upper)))
      (l-zigzag-width
       (or (assq-ref props 'l-zigzag-width)
           (getOption '(analysis frames l-zigzag-width))))

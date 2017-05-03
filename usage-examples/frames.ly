@@ -208,8 +208,56 @@ spc = \markup \vspace #1
   }
 }
 
+\markup \column {
+  \concat { - " " \typewriter y-lower " " (-4) }
+  \concat { - " " \typewriter y-upper " " (4) }
+}
+\pspc
+\markup \justify {
+  The vertical extent of the frame defaults to -4/+4 (in staff spaces
+  from the center staffline). These values can be modified using The
+  \typewriter y-lower and \typewriter y-upper properties. When given a
+  number they cause a horizontal line at that Y position to be drawn.
+  But using a pair of numbers flexible polygons can be created.
+}
+
+\noPageBreak
 \spc
-\markup \bold { TODO: -layer, -open-on-bottom (-top), manual Y positions, padding }
+\noPageBreak
+
+\score {
+  \relative c' {
+
+    \genericFrame \with {
+      y-lower = -5.5
+      y-upper = 5.5
+    } {
+      g8 ^"-5.5 / +5.5"
+      e' g g' e c
+    }
+    r4
+    \genericFrame \with {
+      y-upper = #'(2 . 5)
+      y-lower = -4.5
+    } {
+      c,8 ^"Lower straight, upper diagonal"
+      e g c g e
+    }
+
+    r4
+    \genericFrame \with {
+      y-lower = #'(-4 . -6)
+      y-upper = #'(3 . 6)
+    } {
+      c8 ^"Both modified"
+      e g c g e
+    }
+    r4
+  }
+}
+
+\spc
+\markup \bold { TODO: -layer, -open-on-bottom (-top), padding }
 
 %{
 \markup \vspace #1
