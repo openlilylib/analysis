@@ -411,56 +411,6 @@ spc = \markup \vspace #1
   >>
 }
 
-\pageBreak
-\markup \vspace #1
-\markup "Property: line-thickness"
-
-\score {
-  \relative c' {
-    \override HorizontalBracket.line-thickness = #0.0
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #0.1
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.1" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #0.2
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.2" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #0.3
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.3" \startGroup e g c g e \stopGroup r4
-    \break
-    \override HorizontalBracket.line-thickness = #0.4
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.4" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #0.5
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.5" \startGroup e g c g e \stopGroup r4
-
-    \override HorizontalBracket.line-thickness = #0.6
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.6" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #0.7
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.7" \startGroup e g c g e \stopGroup r4
-    \break
-    \override HorizontalBracket.line-thickness = #0.8
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#0.8" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #1.0
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#1.0" \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #1.5
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#1.5"
-    _\markup {\tiny \override #'(baseline-skip . 1.5)  \column {"Update: Values above stepLeft or stepRight" "now also will lead to sensible results."}}
-    \startGroup e g c g e \stopGroup r4
-    \override HorizontalBracket.line-thickness = #2.0
-    \genericSpan #-4 #4 #-4 #4 \colDarkRed \colLightRed #0 #2 ##f ##f
-    c8 ^"#2.0" \startGroup e g c g e \stopGroup r4
-
-  }
-}
 
 \markup {
   \override #'(baseline-skip . 2)
