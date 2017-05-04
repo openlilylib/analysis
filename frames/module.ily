@@ -44,6 +44,8 @@
 \registerOption analysis.frames.layer -10
 \registerOption analysis.frames.border-color #(rgb-color 0.3  0.3  0.9)
 \registerOption analysis.frames.color #(rgb-color 0.8  0.8  1.0)
+\registerOption analysis.frames.hide "none"
+\registerOption analysis.frames.angle 0
 
 
 
@@ -62,6 +64,7 @@
    (let*
     ;; make properties available
     ((live-props (get-live-properties grob))
+     (frame-angle (assq-ref props 'frame-angle))
      (border-width (assq-ref props 'border-width))
      (border-radius (assq-ref props 'border-radius))
      (y-l-lower (assq-ref props 'y-l-lower))
@@ -419,6 +422,9 @@
     ((props (if ctx-mod
                 (context-mod->props ctx-mod)
                 '()))
+     (frame-angle
+      (or (assq-ref props 'angle)
+          (getOption '(analysis frames angle))))
      (border-width
       (or (assq-ref props 'border-width)
           (getOption '(analysis frames border-width))))
@@ -473,11 +479,15 @@
         (if col (cdr col) (getOption '(analysis frames border-color)))))
      (color
       (let*
-       ((prop-col (assq 'color props))
-        (col (if prop-col
-                 (cdr prop-col)
-                 (getOption '(analysis frames color)))))
-       (if col col white)))
+       ((prop-col (assq 'color props)))
+       (if prop-col
+           (cdr prop-col)
+           (getOption '(analysis frames color)))))
+     (hide 
+      (let ((col (assq 'hide props)))
+        (if col 
+            (string->symbol (cdr col)) 
+            (string->symbol (getOption '(analysis frames hide))))))
      )
     `((border-width . ,border-width)
       (padding . ,padding)
@@ -495,6 +505,7 @@
       (layer . ,layer)
       (border-color . ,border-color)
       (color . ,color)
+      (hide . ,hide)
       )))
 
 #(define (offset-shorten-pair props)
@@ -526,10 +537,33 @@ genericFrame =
       `(,@lst-artic ,(make-music 'NoteGroupingEvent 'span-direction 1)))
     #{
       \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
+      #(case (assq-ref props 'hide)
+         ((staff)
+           #{
+             #(set! props (assq-set! props 'layer 1))
+             \temporary \override NoteHead.layer = 2
+             \temporary \override Stem.layer = 2
+             \temporary \override Beam.layer = 2
+             \temporary \override Flag.layer = 2
+             \temporary \override Rest.layer = 2
+             \temporary \override Accidental.layer = 2
+           #})
+         ((all)
+          (set! props (assq-set! props 'layer 5))))
+%      \once \override HorizontalBracket.rotation = #'(45 0 0)
       \once\override HorizontalBracket.stencil =
       $(lambda (grob) (make-frame-stencil grob props))
       % Return the processed music expression
       #mus
+      #(if (eq? (assq-ref props 'hide) 'staff)
+           #{
+             \revert NoteHead.layer
+             \revert Stem.layer
+             \revert Beam.layer
+             \revert Flag.layer
+             \revert Rest.layer
+             \revert Accidental.layer
+           #})
     #}))
 
 
