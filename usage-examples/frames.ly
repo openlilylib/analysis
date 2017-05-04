@@ -173,8 +173,10 @@ spc = \markup \vspace #1
 \markup \justify {
   The left and right edges of the frame can be decorated with a zig-zag
   line-thickness. This is achieved by setting \typewriter l-zigzag-width or
-  \typewriter r-zigzag-width to a value greater than zero. Usually it will
-  be practical to use multiples of \typewriter 1 as values.
+  \typewriter r-zigzag-width to a value greater than zero. In order to avoid
+  strange results the value should be a divisor of the distance between
+  lower and upper corner (see next element). \typewriter border-radius will
+  also make the zigzag curved.
 }
 
 \spc
