@@ -31,7 +31,8 @@
 % Define configuration variables and set defaults
 
 \registerOption analysis.frames.border-width 0.25
-\registerOption analysis.frames.padding -4
+\registerOption analysis.frames.padding 0
+\registerOption analysis.frames.broken-bound-padding 4
 \registerOption analysis.frames.border-radius 0.5
 \registerOption analysis.frames.shorten-pair #'(0 . 0)
 \registerOption analysis.frames.y-lower -4
@@ -76,6 +77,7 @@
      (open-on-top (assq-ref props 'open-on-top))
      (border-width (assq-ref props 'border-width))
      (padding (assq-ref props 'padding))
+     (bb-pad (assq-ref props 'broken-bound-padding))
      (frame-X-extent (assq-ref live-props 'frame-X-extent))
      (open-on-left (assq-ref live-props 'open-on-left))
      (open-on-right (assq-ref live-props 'open-on-right))
@@ -95,8 +97,8 @@
                        (if open-on-right (+ (cdr frame-X-extent) h-border-width) (+ (cdr frame-X-extent) border-width))
                        )))
            (X-ext (cons
-                   (if open-on-left  (- (+ (car X-ext) padding) (/ l-width 2)) (car X-ext))     ; shorten/lengthen by broken-bound-paddingding if spanner is broken
-                   (if open-on-right (+ (- (cdr X-ext) padding) (/ r-width 2)) (cdr X-ext))))
+                   (if open-on-left  (- (+ (car X-ext) bb-pad) (/ l-width 2)) (car X-ext))     ; shorten/lengthen by broken-bound-bb-padding if spanner is broken
+                   (if open-on-right (+ (- (cdr X-ext) bb-pad) (/ r-width 2)) (cdr X-ext))))
            (points (list))       ; will contain coordinates for outer polygon
            (points-i (list))     ; will contain coordinates for inner polygon
            (slope-upper (/ (- y-r-upper y-l-upper) (- (cdr X-ext) (car X-ext))))  ; slope of the polygon's upper edge
@@ -423,6 +425,10 @@
      (padding
       (or (assq-ref props 'padding)
           (getOption '(analysis frames padding))))
+     (broken-bound-padding
+      (* -1
+        (or (assq-ref props 'broken-bound-padding)
+            (getOption '(analysis frames broken-bound-padding)))))
      (border-radius
       (or (assq-ref props 'border-radius)
           (getOption '(analysis frames border-radius))))
@@ -475,6 +481,7 @@
      )
     `((border-width . ,border-width)
       (padding . ,padding)
+      (broken-bound-padding . ,broken-bound-padding)
       (border-radius . ,border-radius)
       (shorten-pair . ,shorten-pair)
       (y-l-lower . ,y-l-lower)
