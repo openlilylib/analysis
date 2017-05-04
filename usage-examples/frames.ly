@@ -35,6 +35,7 @@
   ragged-right = ##f
   %page-count = 2
   tagline = ##f
+  system-system-spacing.basic-distance = 18
 }
 
 colBackColor =    #(rgb-color 0.99 0.96 0.8)
@@ -87,7 +88,7 @@ spc = \markup \vspace #1
   A frame has a body and a border, which by default are printed both. The
   color of both elements is controlled with the properties \typewriter
   color and \typewriter border-color, and they can be suppressed by setting
-  this property to \typewriter white or \typewriter "##f" (for example \typewriter 
+  this property to \typewriter white or \typewriter "##f" (for example \typewriter
   "\\setOption analysis.frames.border-color #green").
 }
 \spc
@@ -101,7 +102,7 @@ spc = \markup \vspace #1
     }
     r4
     \genericFrame \with {
-      color = ##f
+      color = #white
     } {
       c8 ^"Frame only"
       e g c g e
@@ -127,7 +128,7 @@ spc = \markup \vspace #1
 \markup \justify {
   The width (or thickness) of the frame border is controlled with the
   \typewriter border-width Property. \typewriter border-radius applies
-  a rounded effect on the frame. Setting this to \typewriter 0 will 
+  a rounded effect on the frame. Setting this to \typewriter 0 will
   produce a sharply angled frame. With \typewriter shorten-pair the right
   and left padding can be modified. Positive values will make the frame
   narrower while negative values will make it wider. This property should
@@ -202,8 +203,9 @@ spc = \markup \vspace #1
     \genericFrame \with {
       l-zigzag-width = 4
       r-zigzag-width = 2
+      border-radius = 1
     } {
-      c8 ^"Mixed zigzag 4 / 2"
+      c8 ^"Mixed zigzag 4 / 2, border-radius 1.0"
       e g c g e
     }
     r4
@@ -258,39 +260,239 @@ spc = \markup \vspace #1
   }
 }
 
-\spc
-\markup \bold { TODO: -layer, -open-on-bottom (-top), padding }
+\pageBreak
 
-%{
-\markup \vspace #1
-\markup "Lower and upper border are passed as parameters (zero = middle line):"
+\markup \column {
+  \concat { - " " \typewriter hide " " (none / staff / all) }
+  \concat { - " " \typewriter layer " " (-10) }
+  \concat { - " " \typewriter broken-bound-padding " " (4) }
+  \concat { - " " \typewriter open-on-bottom " (##f)" }
+  \concat { - " " \typewriter open-on-top " (##f)" }
+}
+\pspc
+\markup \justify {
+  By default frames are printed behind the staff, which is achieved by
+  setting its \typewriter layer property to \typewriter -10. By manually
+  modifying this property the user has detailed control over the stacking
+  of elements. If the \typewriter hide property is set to \typewriter staff
+  the frame is placed between the staff lines and the music. This is achieved
+  by temporarily setting the frame's \typewriter layer to \typewriter 1 and
+  that of the other score elements to \typewriter 2. So this may interfere
+  with any other \typewriter layer settings the user may have applied
+  otherwise. Setting \typewriter hide to \typewriter all will print the
+  frame in front of everything else (or concretely at the layer
+  \typewriter 5. This can be used to reserve space in exercise sheets.
+}
+\pspc
+\markup \justify {
+  Frames can be nested in a straightforward manner. However, this behaves
+  differently from spanners like manual beams or slurs. In order to
+  print overlapping frames they have to exist in separate voices. \bold
+  NOTE: nested frames may behave strangely with other frames acting at the
+  same time. In the example the “hide all” frame makes the stacked frame
+  in the top staff disappear unless the \typewriter layer property is
+  explicitly set to \typewriter -1 (or a layer higher than the outer
+  frame's.
+}
+\pspc
+\markup \justify {
+  If frames are broken around line breaks the broken edge will be printed
+  without border and zigzag linese. The amount of protrusion into the
+  margin can be set with the \typewriter broken-bound-padding property.
+}
+\pspc
+\markup \justify {
+  With the boolean \typewriter open-on-top and \typewriter open-on-bottom
+  the top and/or bottom borders can be switched off, which can be used to
+  create fake cross-staff Frames.
+}
+\spc
 
 \score {
-  \relative c' {
-    \override SpacingSpanner.common-shortest-duration = #(ly:make-moment 1/4)
-    \override TextScript.staff-padding = #7
-    \genericSpan #-4 #0 #-4 #0 \colDarkRed \colLightRed #0 #0 ##f ##f
-    c8 ^\markup { \override #'(baseline-skip . 2) \left-column { " "  "y-upper: #0"  "y-lower: #-4"}}
-    \startGroup e g c g e \stopGroup r4
-    \genericSpan #-2 #2 #-2 #2 \colDarkRed \colLightRed #0 #0 ##f ##f
-    c8 ^\markup { \override #'(baseline-skip . 2) \left-column {" "  "#2"  "#-2"}}
-    \startGroup e g c g e \stopGroup r4
-    \genericSpan #-5 #-1 #-0.5 #3.5 \colDarkRed \colLightRed #0 #0 ##f ##f
-    c16 ^\markup { \override #'(baseline-skip . 2) \left-column {"left:"  "#-1"  "#-5"}}
-    \startGroup
-    \once \override TextScript.staff-padding = #4
-    d
-    _"Left and right edge can have their own Y-extent"
-    e f ^\markup { \override #'(baseline-skip . 2) \left-column {"right:"  "#3.5"  "#-0.5"}}
-    g a b c d4 \stopGroup r4
-    r16
-    \genericSpan #-1 #2 #-4 #2 \colDarkRed \colLightRed #0 #0 ##f ##f
-    c ^\markup { \override #'(baseline-skip . 2) \left-column {"left:"  "#2"  "#-1"}}
-    \startGroup b c a c g c f, ^\markup { \override #'(baseline-skip . 2) \left-column {"right:"  "#2"  "#-4"}}
-    c' e, c' \stopGroup r4
+  <<
+    \new Staff \relative c'{
+      \genericFrame \with {
+      } {
+        c8 ^"Frame behind staff (default)"
+        e g c g e
+      } r4
+      \genericFrame \with {
+      } {
+        c16 ^"Stack frames"
+        c32 d
+        \genericFrame \with {
+          color = #white
+          border-color = #red
+          border-radius = 1
+          y-lower = -3.25
+          y-upper = -0.25
+          % It is totally unclear why this is necessary.
+          % The hide = all in the middle system seems to
+          % unset this in a peculiar way
+          layer = -1
+        } {
+          e16 e32
+        }
+        f g8 c g e
+      } r4
+      \genericFrame \with {
+        broken-bound-padding = 0
+        r-zigzag-width = 1.5
+      } {
+        c8 ^"broken-bound-padding 0"
+        e g c
+        \bar ""
+        \break
+        g e
+      } r4
+      \genericFrame \with {
+        open-on-bottom = ##t
+        border-width = 0.5
+      } {
+        c8 ^"Bottom open"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        open-on-bottom = ##t
+        border-width = 0.5
+        border-color = \colDarkRed
+        color = \colLightRed
+        y-lower = -7
+      } {
+        c8 ^"Make boxes overlap"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        open-on-bottom = ##t
+        border-width = 0.5
+        y-lower = -7
+      } {
+        c8 ^"Simulate cross-staff frames"
+        e g c g e
+      } r4
+    }
 
-  }
+    % Middle staff
+    \new Staff \relative c'{
+      \genericFrame \with {
+        hide = staff
+      } {
+        c8 ^"Hide staff"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        hide = all
+        color = #(rgb-color 0.9 0.9 0.9)
+      } {
+        c8 ^"Hide all"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        broken-bound-padding = 2
+        r-zigzag-width = 1.5
+      } {
+        c8 ^"broken-bound-padding 2"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        open-on-bottom = ##t
+        open-on-top = ##t
+        border-width = 0.5
+      } {
+        c8 ^"Bottom/Top open"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        open-on-bottom = ##t
+        open-on-top = ##t
+        border-width = 0.5
+        border-color = \colDarkOrange
+        color = \colLightOrange
+        y-lower = -6
+        y-upper = 6
+      } {
+        c8 ^""
+        e g c g e
+      } r4
+      \genericFrame \with {
+        open-on-bottom = ##t
+        open-on-top = ##t
+        border-width = 0.5
+        y-lower = -6
+        y-upper = 6
+      } {
+        c8 ^""
+        e g c g e
+      } r4
+    }
+
+    % Lower staff
+    \new Staff \relative c'{
+      \genericFrame \with {
+        hide = staff
+        color = #white
+      } {
+        c8 ^"Hide staff, empty"
+        e g c g e
+      } r4
+      <<
+        {
+          \genericFrame \with {
+          } {
+            c8 ^"Overlapping frames"
+            e g
+          }
+          c g e r4
+        }
+        \new Voice {
+          s4
+          \genericFrame \with {
+            y-upper = -0.25
+            y-lower = -1.75
+            border-width = 0.1
+            shorten-pair = #'(0 . -0.5)
+            border-color = \colDarkYellow
+            color = \colLightYellow
+          } {
+            \hide r4 \hide r8
+          }
+        }
+      >>
+      \genericFrame \with {
+        r-zigzag-width = 1.5
+      } {
+        c8 ^"broken-bound-padding 4 (default)"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        border-width = 0.5
+        open-on-top = ##t
+      } {
+        c8 ^"Top open"
+        e g c g e
+      } r4
+      \genericFrame \with {
+        border-width = 0.5
+        open-on-top = ##t
+        border-color = \colDarkYellow
+        color = \colLightYellow
+        y-upper = 5.5
+      } {
+        c8 ^""
+        e g c g e
+      } r4
+      \genericFrame \with {
+        border-width = 0.5
+        open-on-top = ##t
+        y-upper = 5.5
+      } {
+        c8 ^""
+        e g c g e
+      } r4
+    }
+  >>
 }
+%{
 
 \markup \vspace #1
 %\markup "Parameters for left and right edge: straight or zigzag style"
