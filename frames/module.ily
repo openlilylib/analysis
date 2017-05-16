@@ -389,13 +389,13 @@
       ; draw outer polygon:
       (if (color? border-color)  ; only add stencil if set to a valid color (could also be set to ##f)
           (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points border-radius))
+                             (ly:stencil-expr (ly:stencil-rotate (ly:round-filled-polygon points border-radius) frame-angle 0 0))
                              X-ext Y-ext))
           empty-stencil)
       ; draw inner polygon:
       (if (color? color)   ; only add stencil if set to a valid color (could also be set to ##f)
           (ly:make-stencil (list 'color color
-                             (ly:stencil-expr (ly:round-filled-polygon points-i border-radius))
+                             (ly:stencil-expr (ly:stencil-rotate (ly:round-filled-polygon points-i border-radius) frame-angle 0 0))
                              X-ext Y-ext))
           empty-stencil)
       )
