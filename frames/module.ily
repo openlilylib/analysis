@@ -115,39 +115,39 @@
      (all-points (lambda ()
                    (append left-points top-points right-points bottom-points)))
      ;; start calculations
-           (h-border-width (* border-width (sqrt 2)))  ; X-distance between left and right edges of inner and outer polygon. Must be "border-width" * sqrt 2  (Pythagoras)
-           (l-width (* l-zigzag-width  0.5))   ; X-distance of zigzag corners
-           (r-width (* r-zigzag-width 0.5))
-           (Y-ext (cons 0 0))            ; dummy, needed for ly:stencil-expr  (is there a way without it?)
-           (X-ext (cons
-                   (if (> l-zigzag-width 0)    ; left edge has zigzag shape
-                       (- (+ (car frame-X-extent) (/ l-width 2)) h-border-width)  ; Half of the zigzag space will be taken from inside, other half from the outside. Frame space taken from outside.
-                       (if open-on-left  (- (car frame-X-extent) h-border-width) (- (car frame-X-extent) border-width))
-                       )
-                   (if (> r-zigzag-width 0)   ; right edge has zigzag shape
-                       (+ (- (cdr frame-X-extent) (/ r-width 2)) h-border-width)
-                       (if open-on-right (+ (cdr frame-X-extent) h-border-width) (+ (cdr frame-X-extent) border-width))
-                       )))
-           (X-ext (cons
-                   (if open-on-left  (- (+ (car X-ext) bb-pad) (/ l-width 2)) (car X-ext))     ; shorten/lengthen by broken-bound-bb-padding if spanner is broken
-                   (if open-on-right (+ (- (cdr X-ext) bb-pad) (/ r-width 2)) (cdr X-ext))))
-           (points (list))       ; will contain coordinates for outer polygon
-           (points-i (list))     ; will contain coordinates for inner polygon
-           (slope-upper (/ (- y-r-upper y-l-upper) (- (cdr X-ext) (car X-ext))))  ; slope of the polygon's upper edge
+     (h-border-width (* border-width (sqrt 2)))  ; X-distance between left and right edges of inner and outer polygon. Must be "border-width" * sqrt 2  (Pythagoras)
+     (l-width (* l-zigzag-width  0.5))   ; X-distance of zigzag corners
+     (r-width (* r-zigzag-width 0.5))
+     (Y-ext (cons y-l-lower y-r-upper))            ; dummy, needed for ly:stencil-expr  (is there a way without it?)
+     (X-ext (cons
+             (if (> l-zigzag-width 0)    ; left edge has zigzag shape
+                 (- (+ (car frame-X-extent) (/ l-width 2)) h-border-width)  ; Half of the zigzag space will be taken from inside, other half from the outside. Frame space taken from outside.
+                 (if open-on-left  (- (car frame-X-extent) h-border-width) (- (car frame-X-extent) border-width))
+                 )
+             (if (> r-zigzag-width 0)   ; right edge has zigzag shape
+                 (+ (- (cdr frame-X-extent) (/ r-width 2)) h-border-width)
+                 (if open-on-right (+ (cdr frame-X-extent) h-border-width) (+ (cdr frame-X-extent) border-width))
+                 )))
+     (X-ext (cons
+             (if open-on-left  (- (+ (car X-ext) bb-pad) (/ l-width 2)) (car X-ext))     ; shorten/lengthen by broken-bound-bb-padding if spanner is broken
+             (if open-on-right (+ (- (cdr X-ext) bb-pad) (/ r-width 2)) (cdr X-ext))))
+     (points (list))       ; will contain coordinates for outer polygon
+     (points-i (list))     ; will contain coordinates for inner polygon
+     (slope-upper (/ (- y-r-upper y-l-upper) (- (cdr X-ext) (car X-ext))))  ; slope of the polygon's upper edge
 
-           (slope-lower (/ (- y-r-lower y-l-lower) (- (cdr X-ext) (car X-ext))))  ; slope of the polygon's lower edge
-           (d-upper (if open-on-top    0  (* border-width (sqrt (+ (expt slope-upper 2) 1)))))  ; (Pythagoras)
-           ; Y-distance between upper edges of inner and outer polygon. Equal to "border-width" if upper edge is horizontal.
-           ; Increases as the upper edge's slope increases.
-           (d-lower (if open-on-bottom 0  (* border-width (sqrt (+ (expt slope-lower 2) 1)))))  ; same for lower edge
-           ; stuff for later calculations:
-           (xtemp 0)
-           (yLowerLimit 0)
-           (yUpperLimit 0)
-           (xp 0)
-           (yp 0)
-           (jumps 0)
-           )
+     (slope-lower (/ (- y-r-lower y-l-lower) (- (cdr X-ext) (car X-ext))))  ; slope of the polygon's lower edge
+     (d-upper (if open-on-top    0  (* border-width (sqrt (+ (expt slope-upper 2) 1)))))  ; (Pythagoras)
+     ; Y-distance between upper edges of inner and outer polygon. Equal to "border-width" if upper edge is horizontal.
+     ; Increases as the upper edge's slope increases.
+     (d-lower (if open-on-bottom 0  (* border-width (sqrt (+ (expt slope-lower 2) 1)))))  ; same for lower edge
+     ; stuff for later calculations:
+     (xtemp 0)
+     (yLowerLimit 0)
+     (yUpperLimit 0)
+     (xp 0)
+     (yp 0)
+     (jumps 0)
+     )
 
     ;; set grob properties that can be set from within the stencil callback
     (ly:grob-set-property! grob 'layer layer)
@@ -155,282 +155,282 @@
 
     (add-corner (cons 0 0) left-points -1 -1 #f)
 
-     ; calculate outer polygon's borders:
+    ; calculate outer polygon's borders:
 
-     ; lower-left corner:
-     (set! points (list (cons (car X-ext) y-l-lower)))
+    ; lower-left corner:
+    (set! points (list (cons (car X-ext) y-l-lower)))
 
-     ; calculate coordinates for left (outer) zigzag border:
-     (if (and (> l-zigzag-width 0) (not open-on-left))
+    ; calculate coordinates for left (outer) zigzag border:
+    (if (and (> l-zigzag-width 0) (not open-on-left))
+        (let loop ((cnt y-l-lower))
+          (if (< cnt y-l-upper)
+              (begin
+               (if (and (< cnt y-l-upper) (> cnt y-l-lower))  ; only add to list if point is inside the given Y-range
+                   (set! points (cons (cons    (car X-ext)             cnt                 ) points)))
+               (if (and (< (+ cnt (/ l-zigzag-width 2)) y-l-upper) (> (+ cnt (/ l-zigzag-width 2)) y-l-lower))
+                   (set! points (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points)))
+               (loop (+ cnt l-zigzag-width))))))
+
+    ; upper-left corner:
+    (set! points (cons
+                  (cons (car X-ext) y-l-upper)
+                  points ))
+    ; upper-right corner:
+    (set! points (cons
+                  (cons (cdr X-ext) y-r-upper)
+                  points ))
+    ; right outer zigzag border:
+    (if (and (> r-zigzag-width 0) (not open-on-right))
+        (let loop ((cnt y-r-upper))
+          (if (> cnt y-r-lower)
+              (begin
+               (if (and (< cnt y-r-upper) (> cnt y-r-lower))
+                   (set! points (cons (cons    (cdr X-ext)             cnt                  ) points)))
+               (if (and (< (- cnt (/ r-zigzag-width 2)) y-r-upper) (> (- cnt (/ r-zigzag-width 2)) y-r-lower))
+                   (set! points (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points)))
+               (loop (- cnt r-zigzag-width))))))
+
+    ; lower-right corner:
+    (set! points (cons
+                  (cons (cdr X-ext) y-r-lower)
+                  points ))
+
+    ; shrink X-ext for use with inner stuff:
+    (if (not open-on-left)
+        (if (> l-zigzag-width 0)
+            (set! X-ext (cons (+ (car X-ext) h-border-width) (cdr X-ext)))
+            (set! X-ext (cons (+ (car X-ext)   border-width) (cdr X-ext)))
+            )
+        )
+    (if (not open-on-right)
+        (if (> r-zigzag-width 0)
+            (set! X-ext (cons (car X-ext) (- (cdr X-ext) h-border-width)))
+            (set! X-ext (cons (car X-ext) (- (cdr X-ext)   border-width)))
+            )
+        )
+    ; Now X-ext represents INNER polygon's width WITHOUT the zigzag corners.
+
+    ; Now calculate inner borders:
+    ; xp and yp will be the coordinates of the corner currently being calculated
+
+    ; calculate lower-left corner:
+
+    (set! yLowerLimit y-l-lower)
+    (set! yUpperLimit y-l-upper)
+
+    (if open-on-left
+        (begin
+         (set! xp (car X-ext))
+         (set! yp (+ y-l-lower d-lower))
+         )
+        (if (> l-zigzag-width 0)
+            (if (not (eq? slope-lower -1))
+                (begin
+                 (set! jumps 0)
+                 (while (> (- (+ (* slope-lower h-border-width) d-lower) (* jumps l-zigzag-width)) l-zigzag-width)
+                   (set! jumps (+ 1 jumps)))
+                 (set! xtemp (/ (- (+ h-border-width (* jumps l-zigzag-width)) d-lower) (+ slope-lower 1)))
+                 ; results from the solution for a system of two equations. Forgive me, I'm a maths teacher :-)
+                 (if (< xtemp (- h-border-width (/ l-zigzag-width 2)))
+                     (if (= 1 slope-lower)
+                         (set! xtemp h-border-width)
+                         (set! xtemp
+                               (/ (+ (- d-lower (* l-zigzag-width (+ 1 jumps))) h-border-width) (- 1 slope-lower)))))  ; another system of 2 equations...
+                 (set! xp (+ (- (car X-ext) h-border-width) xtemp))
+                 (set! yp (+ (+ y-l-lower (* slope-lower xtemp)) d-lower))
+                 )
+                )
+            (begin
+             (set! xp (car X-ext))
+             (set! yp (+ (+ y-l-lower (* border-width slope-lower)) d-lower))
+             )
+            )
+        )
+
+    ; insert lower-left corner's coordinates into list:
+    (if (not (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-lower -1)))
+        (begin
+         (set! points-i (cons (cons xp yp) points-i))
+         (set! yLowerLimit yp)
+         )
+        )
+
+    ; calculate upper-left corner:
+    (if open-on-left
+        (begin
+         (set! xp (car X-ext))
+         (set! yp (- y-l-upper d-upper))
+         )
+        (if (> l-zigzag-width 0)
+            (if (not (eq? slope-upper 1))
+                (begin
+                 (set! jumps 0)
+                 (while (<
+                         (+ (- (* slope-upper h-border-width) d-upper) (* jumps l-zigzag-width))
+                         (- l-zigzag-width))
+                   (set! jumps (+ jumps 1)))
+                 (set! xtemp (/ (- d-upper (+ h-border-width (* jumps l-zigzag-width))) (- slope-upper 1)))
+                 (if (< xtemp (- h-border-width (/ l-zigzag-width 2)))
+                     (if (= -1 slope-upper)
+                         (set! xtemp h-border-width)
+                         (set! xtemp
+                               (/ (- (- (* l-zigzag-width (+ 1 jumps)) d-upper) h-border-width) (- (- 1) slope-upper)))
+                         )
+                     )
+                 (set! xp (+ (- (car X-ext) h-border-width) xtemp))
+                 (set! yp (- (+ y-l-upper (* slope-upper xtemp)) d-upper))
+                 )
+                )
+            (begin
+             (set! xp (car X-ext))
+             (set! yp (- (+ y-l-upper (* border-width slope-upper)) d-upper))
+             )
+            )
+        )
+
+    (if (not
+         (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
+         )
+        (set! yUpperLimit yp))
+
+
+    ; left (inner) zigzag:
+    (if (and (> l-zigzag-width 0) (not open-on-left))
+        (begin
          (let loop ((cnt y-l-lower))
            (if (< cnt y-l-upper)
                (begin
-                (if (and (< cnt y-l-upper) (> cnt y-l-lower))  ; only add to list if point is inside the given Y-range
-                    (set! points (cons (cons    (car X-ext)             cnt                 ) points)))
-                (if (and (< (+ cnt (/ l-zigzag-width 2)) y-l-upper) (> (+ cnt (/ l-zigzag-width 2)) y-l-lower))
-                    (set! points (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points)))
-                (loop (+ cnt l-zigzag-width))))))
+                (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
+                    (set! points-i (cons (cons    (car X-ext)             cnt                 ) points-i))
+                    )
+                (if (and (> (+ cnt (/ l-zigzag-width 2)) yLowerLimit) (< (+ cnt (/ l-zigzag-width 2)) yUpperLimit))
+                    (set! points-i (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points-i))
+                    )
+                (loop (+ cnt l-zigzag-width))
+                )
+               )
+           )
+         )
+        )
 
-     ; upper-left corner:
-     (set! points (cons
-                   (cons (car X-ext) y-l-upper)
-                   points ))
-     ; upper-right corner:
-     (set! points (cons
-                   (cons (cdr X-ext) y-r-upper)
-                   points ))
-     ; right outer zigzag border:
-     (if (and (> r-zigzag-width 0) (not open-on-right))
+    ; insert upper-left corner (yes, AFTER the zigzag points, so all the points will be given in clockwise order):
+    (if (not
+         (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
+         )
+        (set! points-i (cons (cons xp yp) points-i)))
+
+    ; calculate upper-right corner:
+
+    (set! yLowerLimit y-r-lower)
+    (set! yUpperLimit y-r-upper)
+
+    (if open-on-right
+        (begin
+         (set! xp (cdr X-ext))
+         (set! yp (- y-r-upper d-upper))
+         )
+        (if (> r-zigzag-width 0)
+            (if (not (eq? slope-upper -1))
+                (begin
+                 (set! jumps 0)
+                 (while (<
+                         (+ (- (* slope-upper (- h-border-width)) d-upper) (* jumps r-zigzag-width))
+                         (- r-zigzag-width))
+                   (set! jumps (+ jumps 1)))
+                 (set! xtemp (/ (- d-upper (+ h-border-width (* jumps r-zigzag-width))) (+ slope-upper 1)))
+                 (if (> xtemp (- (/ r-zigzag-width 2) h-border-width  ))
+                     (if (= 1 slope-upper)
+                         (set! xtemp (- h-border-width))
+                         (set! xtemp
+                               (/ (- (- (* r-zigzag-width (+ 1 jumps)) d-upper) h-border-width) (- 1 slope-upper)))
+                         )
+                     )
+                 (set! xp (+ (+ (cdr X-ext) h-border-width) xtemp))
+                 (set! yp (- (+ y-r-upper (* slope-upper xtemp)) d-upper))
+                 )
+                )
+            (begin
+             (set! xp (cdr X-ext))
+             (set! yp (- (- y-r-upper (* border-width slope-upper)) d-upper))
+             )
+            )
+        )
+
+    ; insert upper-right corner:
+    (if (not
+         (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-upper -1)))
+        (begin
+         (set! points-i (cons (cons xp yp) points-i))
+         (set! yUpperLimit yp)))
+
+    ; calculate lower-right corner:
+    (if open-on-right
+        (begin
+         (set! xp (cdr X-ext))
+         (set! yp (+ y-r-lower d-lower))
+         )
+        (if (> r-zigzag-width 0)
+            (if (not (eq? slope-lower 1))
+                (begin
+                 (set! jumps 0)
+                 (while (> (- (- d-lower (* slope-lower h-border-width)) (* jumps r-zigzag-width)) r-zigzag-width)
+                   (set! jumps (+ 1 jumps)))
+                 (set! xtemp (/ (- (+ h-border-width (* jumps r-zigzag-width)) d-lower) (- slope-lower 1)))
+                 (if (> xtemp (- (/ r-zigzag-width 2) h-border-width)   )
+                     (if (= -1 slope-lower)
+                         (set! xtemp (- h-border-width))
+                         (set! xtemp
+                               (/ (+ (- d-lower (* r-zigzag-width (+ 1 jumps))) h-border-width) (- -1 slope-lower)))))
+                 (set! xp (+ (+ (cdr X-ext) h-border-width) xtemp))
+                 (set! yp (+ (+ y-r-lower (* slope-lower xtemp)) d-lower))
+                 )
+                )
+            (begin
+             (set! xp (cdr X-ext))
+             (set! yp (+ (- y-r-lower (* border-width slope-lower)) d-lower))
+             )
+            )
+        )
+
+    (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
+        (set! yLowerLimit yp))
+
+    ; right zigzag:
+    (if (and (> r-zigzag-width 0) (not open-on-right))
+        (begin
          (let loop ((cnt y-r-upper))
            (if (> cnt y-r-lower)
                (begin
-                (if (and (< cnt y-r-upper) (> cnt y-r-lower))
-                    (set! points (cons (cons    (cdr X-ext)             cnt                  ) points)))
-                (if (and (< (- cnt (/ r-zigzag-width 2)) y-r-upper) (> (- cnt (/ r-zigzag-width 2)) y-r-lower))
-                    (set! points (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points)))
-                (loop (- cnt r-zigzag-width))))))
-
-     ; lower-right corner:
-     (set! points (cons
-                   (cons (cdr X-ext) y-r-lower)
-                   points ))
-
-     ; shrink X-ext for use with inner stuff:
-     (if (not open-on-left)
-         (if (> l-zigzag-width 0)
-             (set! X-ext (cons (+ (car X-ext) h-border-width) (cdr X-ext)))
-             (set! X-ext (cons (+ (car X-ext)   border-width) (cdr X-ext)))
-             )
-         )
-     (if (not open-on-right)
-         (if (> r-zigzag-width 0)
-             (set! X-ext (cons (car X-ext) (- (cdr X-ext) h-border-width)))
-             (set! X-ext (cons (car X-ext) (- (cdr X-ext)   border-width)))
-             )
-         )
-     ; Now X-ext represents INNER polygon's width WITHOUT the zigzag corners.
-
-     ; Now calculate inner borders:
-     ; xp and yp will be the coordinates of the corner currently being calculated
-
-     ; calculate lower-left corner:
-
-     (set! yLowerLimit y-l-lower)
-     (set! yUpperLimit y-l-upper)
-
-     (if open-on-left
-         (begin
-          (set! xp (car X-ext))
-          (set! yp (+ y-l-lower d-lower))
-          )
-         (if (> l-zigzag-width 0)
-             (if (not (eq? slope-lower -1))
-                 (begin
-                  (set! jumps 0)
-                  (while (> (- (+ (* slope-lower h-border-width) d-lower) (* jumps l-zigzag-width)) l-zigzag-width)
-                    (set! jumps (+ 1 jumps)))
-                  (set! xtemp (/ (- (+ h-border-width (* jumps l-zigzag-width)) d-lower) (+ slope-lower 1)))
-                  ; results from the solution for a system of two equations. Forgive me, I'm a maths teacher :-)
-                  (if (< xtemp (- h-border-width (/ l-zigzag-width 2)))
-                      (if (= 1 slope-lower)
-                          (set! xtemp h-border-width)
-                          (set! xtemp
-                                (/ (+ (- d-lower (* l-zigzag-width (+ 1 jumps))) h-border-width) (- 1 slope-lower)))))  ; another system of 2 equations...
-                  (set! xp (+ (- (car X-ext) h-border-width) xtemp))
-                  (set! yp (+ (+ y-l-lower (* slope-lower xtemp)) d-lower))
-                  )
-                 )
-             (begin
-              (set! xp (car X-ext))
-              (set! yp (+ (+ y-l-lower (* border-width slope-lower)) d-lower))
-              )
-             )
-         )
-
-     ; insert lower-left corner's coordinates into list:
-     (if (not (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-lower -1)))
-         (begin
-          (set! points-i (cons (cons xp yp) points-i))
-          (set! yLowerLimit yp)
-          )
-         )
-
-     ; calculate upper-left corner:
-     (if open-on-left
-         (begin
-          (set! xp (car X-ext))
-          (set! yp (- y-l-upper d-upper))
-          )
-         (if (> l-zigzag-width 0)
-             (if (not (eq? slope-upper 1))
-                 (begin
-                  (set! jumps 0)
-                  (while (<
-                          (+ (- (* slope-upper h-border-width) d-upper) (* jumps l-zigzag-width))
-                          (- l-zigzag-width))
-                    (set! jumps (+ jumps 1)))
-                  (set! xtemp (/ (- d-upper (+ h-border-width (* jumps l-zigzag-width))) (- slope-upper 1)))
-                  (if (< xtemp (- h-border-width (/ l-zigzag-width 2)))
-                      (if (= -1 slope-upper)
-                          (set! xtemp h-border-width)
-                          (set! xtemp
-                                (/ (- (- (* l-zigzag-width (+ 1 jumps)) d-upper) h-border-width) (- (- 1) slope-upper)))
-                          )
-                      )
-                  (set! xp (+ (- (car X-ext) h-border-width) xtemp))
-                  (set! yp (- (+ y-l-upper (* slope-upper xtemp)) d-upper))
-                  )
-                 )
-             (begin
-              (set! xp (car X-ext))
-              (set! yp (- (+ y-l-upper (* border-width slope-upper)) d-upper))
-              )
-             )
-         )
-
-     (if (not
-          (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
-          )
-         (set! yUpperLimit yp))
-
-
-     ; left (inner) zigzag:
-     (if (and (> l-zigzag-width 0) (not open-on-left))
-         (begin
-          (let loop ((cnt y-l-lower))
-            (if (< cnt y-l-upper)
-                (begin
-                 (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
-                     (set! points-i (cons (cons    (car X-ext)             cnt                 ) points-i))
-                     )
-                 (if (and (> (+ cnt (/ l-zigzag-width 2)) yLowerLimit) (< (+ cnt (/ l-zigzag-width 2)) yUpperLimit))
-                     (set! points-i (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points-i))
-                     )
-                 (loop (+ cnt l-zigzag-width))
-                 )
+                (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
+                    (set! points-i (cons (cons    (cdr X-ext)             cnt                  ) points-i)))
+                (if (and (> (- cnt (/ r-zigzag-width 2)) yLowerLimit) (< (- cnt (/ r-zigzag-width 2)) yUpperLimit))
+                    (set! points-i (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points-i)))
+                (loop (- cnt r-zigzag-width))
                 )
-            )
-          )
+               )
+           )
          )
+        )
 
-     ; insert upper-left corner (yes, AFTER the zigzag points, so all the points will be given in clockwise order):
-     (if (not
-          (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
-          )
-         (set! points-i (cons (cons xp yp) points-i)))
+    ; insert lower-right corner:
+    (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
+        (set! points-i (cons (cons xp yp) points-i)))
 
-     ; calculate upper-right corner:
-
-     (set! yLowerLimit y-r-lower)
-     (set! yUpperLimit y-r-upper)
-
-     (if open-on-right
-         (begin
-          (set! xp (cdr X-ext))
-          (set! yp (- y-r-upper d-upper))
-          )
-         (if (> r-zigzag-width 0)
-             (if (not (eq? slope-upper -1))
-                 (begin
-                  (set! jumps 0)
-                  (while (<
-                          (+ (- (* slope-upper (- h-border-width)) d-upper) (* jumps r-zigzag-width))
-                          (- r-zigzag-width))
-                    (set! jumps (+ jumps 1)))
-                  (set! xtemp (/ (- d-upper (+ h-border-width (* jumps r-zigzag-width))) (+ slope-upper 1)))
-                  (if (> xtemp (- (/ r-zigzag-width 2) h-border-width  ))
-                      (if (= 1 slope-upper)
-                          (set! xtemp (- h-border-width))
-                          (set! xtemp
-                                (/ (- (- (* r-zigzag-width (+ 1 jumps)) d-upper) h-border-width) (- 1 slope-upper)))
-                          )
-                      )
-                  (set! xp (+ (+ (cdr X-ext) h-border-width) xtemp))
-                  (set! yp (- (+ y-r-upper (* slope-upper xtemp)) d-upper))
-                  )
-                 )
-             (begin
-              (set! xp (cdr X-ext))
-              (set! yp (- (- y-r-upper (* border-width slope-upper)) d-upper))
-              )
-             )
-         )
-
-     ; insert upper-right corner:
-     (if (not
-          (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-upper -1)))
-         (begin
-          (set! points-i (cons (cons xp yp) points-i))
-          (set! yUpperLimit yp)))
-
-     ; calculate lower-right corner:
-     (if open-on-right
-         (begin
-          (set! xp (cdr X-ext))
-          (set! yp (+ y-r-lower d-lower))
-          )
-         (if (> r-zigzag-width 0)
-             (if (not (eq? slope-lower 1))
-                 (begin
-                  (set! jumps 0)
-                  (while (> (- (- d-lower (* slope-lower h-border-width)) (* jumps r-zigzag-width)) r-zigzag-width)
-                    (set! jumps (+ 1 jumps)))
-                  (set! xtemp (/ (- (+ h-border-width (* jumps r-zigzag-width)) d-lower) (- slope-lower 1)))
-                  (if (> xtemp (- (/ r-zigzag-width 2) h-border-width)   )
-                      (if (= -1 slope-lower)
-                          (set! xtemp (- h-border-width))
-                          (set! xtemp
-                                (/ (+ (- d-lower (* r-zigzag-width (+ 1 jumps))) h-border-width) (- -1 slope-lower)))))
-                  (set! xp (+ (+ (cdr X-ext) h-border-width) xtemp))
-                  (set! yp (+ (+ y-r-lower (* slope-lower xtemp)) d-lower))
-                  )
-                 )
-             (begin
-              (set! xp (cdr X-ext))
-              (set! yp (+ (- y-r-lower (* border-width slope-lower)) d-lower))
-              )
-             )
-         )
-
-     (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
-         (set! yLowerLimit yp))
-
-     ; right zigzag:
-     (if (and (> r-zigzag-width 0) (not open-on-right))
-         (begin
-          (let loop ((cnt y-r-upper))
-            (if (> cnt y-r-lower)
-                (begin
-                 (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
-                     (set! points-i (cons (cons    (cdr X-ext)             cnt                  ) points-i)))
-                 (if (and (> (- cnt (/ r-zigzag-width 2)) yLowerLimit) (< (- cnt (/ r-zigzag-width 2)) yUpperLimit))
-                     (set! points-i (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points-i)))
-                 (loop (- cnt r-zigzag-width))
-                 )
-                )
-            )
-          )
-         )
-
-     ; insert lower-right corner:
-     (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
-         (set! points-i (cons (cons xp yp) points-i)))
-
-     (ly:stencil-add
-      ; draw outer polygon:
-      (if (color? border-color)  ; only add stencil if set to a valid color (could also be set to ##f)
-          (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points border-radius))
-                             X-ext Y-ext))
-          empty-stencil)
-      ; draw inner polygon:
-      (if (color? color)   ; only add stencil if set to a valid color (could also be set to ##f)
-          (ly:make-stencil (list 'color color
-                             (ly:stencil-expr (ly:round-filled-polygon points-i border-radius))
-                             X-ext Y-ext))
-          empty-stencil)
-      )
+    (ly:stencil-add
+     ; draw outer polygon:
+     (if (color? border-color)  ; only add stencil if set to a valid color (could also be set to ##f)
+         (ly:make-stencil (list 'color border-color
+                            (ly:stencil-expr (ly:round-filled-polygon points border-radius))
+                            X-ext Y-ext))
+         empty-stencil)
+     ; draw inner polygon:
+     (if (color? color)   ; only add stencil if set to a valid color (could also be set to ##f)
+         (ly:make-stencil (list 'color color
+                            (ly:stencil-expr (ly:round-filled-polygon points-i border-radius))
+                            X-ext Y-ext))
+         empty-stencil)
      )
+    )
    )
 
 
@@ -514,10 +514,10 @@
        (if prop-col
            (cdr prop-col)
            (getOption '(analysis frames color)))))
-     (hide 
+     (hide
       (let ((col (assq 'hide props)))
-        (if col 
-            (string->symbol (cdr col)) 
+        (if col
+            (string->symbol (cdr col))
             (string->symbol (getOption '(analysis frames hide))))))
      )
     `((border-width . ,border-width)
@@ -570,18 +570,18 @@ genericFrame =
       \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
       #(case (assq-ref props 'hide)
          ((staff)
-           #{
-             #(set! props (assq-set! props 'layer 1))
-             \temporary \override NoteHead.layer = 2
-             \temporary \override Stem.layer = 2
-             \temporary \override Beam.layer = 2
-             \temporary \override Flag.layer = 2
-             \temporary \override Rest.layer = 2
-             \temporary \override Accidental.layer = 2
-           #})
+          #{
+            #(set! props (assq-set! props 'layer 1))
+            \temporary \override NoteHead.layer = 2
+            \temporary \override Stem.layer = 2
+            \temporary \override Beam.layer = 2
+            \temporary \override Flag.layer = 2
+            \temporary \override Rest.layer = 2
+            \temporary \override Accidental.layer = 2
+          #})
          ((all)
           (set! props (assq-set! props 'layer 5))))
-%      \once \override HorizontalBracket.rotation = #'(45 0 0)
+      %      \once \override HorizontalBracket.rotation = #'(45 0 0)
       \once\override HorizontalBracket.stencil =
       $(lambda (grob) (make-frame-stencil grob props))
       % Return the processed music expression
