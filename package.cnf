@@ -12,6 +12,10 @@ description: <
   There is no proper description available yet
   as this package is only in its beginning stage.
   >
+modules: [
+  arrows
+  frames
+  ]
 dependencies: [
   first one
   second one
@@ -24,5 +28,6 @@ maintainers: [
   ]
 version: 0.0.1
 license: GPL3
-repository:  https://github.com/openlilylib/analysis/
+website: https://github.com/openlilylib/analysis
+repository: https://github.com/openlilylib/analysis.git
 
