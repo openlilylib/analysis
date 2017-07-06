@@ -153,6 +153,8 @@
     (ly:grob-set-property! grob 'layer layer)
     (ly:grob-set-property! grob 'Y-offset 0)
 
+    (add-corner (cons 0 0) left-points -1 -1 #f)
+
      ; calculate outer polygon's borders:
 
      ; lower-left corner:
