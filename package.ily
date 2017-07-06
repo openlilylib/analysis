@@ -25,22 +25,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %{
-  This file loads the whole ScholarLY library,
-  currently only the annotate module is implemented
+  Entry file for the anaLYsis package.
+  This package doesn't directly include any functionality,
+  to use it one or more modules have to be loaded
 %}
 
 #(ly:set-option 'relative-includes #t)
 
 \include "../oll-core/package.ily"
-
-% TODO:
-% Decide if that redundancy with the package.yml shall be maintained!
-\registerPackage analysis \with {
-  maintainers = #'()
-  version = "0.0.1"
-  short-description = "Graphical highlighing for musical analysis with GNU LilyPond"
-  description = "TODO!"
-}
-
-\registerModule analysis.arrows
-\registerModule analysis.frames
