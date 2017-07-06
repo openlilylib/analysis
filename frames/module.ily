@@ -85,6 +85,35 @@
      (open-on-left (assq-ref live-props 'open-on-left))
      (open-on-right (assq-ref live-props 'open-on-right))
 
+     ;; store polygon points.
+     ;; retrieve list of all inner or outer points
+     ;; pass either one out of the four point lists or the result of invoking all-points
+     (inner-points
+      (lambda (side)
+        (if (null? side) '()
+            (map car side))))
+     (outer-points
+      (lambda (side)
+        (if (null? side) '()
+            (map cdr side))))
+     ;; add a pair of inner/outer points to the pts list
+     (add-points (lambda (side pts) (set! side (append side (list pts)))))
+     (add-corner (lambda (p side h-dir v-dir diag)
+                   (let*
+                    ((x-fact (if diag (* border-width (sqrt 2)) border-width))
+                     (outer-point
+                      (cons
+                       (+ (car p) (* x-fact h-dir))
+                       (+ (cdr p) v-dir))))
+                    (add-points side (cons p outer-point)))))
+
+     ;; each entry is a pair of two pairs with coordinates of inner and outer point
+     (left-points '())
+     (top-points '())
+     (right-points '())
+     (bottom-points '())
+     (all-points (lambda ()
+                   (append left-points top-points right-points bottom-points)))
      ;; start calculations
            (h-border-width (* border-width (sqrt 2)))  ; X-distance between left and right edges of inner and outer polygon. Must be "border-width" * sqrt 2  (Pythagoras)
            (l-width (* l-zigzag-width  0.5))   ; X-distance of zigzag corners
