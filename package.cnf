@@ -28,6 +28,5 @@ maintainers: [
   ]
 version: 0.0.1
 license: GPL3
-website: https://github.com/openlilylib/analysis
 repository: https://github.com/openlilylib/analysis.git
 
