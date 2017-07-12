@@ -29,7 +29,3 @@
   This package doesn't directly include any functionality,
   to use it one or more modules have to be loaded
 %}
-
-#(ly:set-option 'relative-includes #t)
-
-\include "../oll-core/package.ily"
