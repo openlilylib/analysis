@@ -87,9 +87,10 @@ spc = \markup \vspace #1
 \markup \justify {
   A frame has a body and a border, which by default are printed both. The
   color of both elements is controlled with the properties \typewriter
-  color and \typewriter border-color, and they can be suppressed by setting
-  this property to \typewriter white or \typewriter "##f" (for example \typewriter
-  "\\setOption analysis.frames.border-color #green").
+  color and \typewriter border-color, and they can be made invisible by setting
+  this property to \typewriter white  (for example \typewriter
+  "\\setOption analysis.frames.border-color #green"), or they can be completely suppressed by 
+  setting it to \typewriter "##f".
 }
 \spc
 
@@ -97,14 +98,14 @@ spc = \markup \vspace #1
   \relative c' {
 
     \genericFrame {
-      c8 ^"Default: fill and frame"
+      c8 ^"Default: body and border"
       e g c g e
     }
     r4
     \genericFrame \with {
-      color = #white
+      color = ##f
     } {
-      c8 ^"Frame only"
+      c8 ^"Border only"
       e g c g e
     }
 
@@ -112,7 +113,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       border-color = ##f
     } {
-      c8 ^"Fill only"
+      c8 ^"Body only"
       e g c g e
     }
     r4
@@ -297,7 +298,7 @@ spc = \markup \vspace #1
 \pspc
 \markup \justify {
   If frames are broken around line breaks the broken edge will be printed
-  without border and zigzag linese. The amount of protrusion into the
+  without border and zigzag lines. The amount of protrusion into the
   margin can be set with the \typewriter broken-bound-padding property.
 }
 \pspc
@@ -337,7 +338,7 @@ spc = \markup \vspace #1
       } r4
       \genericFrame \with {
         broken-bound-padding = 0
-        r-zigzag-width = 1.5
+        r-zigzag-width = 2
       } {
         c8 ^"broken-bound-padding 0"
         e g c
@@ -389,7 +390,7 @@ spc = \markup \vspace #1
       } r4
       \genericFrame \with {
         broken-bound-padding = 2
-        r-zigzag-width = 1.5
+        r-zigzag-width = 2
       } {
         c8 ^"broken-bound-padding 2"
         e g c g e
@@ -459,7 +460,7 @@ spc = \markup \vspace #1
         }
       >>
       \genericFrame \with {
-        r-zigzag-width = 1.5
+        r-zigzag-width = 2
       } {
         c8 ^"broken-bound-padding 4 (default)"
         e g c g e
