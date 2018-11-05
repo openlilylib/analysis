@@ -85,12 +85,16 @@ spc = \markup \vspace #1
 \pspc
 
 \markup \justify {
-  A frame has a body and a border, which by default are printed both. The
-  color of both elements is controlled with the properties \typewriter
-  color and \typewriter border-color, and they can be made invisible by setting
-  this property to \typewriter white  (for example \typewriter
-  "\\setOption analysis.frames.border-color #green"), or they can be completely suppressed by 
-  setting it to \typewriter "##f".
+  A frame has a body and a border, which by default are printed both.
+}
+\pspc
+\markup \justify {
+  The color of both elements is controlled with the properties \typewriter
+  color and \typewriter border-color  (for example \typewriter
+  "\\setOption analysis.frames.border-color #green"), 
+  and they can be made invisible by setting
+  this property to \typewriter white , or they can be completely suppressed by 
+  setting it to \typewriter "#f".
 }
 \spc
 
@@ -105,7 +109,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       color = ##f
     } {
-      c8 ^"Border only"
+      c8 ^"border only"
       e g c g e
     }
 
@@ -113,7 +117,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       border-color = ##f
     } {
-      c8 ^"Body only"
+      c8 ^"body only"
       e g c g e
     }
     r4
@@ -122,14 +126,15 @@ spc = \markup \vspace #1
 
 \markup \column {
   \concat { - " " \typewriter border-width " " (0.25) }
-  \concat { - " " \typewriter border-radius " " (0.5) }
+  \concat { - " " \typewriter border-radius " " (0) }
   \concat { - " " \typewriter shorten-pair " " "#'(0 . 0)" }
 }
 \pspc
 \markup \justify {
   The width (or thickness) of the frame border is controlled with the
   \typewriter border-width Property. \typewriter border-radius applies
-  a rounded effect on the frame. Setting this to \typewriter 0 will
+  a rounded effect on the frame (but will also make it grow outwards). 
+  Leaving this at \typewriter 0 will
   produce a sharply angled frame. With \typewriter shorten-pair the right
   and left padding can be modified. Positive values will make the frame
   narrower while negative values will make it wider. This property should
@@ -185,31 +190,32 @@ spc = \markup \vspace #1
 
 \score {
   \relative c' {
-
+    r8
     \genericFrame \with {
       l-zigzag-width = 2
     } {
-      c8 ^"Left zigzag 2"
-      e g c g e
+      e8 ^"Left zigzag 2"
+      g c g e
     }
     r4
     \genericFrame \with {
       r-zigzag-width = 1
     } {
       c8 ^"Right zigzag 1"
-      e g c g e
+      e g c g
     }
 
-    r4
+    r8 r4
+    r8
     \genericFrame \with {
       l-zigzag-width = 4
       r-zigzag-width = 2
       border-radius = 1
     } {
-      c8 ^"Mixed zigzag 4 / 2, border-radius 1.0"
-      e g c g e
+      e8 ^"Mixed zigzag 4 / 2, border-radius 1.0"
+      g c g
     }
-    r4
+    r8 r4
   }
 }
 
@@ -305,7 +311,9 @@ spc = \markup \vspace #1
 \markup \justify {
   With the boolean \typewriter open-on-top and \typewriter open-on-bottom
   the top and/or bottom borders can be switched off, which can be used to
-  create fake cross-staff Frames.
+  create fake cross-staff Frames. In that case (and also when using frames 
+  broken around line breaks), \typewriter border-radius should be left at 
+  \typewriter 0 .
 }
 \spc
 
