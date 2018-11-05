@@ -490,31 +490,31 @@
          ; draw upper edge:
          (if need-upper-polygon
              (ly:make-stencil (list 'color border-color
-                                (ly:stencil-expr (ly:round-filled-polygon points-up border-radius))
+                                (ly:stencil-expr (ly:round-filled-polygon points-up border-radius 0))
                                 X-ext Y-ext))
              empty-stencil)
          ; draw lower edge:
          (if need-lower-polygon
              (ly:make-stencil (list 'color border-color
-                                (ly:stencil-expr (ly:round-filled-polygon points-lo border-radius))
+                                (ly:stencil-expr (ly:round-filled-polygon points-lo border-radius 0))
                                 X-ext Y-ext))
              empty-stencil)
          ; draw left edge:
          (if need-left-polygon
              (ly:make-stencil (list 'color border-color
-                                (ly:stencil-expr (ly:round-filled-polygon points-l border-radius))
+                                (ly:stencil-expr (ly:round-filled-polygon points-l border-radius 0))
                                 X-ext Y-ext))
              empty-stencil)
          ; draw right edge:
          (if need-right-polygon
              (ly:make-stencil (list 'color border-color
-                                (ly:stencil-expr (ly:round-filled-polygon points-r border-radius))
+                                (ly:stencil-expr (ly:round-filled-polygon points-r border-radius 0))
                                 X-ext Y-ext))
              empty-stencil)
          ; draw inner polygon:
          (if need-inner-polygon
              (ly:make-stencil (list 'color color
-                                (ly:stencil-expr (ly:round-filled-polygon points-i border-radius))
+                                (ly:stencil-expr (ly:round-filled-polygon points-i border-radius 0))
                                 X-ext Y-ext))
              empty-stencil)
          )
