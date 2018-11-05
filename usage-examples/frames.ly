@@ -270,7 +270,7 @@ spc = \markup \vspace #1
 \pageBreak
 
 \markup \column {
-  \concat { - " " \typewriter hide " " (none / staff / all) }
+  \concat { - " " \typewriter hide " " (none / staff / music / all) }
   \concat { - " " \typewriter layer " " (-10) }
   \concat { - " " \typewriter broken-bound-padding " " (4) }
   \concat { - " " \typewriter open-on-bottom " (##f)" }
@@ -284,9 +284,15 @@ spc = \markup \vspace #1
   of elements. If the \typewriter hide property is set to \typewriter staff
   the frame is placed between the staff lines and the music. This is achieved
   by temporarily setting the frame's \typewriter layer to \typewriter 1 and
-  that of the other score elements to \typewriter 2. So this may interfere
+  that of the other score elements to \typewriter 2. 
+  Setting \typewriter hide to \typewriter music will place the frame in layer 
+  \typewriter -1 and the music in layer \typewriter -2.
+  So this may interfere
   with any other \typewriter layer settings the user may have applied
-  otherwise. Setting \typewriter hide to \typewriter all will print the
+  otherwise. 
+  
+  
+  Setting \typewriter hide to \typewriter all will print the
   frame in front of everything else (or concretely at the layer
   \typewriter 5. This can be used to reserve space in exercise sheets.
 }
@@ -385,8 +391,9 @@ spc = \markup \vspace #1
     \new Staff \relative c'{
       \genericFrame \with {
         hide = staff
+        color = #white 
       } {
-        c8 ^"Hide staff"
+        c8 ^"Hide staff, white"
         e g c g e
       } r4
       \genericFrame \with {
@@ -438,10 +445,10 @@ spc = \markup \vspace #1
     % Lower staff
     \new Staff \relative c'{
       \genericFrame \with {
-        hide = staff
+        hide = music
         color = #white
       } {
-        c8 ^"Hide staff, empty"
+        c8 ^"Hide music, white"
         e g c g e
       } r4
       <<
@@ -462,6 +469,7 @@ spc = \markup \vspace #1
             shorten-pair = #'(0 . -0.5)
             border-color = \colDarkYellow
             color = \colLightYellow
+            layer = -9
           } {
             \hide r4 \hide r8
           }
