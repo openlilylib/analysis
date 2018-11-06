@@ -64,7 +64,7 @@
    (let*
     ;; make properties available
     ((live-props (get-live-properties grob))
-     (frame-angle (assq-ref props 'frame-angle))
+     (frame-angle (assq-ref props 'angle))
      (border-width (assq-ref props 'border-width))
      (border-radius (assq-ref props 'border-radius))
      (y-l-lower (assq-ref props 'y-l-lower))
@@ -78,7 +78,7 @@
      (r-zigzag-width (assq-ref props 'r-zigzag-width))
      (open-on-bottom (assq-ref props 'open-on-bottom))
      (open-on-top (assq-ref props 'open-on-top))
-     (border-width (assq-ref props 'border-width))
+     ;; (border-width (assq-ref props 'border-width))    ;; already done above...
      (padding (assq-ref props 'padding))
      (bb-pad (assq-ref props 'broken-bound-padding))
      (frame-X-extent (assq-ref live-props 'frame-X-extent))
@@ -625,6 +625,7 @@
       (border-color . ,border-color)
       (color . ,color)
       (hide . ,hide)
+      (angle . ,frame-angle)
       )))
 
 #(define (offset-shorten-pair props)
