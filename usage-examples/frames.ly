@@ -509,6 +509,61 @@ spc = \markup \vspace #1
     }
   >>
 }
+
+\spc
+
+\markup \column {
+  \concat { - " " \typewriter angle " " (0) }
+}
+\noPageBreak
+\pspc
+\noPageBreak
+\markup \justify {
+  Frames can be rotated couter-clockwise around their center point by
+  setting the \typewriter angle property to a positive value in degrees. 
+  Negative values will turn the frame clockwise.
+}
+
+\noPageBreak
+\spc
+\noPageBreak
+
+\score {
+  \relative c'' {
+    \genericFrame \with {
+      r-zigzag-width = 1
+    } {
+      c,8 ^"angle: 0 (default)"
+      e g c g
+    }
+    r8 r4
+    \genericFrame \with {
+      r-zigzag-width = 1
+      angle = 5
+    } {
+      c,8 ^"5 degrees"
+      e g c g
+    }
+    r8 r4
+    \genericFrame \with {
+      r-zigzag-width = 1
+      angle = 10
+    } {
+      c,8 ^"10"
+      e g c g
+    }
+    r8 r4
+    \genericFrame \with {
+      r-zigzag-width = 1
+      angle = -10
+    } {
+      c,8 ^"        -10"
+      e g c g
+    }
+    r8 r4
+  }
+}
+
 %{
 
 
