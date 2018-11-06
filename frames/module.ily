@@ -143,6 +143,10 @@
      ; Y-distance between upper edges of inner and outer polygon. Equal to "border-width" if upper edge is horizontal.
      ; Increases as the upper edge's slope increases.
      (d-lower (if open-on-bottom 0  (* border-width (sqrt (+ (expt slope-lower 2) 1)))))  ; same for lower edge
+     ; Where to find the center points for rotation:
+     (rotation-center-x (/ (- (cdr X-ext) (car X-ext)) 2))
+     (rotation-center-y (/ (+ y-l-upper y-r-upper y-l-lower y-r-lower) 4))
+     
      ; stuff for later calculations:
      (xtemp 0)
      (yLowerLimit 0)
@@ -490,31 +494,41 @@
      ; draw upper edge:
      (if need-upper-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:round-filled-polygon points-up border-radius 0))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute 
+                                              (ly:round-filled-polygon points-up border-radius 0) 
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw lower edge:
      (if need-lower-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:round-filled-polygon points-lo border-radius 0))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute 
+                                              (ly:round-filled-polygon points-lo border-radius 0)
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw left edge:
      (if need-left-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:round-filled-polygon points-l border-radius 0))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute 
+                                              (ly:round-filled-polygon points-l  border-radius 0) 
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw right edge:
      (if need-right-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:round-filled-polygon points-r border-radius 0))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute 
+                                              (ly:round-filled-polygon points-r  border-radius 0) 
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw inner polygon:
      (if need-inner-polygon
          (ly:make-stencil (list 'color color
-                            (ly:stencil-expr (ly:round-filled-polygon points-i border-radius 0))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute 
+                                              (ly:round-filled-polygon points-i  border-radius 0) 
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      )
