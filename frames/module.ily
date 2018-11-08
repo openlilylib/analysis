@@ -46,8 +46,26 @@
 \registerOption analysis.frames.color #(rgb-color 0.8  0.8  1.0)
 \registerOption analysis.frames.hide "none"
 \registerOption analysis.frames.angle 0
+\registerOption analysis.frames.caption ##f
+\registerOption analysis.frames.caption-padding 0.25
+\registerOption analysis.frames.caption-radius 0.25
+\registerOption analysis.frames.caption-align-bottom ##f
+\registerOption analysis.frames.caption-halign -1  % from -1=left to 1=right
+\registerOption analysis.frames.caption-color ##f  % ##f will use border-color
 
 
+#(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
+   (let* ((stencil (interpret-markup layout props arg))
+          (X-ext (ly:stencil-extent stencil X))
+          (Y-ext (ly:stencil-extent stencil Y)))
+     (if (color? color)
+         (ly:stencil-add (ly:make-stencil
+                          (list 'color color
+                            (ly:stencil-expr (ly:round-filled-box X-ext Y-ext radius))
+                            X-ext Y-ext)) stencil)
+         stencil)
+     )
+   )
 
 #(define (get-live-properties grob)
    "Return the properties that have to be retrieved from the actual grob"
@@ -84,6 +102,21 @@
      (frame-X-extent (assq-ref live-props 'frame-X-extent))
      (open-on-left (assq-ref live-props 'open-on-left))
      (open-on-right (assq-ref live-props 'open-on-right))
+     (caption (assq-ref props 'caption))
+     (caption-padding (assq-ref props 'caption-padding))
+     (caption-radius (assq-ref props 'caption-radius))
+     (caption-align-bottom (assq-ref props 'caption-align-bottom))
+     (caption-halign (assq-ref props 'caption-halign))
+     (caption-color (assq-ref props 'caption-color))
+
+     (layout (ly:grob-layout grob))
+     (caption-props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
+     (caption-stencil empty-stencil)
+     (caption-x 0)
+     (caption-y 0)
+     (caption-width 0)
+     (caption-height 0)
+
 
      ;; store polygon points.
      ;; retrieve list of all inner or outer points
@@ -146,7 +179,11 @@
      ; Where to find the center points for rotation:
      (rotation-center-x (/ (- (cdr X-ext) (car X-ext)) 2))
      (rotation-center-y (/ (+ y-l-upper y-r-upper y-l-lower y-r-lower) 4))
-     
+     (caption-left (car X-ext))
+     (caption-right (cdr X-ext))
+     (caption-space-factor 1)
+     (caption-x-deficit 0)
+
      ; stuff for later calculations:
      (xtemp 0)
      (yLowerLimit 0)
@@ -159,6 +196,7 @@
      (need-left-polygon  (and (and (> border-width 0) (not open-on-left))   (color? border-color)))
      (need-right-polygon (and (and (> border-width 0) (not open-on-right))  (color? border-color)))
      (need-inner-polygon (color? color))
+     (need-caption (markup? caption))
      )
 
     ;; set grob properties that can be set from within the stencil callback
@@ -490,19 +528,56 @@
 
     ; Edge polygons are finished now.
 
+    (if need-caption
+        (begin
+         (set! caption-stencil (interpret-markup layout caption-props
+                                 (markup #:on-box caption-radius (if (color? caption-color) caption-color border-color)
+                                   #:pad-markup caption-padding
+                                   caption)
+                                 ))
+         (set! caption-width  (- (cdr (ly:stencil-extent caption-stencil X)) (car (ly:stencil-extent caption-stencil X)) ))
+         (set! caption-height (- (cdr (ly:stencil-extent caption-stencil Y)) (car (ly:stencil-extent caption-stencil Y)) ))
+         (set! caption-space-factor (/ (+ caption-right (- caption-left) (- (* caption-width (cos (atan (if caption-align-bottom slope-lower slope-upper)))))) (- caption-right caption-left)))
+         (set! caption-x-deficit (* 0.5 caption-width (- 1 (cos (atan (if caption-align-bottom slope-lower slope-upper))))))
+         (set! caption-x    ; cross-fade between left and right position:
+               (+
+                (* (/ (- 1 caption-halign) 2)   ; factor between 1 a 0  (caption-halign is between -1=left and 1=right)
+                  (+ caption-left caption-padding (- (/ border-radius 2)) (- caption-x-deficit))  ; left-edge position
+                  )
+                (* (/ (+ 1 caption-halign) 2)   ; factor between 0 a 1
+                  (+ caption-right caption-padding (/ border-radius 2) (- caption-width) caption-x-deficit)  ; right-edge position
+                  )
+                )
+               )
+         (set! caption-y
+               (+
+                (* (/ (- 1 (* caption-halign caption-space-factor)) 2)   ; factor between 1 a 0  (caption-halign is between -1=left and 1=right)
+                  (if caption-align-bottom y-l-lower y-l-upper)  ; left-edge position
+                  )
+                (* (/ (+ 1 (* caption-halign caption-space-factor)) 2)   ; factor between 0 a 1
+                  (if caption-align-bottom y-r-lower y-r-upper)  ; right-edge position
+                  )
+                )
+               )
+         if (if caption-align-bottom
+             (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height)))
+             (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) ))
+             )
+         ))
+
     (ly:stencil-add
      ; draw upper edge:
      (if need-upper-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:stencil-rotate-absolute 
-                                              (ly:round-filled-polygon points-up border-radius 0) 
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-up border-radius 0)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw lower edge:
      (if need-lower-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:stencil-rotate-absolute 
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
                                               (ly:round-filled-polygon points-lo border-radius 0)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
@@ -510,27 +585,36 @@
      ; draw left edge:
      (if need-left-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:stencil-rotate-absolute 
-                                              (ly:round-filled-polygon points-l  border-radius 0) 
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-l  border-radius 0)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw right edge:
      (if need-right-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:stencil-rotate-absolute 
-                                              (ly:round-filled-polygon points-r  border-radius 0) 
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-r  border-radius 0)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw inner polygon:
      (if need-inner-polygon
          (ly:make-stencil (list 'color color
-                            (ly:stencil-expr (ly:stencil-rotate-absolute 
-                                              (ly:round-filled-polygon points-i  border-radius 0) 
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-i  border-radius 0)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
+     ; draw caption:
+     (if need-caption
+         (ly:stencil-rotate-absolute
+          (ly:stencil-rotate
+           (ly:stencil-translate caption-stencil (cons caption-x caption-y))
+           (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265)) 0 (if caption-align-bottom 1 -1))
+          frame-angle rotation-center-x rotation-center-y)
+         empty-stencil)
+
      )
     )
    )
@@ -558,6 +642,24 @@
      (frame-angle
       (or (assq-ref props 'angle)
           (getOption '(analysis frames angle))))
+     (caption
+      (or (assq-ref props 'caption)
+          (getOption '(analysis frames caption))))
+     (caption-padding
+      (or (assq-ref props 'caption-padding)
+          (getOption '(analysis frames caption-padding))))
+     (caption-radius
+      (or (assq-ref props 'caption-radius)
+          (getOption '(analysis frames caption-radius))))
+     (caption-halign
+      (or (assq-ref props 'caption-halign)
+          (getOption '(analysis frames caption-halign))))
+     (caption-color
+      (or (assq-ref props 'caption-color)
+          (getOption '(analysis frames caption-color))))
+     (caption-align-bottom
+      (or (assq-ref props 'caption-align-bottom)
+          (getOption '(analysis frames caption-align-bottom))))
      (border-width
       (or (assq-ref props 'border-width)
           (getOption '(analysis frames border-width))))
@@ -640,6 +742,12 @@
       (color . ,color)
       (hide . ,hide)
       (angle . ,frame-angle)
+      (caption . ,caption)
+      (caption-padding . ,caption-padding)
+      (caption-radius . ,caption-radius)
+      (caption-align-bottom . ,caption-align-bottom)
+      (caption-halign . ,caption-halign)
+      (caption-color . ,caption-color)
       )))
 
 #(define (offset-shorten-pair props)
@@ -1738,15 +1846,19 @@ colorFrame = #(define-music-function (y-lower y-upper border-color)
                 #{  \genericFrame $y-lower $y-upper $y-lower $y-upper $border-color #0 #0 ##f ##f  #})
 
 
-
-#(define-markup-command (on-color layout props color arg) (color? markup?)
+#(define-markup-command (on-color layout props color arg) (scheme? markup?)
    (let* ((stencil (interpret-markup layout props arg))
           (X-ext (ly:stencil-extent stencil X))
           (Y-ext (ly:stencil-extent stencil Y)))
-     (ly:stencil-add (ly:make-stencil
-                      (list 'color color
-                        (ly:stencil-expr (ly:round-filled-box X-ext Y-ext 0))
-                        X-ext Y-ext)) stencil)))
+     (if (color? color)
+         (ly:stencil-add (ly:make-stencil
+                          (list 'color color
+                            (ly:stencil-expr (ly:round-filled-box X-ext Y-ext 0))
+                            X-ext Y-ext)) stencil)
+         stencil)
+     )
+   )
+
 
 #(define-markup-command (sticker layout props border-color color arg) (color? color? markup?)
    (let* ((stencil (interpret-markup layout props arg))
