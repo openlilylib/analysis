@@ -51,7 +51,9 @@
 \registerOption analysis.frames.caption-radius 0.25
 \registerOption analysis.frames.caption-align-bottom ##f
 \registerOption analysis.frames.caption-halign -1  % from -1=left to 1=right
-\registerOption analysis.frames.caption-color ##f  % ##f will use border-color
+\registerOption analysis.frames.caption-color  ##f  % ##f will use border-color
+\registerOption analysis.frames.caption-keep-y ##f
+\registerOption analysis.frames.caption-translate-x 0
 
 
 #(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
@@ -108,6 +110,8 @@
      (caption-align-bottom (assq-ref props 'caption-align-bottom))
      (caption-halign (assq-ref props 'caption-halign))
      (caption-color (assq-ref props 'caption-color))
+     (caption-keep-y (assq-ref props 'caption-keep-y))
+     (caption-translate-x (assq-ref props 'caption-translate-x))
 
      (layout (ly:grob-layout grob))
      (caption-props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
@@ -116,6 +120,9 @@
      (caption-y 0)
      (caption-width 0)
      (caption-height 0)
+     (y-with-descender 0)
+     (y-without-descender 0)
+     (descender-height 0)
 
 
      ;; store polygon points.
@@ -530,14 +537,36 @@
 
     (if need-caption
         (begin
+         (set! caption-stencil (interpret-markup layout caption-props (markup "j")))
+         (set! y-with-descender    (car (ly:stencil-extent caption-stencil Y)) )
+         (set! caption-stencil (interpret-markup layout caption-props (markup "i")))
+         (set! y-without-descender (car (ly:stencil-extent caption-stencil Y)) )
+         (set! descender-height (- y-without-descender y-with-descender))
+
          (set! caption-stencil (interpret-markup layout caption-props
                                  (markup #:on-box caption-radius (if (color? caption-color) caption-color border-color)
                                    #:pad-markup caption-padding
-                                   caption)
-                                 ))
+                                   (if caption-keep-y
+                                       caption
+                                       (markup
+                                        #:combine caption
+                                        #:transparent
+                                        #:scale (cons 0.1 1)
+                                        #:combine "É" "j"
+                                        )
+                                       )
+                                   )))
          (set! caption-width  (- (cdr (ly:stencil-extent caption-stencil X)) (car (ly:stencil-extent caption-stencil X)) ))
          (set! caption-height (- (cdr (ly:stencil-extent caption-stencil Y)) (car (ly:stencil-extent caption-stencil Y)) ))
-         (set! caption-space-factor (/ (+ caption-right (- caption-left) (- (* caption-width (cos (atan (if caption-align-bottom slope-lower slope-upper)))))) (- caption-right caption-left)))
+         (set! caption-space-factor
+               (/
+                (+
+                 caption-right
+                 (- caption-left)
+                 (- (* caption-width (cos (atan (if caption-align-bottom slope-lower slope-upper))))))
+                (- caption-right caption-left)
+                )
+               )
          (set! caption-x-deficit (* 0.5 caption-width (- 1 (cos (atan (if caption-align-bottom slope-lower slope-upper))))))
          (set! caption-x    ; cross-fade between left and right position:
                (+
@@ -547,22 +576,29 @@
                 (* (/ (+ 1 caption-halign) 2)   ; factor between 0 a 1
                   (+ caption-right caption-padding (/ border-radius 2) (- caption-width) caption-x-deficit)  ; right-edge position
                   )
+                caption-translate-x
                 )
                )
          (set! caption-y
                (+
-                (* (/ (- 1 (* caption-halign caption-space-factor)) 2)   ; factor between 1 a 0  (caption-halign is between -1=left and 1=right)
+                (* (+
+                    (/ (- 1 (* caption-halign caption-space-factor)) 2)   ; factor between 1 a 0  (caption-halign is between -1=left and 1=right)
+                    (/ caption-translate-x (- caption-left caption-right))
+                    )
                   (if caption-align-bottom y-l-lower y-l-upper)  ; left-edge position
                   )
-                (* (/ (+ 1 (* caption-halign caption-space-factor)) 2)   ; factor between 0 a 1
+                (* (+
+                    (/ (+ 1 (* caption-halign caption-space-factor)) 2)   ; factor between 0 a 1
+                    (/ caption-translate-x (- caption-right caption-left))
+                    )
                   (if caption-align-bottom y-r-lower y-r-upper)  ; right-edge position
                   )
                 )
                )
          if (if caption-align-bottom
-             (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height)))
-             (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) ))
-             )
+                (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height) descender-height))
+                (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
+                )
          ))
 
     (ly:stencil-add
@@ -657,6 +693,12 @@
      (caption-color
       (or (assq-ref props 'caption-color)
           (getOption '(analysis frames caption-color))))
+     (caption-keep-y
+      (or (assq-ref props 'caption-keep-y)
+          (getOption '(analysis frames caption-keep-y))))
+     (caption-translate-x
+      (or (assq-ref props 'caption-translate-x)
+          (getOption '(analysis frames caption-translate-x))))
      (caption-align-bottom
       (or (assq-ref props 'caption-align-bottom)
           (getOption '(analysis frames caption-align-bottom))))
@@ -748,6 +790,8 @@
       (caption-align-bottom . ,caption-align-bottom)
       (caption-halign . ,caption-halign)
       (caption-color . ,caption-color)
+      (caption-keep-y . ,caption-keep-y)
+      (caption-translate-x . ,caption-translate-x)
       )))
 
 #(define (offset-shorten-pair props)
