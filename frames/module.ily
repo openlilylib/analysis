@@ -689,6 +689,7 @@ genericFrame =
       #(if (eq? (assq-ref props 'hide) 'staff)
            #{
              \revert NoteHead.layer
+             \revert Staff.LedgerLineSpanner.layer
              \revert Stem.layer
              \revert Beam.layer
              \revert Flag.layer
