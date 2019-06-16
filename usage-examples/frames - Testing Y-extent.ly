@@ -27,6 +27,8 @@
 \version "2.19.83"
 
 \include "oll-core/package.ily"
+% \include "lilypond-book-preamble.ly"   %%% Remove comment sign to test
+
 \loadPackage \with {
   modules = frames
 } analysis
@@ -100,6 +102,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       y-lower = -3
       y-upper = 3
+      % border-radius = 2
       shorten-pair = #'(0 . -6)
     } {
       c8 g

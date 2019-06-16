@@ -171,6 +171,12 @@
      (X-ext (cons
              (if open-on-left  (- (+ (car X-ext) bb-pad) (/ l-width 2)) (car X-ext))     ; shorten/lengthen by broken-bound-bb-padding if spanner is broken
              (if open-on-right (+ (- (cdr X-ext) bb-pad) (/ r-width 2)) (cdr X-ext))))
+     ; Now X-ext represents the overall X-extent WITHOUT the zigzag attachments
+     (frame-X-extent (cons
+                      (- (- (car X-ext) (/ border-radius 2)) l-width)
+                      (+ (+ (cdr X-ext) (/ border-radius 2)) r-width)
+                      ))
+     ; Now frame-X-extent represents the overall X-extent including everything...
      (points-up (list))    ; will contain coordinates for upper edge polygon
      (points-lo (list))    ; will contain coordinates for lower edge polygon
      (points-l (list))     ; will contain coordinates for left  edge polygon
@@ -601,6 +607,15 @@
                 )
          ))
 
+    (display "X: ")
+    (display frame-X-extent)
+    ;; (display "  ||  Y: ")
+    ;; (display Y-ext)
+    (display "\n")
+
+    (ly:grob-set-property! grob 'X-extent frame-X-extent)
+    
+    
     (ly:stencil-add
      ; draw upper edge:
      (if need-upper-polygon
