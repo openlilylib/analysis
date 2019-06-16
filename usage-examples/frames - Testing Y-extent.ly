@@ -84,8 +84,9 @@ spc = \markup \vspace #1
     r4
 
     \genericFrame \with {
-      y-lower = -6
-      y-upper = 6
+      y-lower = #'(-5 . -6)
+      y-upper = #'(5 . 6)
+      %border-radius = 2
     } {
       c8 g
     }

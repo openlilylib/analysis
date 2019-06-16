@@ -123,6 +123,7 @@
      (y-with-descender 0)
      (y-without-descender 0)
      (descender-height 0)
+     (temp-value 0)
 
 
      ;; store polygon points.
@@ -158,7 +159,8 @@
      (h-border-width (* border-width (sqrt 2)))  ; X-distance between left and right edges of inner and outer polygon. Must be "border-width" * sqrt 2  (Pythagoras)
      (l-width (* l-zigzag-width  0.5))   ; X-distance of zigzag corners
      (r-width (* r-zigzag-width 0.5))
-     (Y-ext (cons y-l-lower y-r-upper))            ; dummy, needed for ly:stencil-expr  (is there a way without it?)
+     (Y-ext (cons y-l-lower y-l-upper))  ; will be used to set the stencil's dimensions
+     ; also used as dummy, needed for ly:stencil-expr  (is there a way without it?)
      (X-ext (cons
              (if (> l-zigzag-width 0)    ; left edge has zigzag shape
                  (- (+ (car frame-X-extent) (/ l-width 2)) h-border-width)  ; Half of the zigzag space will be taken from inside, other half from the outside. Frame space taken from outside.
@@ -606,16 +608,33 @@
                 (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
                 )
          ))
+    ; determine overall Y-extent
+    ; start with left edge:
+    (set! Y-ext (cons
+                 (- y-l-lower (/ border-radius 2))
+                 (+ y-l-upper (/ border-radius 2))
+                 )
+          )
+    ; test right edge:
+    (set! temp-value (- y-r-lower (/ border-radius 2)))
+    (if (< temp-value (car Y-ext))
+        (set! Y-ext (cons temp-value (cdr Y-ext)))
+        )
+    (set! temp-value (+ y-r-upper (/ border-radius 2)))
+    (if (> temp-value (cdr Y-ext))
+        (set! Y-ext (cons (car Y-ext) temp-value))
+        )
 
     (display "X: ")
     (display frame-X-extent)
-    ;; (display "  ||  Y: ")
-    ;; (display Y-ext)
+    (display "  ||  Y: ")
+    (display Y-ext)
     (display "\n")
 
     (ly:grob-set-property! grob 'X-extent frame-X-extent)
-    
-    
+    (ly:grob-set-property! grob 'Y-extent Y-ext)
+
+
     (ly:stencil-add
      ; draw upper edge:
      (if need-upper-polygon
