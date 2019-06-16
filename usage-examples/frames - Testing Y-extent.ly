@@ -24,6 +24,7 @@
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\version "2.19.83"
 
 \include "oll-core/package.ily"
 \loadPackage \with {
@@ -31,7 +32,7 @@
 } analysis
 
 \paper {
-  indent = 0
+  indent = 2\cm
   top-margin = 3\cm
   % ragged-right = ##f
   tagline = ##f
@@ -72,16 +73,17 @@ spc = \markup \vspace #1
   \relative c'' {
 
     \genericFrame \with {
-      y-lower = -6
-      y-upper = 6
+      y-lower = -3
+      y-upper = 3
+      shorten-pair = #'(-10 . 0)
     } {
       c8 g
     }
     r4
 
     \genericFrame \with {
-      y-lower = -5
-      y-upper = 5
+      y-lower = -6
+      y-upper = 6
     } {
       c8 g
     }
