@@ -84,11 +84,13 @@ spc = \markup \vspace #1
     r4
 
     \genericFrame \with {
-      y-lower = #'(-5 . -6)
-      y-upper = #'(5 . 6)
+      y-lower = #'(-8 . -7)
+      y-upper = #'(7 . 4)
+      % caption = "Blah"
+      % angle = 20
       %border-radius = 2
     } {
-      c8 g
+      c8 g c g c g
     }
     r4
 

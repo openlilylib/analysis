@@ -79,6 +79,36 @@
       (open-on-left . ,open-on-left)
       (open-on-right . ,open-on-right))))
 
+#(define (expand-range range x-to-add y-to-add x-center y-center rotation)
+   "Rotate the given point (x-to-add, y-to-add) around (x-center, y-center) by
+     the given rotation angle. TODO, not yet implemented!
+    Expand the borders of the given range until it contains the rotated point.
+    Return the expanded range."
+   (let*
+    ; split pair of pairs into separate variables for better usability:
+    (
+      (x-lo (car (car range)))
+      (x-hi (cdr (car range)))
+      (y-lo (car (cdr range)))
+      (y-hi (cdr (cdr range)))
+      (new-x x-to-add)
+      (new-y y-to-add)
+      )
+    ; initial values are #f, so replace them:
+    (if (eq? #f x-lo) (set! x-lo new-x))
+    (if (eq? #f x-hi) (set! x-hi new-x))
+    (if (eq? #f y-lo) (set! y-lo new-y))
+    (if (eq? #f y-hi) (set! y-hi new-y))
+    ; now expand borders:
+    (if (< new-x x-lo) (set! x-lo new-x))
+    (if (> new-x x-hi) (set! x-hi new-x))
+    (if (< new-y y-lo) (set! y-lo new-y))
+    (if (> new-y y-hi) (set! y-hi new-y))
+    ; return expanded range as pair of pairs:
+    (cons (cons x-lo x-hi) (cons y-lo y-hi))
+    )
+   )
+
 #(define (make-frame-stencil grob props)
    "Create the actual frame stencil using both live and configuration props."
    (let*
@@ -159,8 +189,9 @@
      (h-border-width (* border-width (sqrt 2)))  ; X-distance between left and right edges of inner and outer polygon. Must be "border-width" * sqrt 2  (Pythagoras)
      (l-width (* l-zigzag-width  0.5))   ; X-distance of zigzag corners
      (r-width (* r-zigzag-width 0.5))
-     (Y-ext (cons y-l-lower y-l-upper))  ; will be used to set the stencil's dimensions
-     ; also used as dummy, needed for ly:stencil-expr  (is there a way without it?)
+     (Y-ext (cons 0 0))  ; dummy, needed for ly:stencil-expr  (is there a way without it?)
+     (stencil-ext (cons (cons #f #f) (cons #f #f)))  ; will be used to set the stencil's dimensions
+     ;                     ( x-lo x-hi ) ( y-lo y-hi )
      (X-ext (cons
              (if (> l-zigzag-width 0)    ; left edge has zigzag shape
                  (- (+ (car frame-X-extent) (/ l-width 2)) h-border-width)  ; Half of the zigzag space will be taken from inside, other half from the outside. Frame space taken from outside.
@@ -608,31 +639,33 @@
                 (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
                 )
          ))
-    ; determine overall Y-extent
-    ; start with left edge:
-    (set! Y-ext (cons
-                 (- y-l-lower (/ border-radius 2))
-                 (+ y-l-upper (/ border-radius 2))
-                 )
-          )
-    ; test right edge:
-    (set! temp-value (- y-r-lower (/ border-radius 2)))
-    (if (< temp-value (car Y-ext))
-        (set! Y-ext (cons temp-value (cdr Y-ext)))
-        )
-    (set! temp-value (+ y-r-upper (/ border-radius 2)))
-    (if (> temp-value (cdr Y-ext))
-        (set! Y-ext (cons (car Y-ext) temp-value))
-        )
+    ; determine overall stencil-extent
+    ; start with frame's top-left edge:
+    (set! stencil-ext
+          (expand-range stencil-ext
+           (car frame-X-extent) (+ y-l-upper (/ border-radius 2))
+           rotation-center-x rotation-center-y frame-angle))
+    ; bottom-left edge:
+    (set! stencil-ext
+          (expand-range stencil-ext
+           (car frame-X-extent) (- y-l-lower (/ border-radius 2))
+           rotation-center-x rotation-center-y frame-angle))
+    ; top-right edge:
+    (set! stencil-ext
+          (expand-range stencil-ext
+           (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2))
+           rotation-center-x rotation-center-y frame-angle))
+    ; bottom-left edge:
+    (set! stencil-ext
+          (expand-range stencil-ext
+           (cdr frame-X-extent) (- y-r-lower (/ border-radius 2))
+           rotation-center-x rotation-center-y frame-angle))
 
-    (display "X: ")
-    (display frame-X-extent)
-    (display "  ||  Y: ")
-    (display Y-ext)
+    (display stencil-ext)
     (display "\n")
 
-    (ly:grob-set-property! grob 'X-extent frame-X-extent)
-    (ly:grob-set-property! grob 'Y-extent Y-ext)
+    (ly:grob-set-property! grob 'X-extent (car stencil-ext))
+    (ly:grob-set-property! grob 'Y-extent (cdr stencil-ext))
 
 
     (ly:stencil-add
@@ -681,7 +714,8 @@
          (ly:stencil-rotate-absolute
           (ly:stencil-rotate
            (ly:stencil-translate caption-stencil (cons caption-x caption-y))
-           (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265)) 0 (if caption-align-bottom 1 -1))
+           (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265)) 0 (if caption-align-bottom 1 -1)
+           )
           frame-angle rotation-center-x rotation-center-y)
          empty-stencil)
 
