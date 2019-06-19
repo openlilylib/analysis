@@ -680,10 +680,11 @@
                   )
                 )
                )
-         if (if caption-align-bottom
+         (if caption-align-bottom
              (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height) descender-height))
              (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
              )
+         (set! caption-stencil (ly:stencil-translate caption-stencil (cons caption-x caption-y)))
          ))
     ; determine overall stencil-extent
     ; start with frame's top-left edge:
@@ -763,7 +764,7 @@
      (if need-caption
          (ly:stencil-rotate-absolute
           (ly:stencil-rotate
-           (ly:stencil-translate caption-stencil (cons caption-x caption-y))
+           caption-stencil
            (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265))
            0
            (if caption-align-bottom 1 -1)
