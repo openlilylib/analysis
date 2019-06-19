@@ -200,6 +200,10 @@
      (y-without-descender 0)
      (descender-height 0)
      (temp-value 0)
+     (caption-left-edge 0)
+     (caption-right-edge 0)
+     (caption-lower-edge 0)
+     (caption-upper-edge 0)
 
 
      ;; store polygon points.
@@ -685,6 +689,10 @@
              (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
              )
          (set! caption-stencil (ly:stencil-translate caption-stencil (cons caption-x caption-y)))
+         (set! caption-left-edge  (car (ly:stencil-extent caption-stencil X)))
+         (set! caption-right-edge (cdr (ly:stencil-extent caption-stencil X)))
+         (set! caption-lower-edge (car (ly:stencil-extent caption-stencil Y)))
+         (set! caption-upper-edge (cdr (ly:stencil-extent caption-stencil Y)))
          ))
     ; determine overall stencil-extent
     ; start with frame's top-left edge:
