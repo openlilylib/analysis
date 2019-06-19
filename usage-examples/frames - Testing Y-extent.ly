@@ -73,7 +73,7 @@ spc = \markup \vspace #1
 
 \score {
   \relative c'' {
-
+%{
     \genericFrame \with {
       y-lower = -3
       y-upper = 3
@@ -82,18 +82,18 @@ spc = \markup \vspace #1
       c8 g
     }
     r4
-
+%}
     \genericFrame \with {
-      y-lower = #'(-8 . -7)
-      y-upper = #'(7 . 4)
+      y-lower = #'(-5 . -4)
+      y-upper = #'(5 . 7)
       % caption = "Blah"
-      % angle = 20
+      angle = 10
       %border-radius = 2
     } {
       c8 g c g c g
     }
     r4
-
+%{
     \genericFrame \with {
       y-lower = -4
       y-upper = 4
@@ -111,10 +111,9 @@ spc = \markup \vspace #1
       c8 g
     }
     r4
-
+%}
 
   }
-
 }
 
 

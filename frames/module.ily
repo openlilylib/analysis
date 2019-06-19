@@ -81,7 +81,7 @@
 
 #(define (expand-range range x-to-add y-to-add x-center y-center rotation)
    "Rotate the given point (x-to-add, y-to-add) around (x-center, y-center) by
-     the given rotation angle. TODO, not yet implemented!
+     the given rotation angle.
     Expand the borders of the given range until it contains the rotated point.
     Return the expanded range."
    (let*
@@ -91,10 +91,38 @@
       (x-hi (cdr (car range)))
       (y-lo (car (cdr range)))
       (y-hi (cdr (cdr range)))
-      (new-x x-to-add)
-      (new-y y-to-add)
+      (x-diff (- x-to-add x-center))
+      (y-diff (- y-to-add y-center))
+      (distance (sqrt (+ (expt x-diff 2) (expt y-diff 2))))
+      (direction
+       (if (eq? 0 x-diff)
+           (if (> y-diff 0) 90 -90) ;then
+           (+ (atan (/ y-diff x-diff)) (if (< x-diff 0) 3.14159265 0)) ;else
+           )
+       )
+      ; apply rotation:
+      (new-direction (+ direction (* rotation (/ 3.14159265 180))))
+      (new-x (+ x-center (* distance (cos new-direction))))
+      (new-y (+ y-center (* distance (sin new-direction))))
       )
-    ; initial values are #f, so replace them:
+    (display "X: ")
+    (display x-to-add)
+    (display " - ")
+    (display x-center)
+    (display " = ")
+    (display x-diff)
+    (display "  |  Y: ")
+    (display y-to-add)
+    (display " - ")
+    (display y-center)
+    (display " = ")
+    (display y-diff)
+    (display "  |  dist=")
+    (display distance)
+    (display "  dir=")
+    (display (* direction (/ 180 3.14159265)))
+    (display "\n")
+    ; initial values are #f, so replace them, if present:
     (if (eq? #f x-lo) (set! x-lo new-x))
     (if (eq? #f x-hi) (set! x-hi new-x))
     (if (eq? #f y-lo) (set! y-lo new-y))
@@ -643,26 +671,26 @@
     ; start with frame's top-left edge:
     (set! stencil-ext
           (expand-range stencil-ext
-           (car frame-X-extent) (+ y-l-upper (/ border-radius 2))
-           rotation-center-x rotation-center-y frame-angle))
+            (car frame-X-extent) (+ y-l-upper (/ border-radius 2))
+            rotation-center-x rotation-center-y frame-angle))
     ; bottom-left edge:
     (set! stencil-ext
           (expand-range stencil-ext
-           (car frame-X-extent) (- y-l-lower (/ border-radius 2))
-           rotation-center-x rotation-center-y frame-angle))
+            (car frame-X-extent) (- y-l-lower (/ border-radius 2))
+            rotation-center-x rotation-center-y frame-angle))
     ; top-right edge:
     (set! stencil-ext
           (expand-range stencil-ext
-           (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2))
-           rotation-center-x rotation-center-y frame-angle))
-    ; bottom-left edge:
+            (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2))
+            rotation-center-x rotation-center-y frame-angle))
+    ; bottom-right edge:
     (set! stencil-ext
           (expand-range stencil-ext
-           (cdr frame-X-extent) (- y-r-lower (/ border-radius 2))
-           rotation-center-x rotation-center-y frame-angle))
+            (cdr frame-X-extent) (- y-r-lower (/ border-radius 2))
+            rotation-center-x rotation-center-y frame-angle))
 
-    (display stencil-ext)
-    (display "\n")
+    ; (display stencil-ext)
+    ; (display "\n")
 
     (ly:grob-set-property! grob 'X-extent (car stencil-ext))
     (ly:grob-set-property! grob 'Y-extent (cdr stencil-ext))
