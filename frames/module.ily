@@ -79,7 +79,7 @@
       (open-on-left . ,open-on-left)
       (open-on-right . ,open-on-right))))
 
-#(define (rotate-point point-to-add x-center y-center rotation)
+#(define (rotate-point point-to-add rotation x-center y-center)
    "Rotate the given point (point-to-add) around (x-center, y-center) by
      the given rotation angle."
    (let*
@@ -700,25 +700,25 @@
           (expand-range stencil-ext
             (rotate-point
              (cons (car frame-X-extent) (+ y-l-upper (/ border-radius 2)))
-             rotation-center-x rotation-center-y frame-angle)))
+             frame-angle rotation-center-x rotation-center-y)))
     ; bottom-left edge:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
              (cons (car frame-X-extent) (- y-l-lower (/ border-radius 2)))
-             rotation-center-x rotation-center-y frame-angle)))
+             frame-angle rotation-center-x rotation-center-y)))
     ; top-right edge:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
              (cons (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2)))
-             rotation-center-x rotation-center-y frame-angle)))
+             frame-angle rotation-center-x rotation-center-y)))
     ; bottom-right edge:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
              (cons (cdr frame-X-extent) (- y-r-lower (/ border-radius 2)))
-             rotation-center-x rotation-center-y frame-angle)))
+             frame-angle rotation-center-x rotation-center-y)))
 
     ; (display stencil-ext)
     ; (display "\n")
