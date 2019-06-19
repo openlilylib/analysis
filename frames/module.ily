@@ -93,9 +93,9 @@
       (direction
        (if (eq? 0 x-diff)
            ;(then...)
-           (if (> y-diff 0) 90 -90) 
+           (if (> y-diff 0) 90 -90)
            ;(else...)
-           (+ (atan (/ y-diff x-diff)) (if (< x-diff 0) 3.14159265 0)) 
+           (+ (atan (/ y-diff x-diff)) (if (< x-diff 0) 3.14159265 0))
            )
        )
       ; apply rotation:
@@ -103,6 +103,7 @@
       (new-x (+ x-center (* distance (cos new-direction))))
       (new-y (+ y-center (* distance (sin new-direction))))
       )
+    #!
     (display "X: ")
     (display x-to-add)
     (display " - ")
@@ -120,6 +121,7 @@
     (display "  dir=")
     (display (* direction (/ 180 3.14159265)))
     (display "\n")
+    !#
     ; return rotated point as pair of coordinates:
     (cons new-x new-y)
     )
@@ -138,7 +140,7 @@
       (x-to-add (car point-to-add))
       (y-to-add (cdr point-to-add))
       )
-    ; initial values are #f, so replace them, if present:
+    ; initial values are #f. Replace them, if present:
     (if (eq? #f x-lo) (set! x-lo x-to-add))
     (if (eq? #f x-hi) (set! x-hi x-to-add))
     (if (eq? #f y-lo) (set! y-lo y-to-add))
@@ -679,9 +681,9 @@
                 )
                )
          if (if caption-align-bottom
-                (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height) descender-height))
-                (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
-                )
+             (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height) descender-height))
+             (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
+             )
          ))
     ; determine overall stencil-extent
     ; start with frame's top-left edge:
