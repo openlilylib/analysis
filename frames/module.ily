@@ -204,6 +204,8 @@
      (caption-right-edge 0)
      (caption-lower-edge 0)
      (caption-upper-edge 0)
+     (caption-mid-x 0)
+     (caption-angle 0)
 
 
      ;; store polygon points.
@@ -693,27 +695,68 @@
          (set! caption-right-edge (cdr (ly:stencil-extent caption-stencil X)))
          (set! caption-lower-edge (car (ly:stencil-extent caption-stencil Y)))
          (set! caption-upper-edge (cdr (ly:stencil-extent caption-stencil Y)))
+         (set! caption-mid-x (/ (+ caption-left-edge caption-right-edge) 2))
+         (set! caption-angle (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265)))
+         (set! caption-stencil (ly:stencil-rotate
+                                caption-stencil
+                                caption-angle
+                                0
+                                (if caption-align-bottom 1 -1)
+                                ))
+         ; determine overall stencil-extent
+         ; test caption corners: (top-left)
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-left-edge caption-upper-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+         ; bottom-left corner:
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-left-edge caption-lower-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+         ; top-right corner:
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-right-edge caption-upper-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+         ; bottom-right corner:
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-right-edge caption-lower-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
          ))
     ; determine overall stencil-extent
-    ; start with frame's top-left edge:
+    ; start with frame's top-left corner:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
              (cons (car frame-X-extent) (+ y-l-upper (/ border-radius 2)))
              frame-angle rotation-center-x rotation-center-y)))
-    ; bottom-left edge:
+    ; bottom-left corner:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
              (cons (car frame-X-extent) (- y-l-lower (/ border-radius 2)))
              frame-angle rotation-center-x rotation-center-y)))
-    ; top-right edge:
+    ; top-right corner:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
              (cons (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2)))
              frame-angle rotation-center-x rotation-center-y)))
-    ; bottom-right edge:
+    ; bottom-right corner:
     (set! stencil-ext
           (expand-range stencil-ext
             (rotate-point
@@ -771,12 +814,7 @@
      ; draw caption:
      (if need-caption
          (ly:stencil-rotate-absolute
-          (ly:stencil-rotate
-           caption-stencil
-           (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265))
-           0
-           (if caption-align-bottom 1 -1)
-           )
+          caption-stencil
           frame-angle rotation-center-x rotation-center-y)
          empty-stencil)
 
