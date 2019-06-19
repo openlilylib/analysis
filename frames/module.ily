@@ -79,25 +79,23 @@
       (open-on-left . ,open-on-left)
       (open-on-right . ,open-on-right))))
 
-#(define (expand-range range x-to-add y-to-add x-center y-center rotation)
-   "Rotate the given point (x-to-add, y-to-add) around (x-center, y-center) by
-     the given rotation angle.
-    Expand the borders of the given range until it contains the rotated point.
-    Return the expanded range."
+#(define (rotate-point point-to-add x-center y-center rotation)
+   "Rotate the given point (point-to-add) around (x-center, y-center) by
+     the given rotation angle."
    (let*
-    ; split pair of pairs into separate variables for better usability:
     (
-      (x-lo (car (car range)))
-      (x-hi (cdr (car range)))
-      (y-lo (car (cdr range)))
-      (y-hi (cdr (cdr range)))
+      (x-to-add (car point-to-add))
+      (y-to-add (cdr point-to-add))
+      ; convert (x-to-add | y-to-add) to polar coordinates (distance ; direction):
       (x-diff (- x-to-add x-center))
       (y-diff (- y-to-add y-center))
       (distance (sqrt (+ (expt x-diff 2) (expt y-diff 2))))
       (direction
        (if (eq? 0 x-diff)
-           (if (> y-diff 0) 90 -90) ;then
-           (+ (atan (/ y-diff x-diff)) (if (< x-diff 0) 3.14159265 0)) ;else
+           ;(then...)
+           (if (> y-diff 0) 90 -90) 
+           ;(else...)
+           (+ (atan (/ y-diff x-diff)) (if (< x-diff 0) 3.14159265 0)) 
            )
        )
       ; apply rotation:
@@ -122,16 +120,34 @@
     (display "  dir=")
     (display (* direction (/ 180 3.14159265)))
     (display "\n")
+    ; return rotated point as pair of coordinates:
+    (cons new-x new-y)
+    )
+   )
+
+#(define (expand-range range point-to-add)
+   "Expand the borders of the given range until it contains the added point.
+    Return the expanded range."
+   (let*
+    ; split pair of pairs into separate variables for better usability:
+    (
+      (x-lo (car (car range)))
+      (x-hi (cdr (car range)))
+      (y-lo (car (cdr range)))
+      (y-hi (cdr (cdr range)))
+      (x-to-add (car point-to-add))
+      (y-to-add (cdr point-to-add))
+      )
     ; initial values are #f, so replace them, if present:
-    (if (eq? #f x-lo) (set! x-lo new-x))
-    (if (eq? #f x-hi) (set! x-hi new-x))
-    (if (eq? #f y-lo) (set! y-lo new-y))
-    (if (eq? #f y-hi) (set! y-hi new-y))
+    (if (eq? #f x-lo) (set! x-lo x-to-add))
+    (if (eq? #f x-hi) (set! x-hi x-to-add))
+    (if (eq? #f y-lo) (set! y-lo y-to-add))
+    (if (eq? #f y-hi) (set! y-hi y-to-add))
     ; now expand borders:
-    (if (< new-x x-lo) (set! x-lo new-x))
-    (if (> new-x x-hi) (set! x-hi new-x))
-    (if (< new-y y-lo) (set! y-lo new-y))
-    (if (> new-y y-hi) (set! y-hi new-y))
+    (if (< x-to-add x-lo) (set! x-lo x-to-add))
+    (if (> x-to-add x-hi) (set! x-hi x-to-add))
+    (if (< y-to-add y-lo) (set! y-lo y-to-add))
+    (if (> y-to-add y-hi) (set! y-hi y-to-add))
     ; return expanded range as pair of pairs:
     (cons (cons x-lo x-hi) (cons y-lo y-hi))
     )
@@ -637,10 +653,10 @@
          (set! caption-x-deficit (* 0.5 caption-width (- 1 (cos (atan (if caption-align-bottom slope-lower slope-upper))))))
          (set! caption-x    ; cross-fade between left and right position:
                (+
-                (* (/ (- 1 caption-halign) 2)   ; factor between 1 a 0  (caption-halign is between -1=left and 1=right)
+                (* (/ (- 1 caption-halign) 2)   ; factor between 1 and 0  (caption-halign is between -1=left and 1=right)
                   (+ caption-left caption-padding (- (/ border-radius 2)) (- caption-x-deficit))  ; left-edge position
                   )
-                (* (/ (+ 1 caption-halign) 2)   ; factor between 0 a 1
+                (* (/ (+ 1 caption-halign) 2)   ; factor between 0 and 1
                   (+ caption-right caption-padding (/ border-radius 2) (- caption-width) caption-x-deficit)  ; right-edge position
                   )
                 caption-translate-x
@@ -649,13 +665,13 @@
          (set! caption-y
                (+
                 (* (+
-                    (/ (- 1 (* caption-halign caption-space-factor)) 2)   ; factor between 1 a 0  (caption-halign is between -1=left and 1=right)
+                    (/ (- 1 (* caption-halign caption-space-factor)) 2)   ; factor between 1 and 0  (caption-halign is between -1=left and 1=right)
                     (/ caption-translate-x (- caption-left caption-right))
                     )
                   (if caption-align-bottom y-l-lower y-l-upper)  ; left-edge position
                   )
                 (* (+
-                    (/ (+ 1 (* caption-halign caption-space-factor)) 2)   ; factor between 0 a 1
+                    (/ (+ 1 (* caption-halign caption-space-factor)) 2)   ; factor between 0 and 1
                     (/ caption-translate-x (- caption-right caption-left))
                     )
                   (if caption-align-bottom y-r-lower y-r-upper)  ; right-edge position
@@ -671,23 +687,27 @@
     ; start with frame's top-left edge:
     (set! stencil-ext
           (expand-range stencil-ext
-            (car frame-X-extent) (+ y-l-upper (/ border-radius 2))
-            rotation-center-x rotation-center-y frame-angle))
+            (rotate-point
+             (cons (car frame-X-extent) (+ y-l-upper (/ border-radius 2)))
+             rotation-center-x rotation-center-y frame-angle)))
     ; bottom-left edge:
     (set! stencil-ext
           (expand-range stencil-ext
-            (car frame-X-extent) (- y-l-lower (/ border-radius 2))
-            rotation-center-x rotation-center-y frame-angle))
+            (rotate-point
+             (cons (car frame-X-extent) (- y-l-lower (/ border-radius 2)))
+             rotation-center-x rotation-center-y frame-angle)))
     ; top-right edge:
     (set! stencil-ext
           (expand-range stencil-ext
-            (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2))
-            rotation-center-x rotation-center-y frame-angle))
+            (rotate-point
+             (cons (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2)))
+             rotation-center-x rotation-center-y frame-angle)))
     ; bottom-right edge:
     (set! stencil-ext
           (expand-range stencil-ext
-            (cdr frame-X-extent) (- y-r-lower (/ border-radius 2))
-            rotation-center-x rotation-center-y frame-angle))
+            (rotate-point
+             (cons (cdr frame-X-extent) (- y-r-lower (/ border-radius 2)))
+             rotation-center-x rotation-center-y frame-angle)))
 
     ; (display stencil-ext)
     ; (display "\n")
@@ -742,7 +762,9 @@
          (ly:stencil-rotate-absolute
           (ly:stencil-rotate
            (ly:stencil-translate caption-stencil (cons caption-x caption-y))
-           (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265)) 0 (if caption-align-bottom 1 -1)
+           (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265))
+           0
+           (if caption-align-bottom 1 -1)
            )
           frame-angle rotation-center-x rotation-center-y)
          empty-stencil)
