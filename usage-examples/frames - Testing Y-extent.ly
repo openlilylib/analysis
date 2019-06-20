@@ -85,14 +85,16 @@ spc = \markup \vspace #1
 %}
     \genericFrame \with {
       y-lower = #'(-4 . -3)
-      y-upper = #'(7 . 6)
-      caption = "Blah"
-      caption-halign = -4
+      y-upper = #'(9 . 6)
+      % caption = "Caption"
+      caption-halign = -1
       % angle = 20
-      caption-align-bottom = ##t
+      % caption-align-bottom = ##t
       % border-radius = 2
+      \override HorizontalBracket.ignore-collision = ##t
+      
     } {
-      c8 g c g c g
+      c8^"I'm a markup"\ff g c g c g\fermata
     }
     r4
 %{
