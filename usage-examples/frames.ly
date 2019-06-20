@@ -766,7 +766,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       caption = \markup \with-color #white "default: 0.25"
     } {
-      c8^\markup \transparent "X" ^"caption-padding:"
+      c8^"caption-padding:"
       e g c g e
     }
     r4
@@ -787,7 +787,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       caption = \markup \with-color #white "default: 0.25"
     } {
-      c8^\markup \transparent "X" ^"caption-radius:"
+      c8^"caption-radius:"
       e g c g e
     }
     r4
