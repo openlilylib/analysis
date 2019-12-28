@@ -170,45 +170,38 @@
     (if need-left-polygon
         (begin
          (set! points-l (list (cons (car X-ext) y-l-lower)))
-
          ; calculate coordinates for left (outer) zigzag border:
          (if (and (> l-zigzag-width 0) (not open-on-left))
              (let loop ((cnt y-l-lower))
                (if (< cnt y-l-upper)
                    (begin
                     (if (and (< cnt y-l-upper) (> cnt y-l-lower))  ; only add to list if point is inside the given Y-range
-                        (set! points-l (cons (cons    (car X-ext)             cnt                 ) points-l)))
+                        (append! points-l (list (cons    (car X-ext)             cnt                 )) ))
                     (if (and (< (+ cnt (/ l-zigzag-width 2)) y-l-upper) (> (+ cnt (/ l-zigzag-width 2)) y-l-lower))
-                        (set! points-l (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points-l)))
+                        (append! points-l (list (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) )))
                     (loop (+ cnt l-zigzag-width))))))
 
          ; upper-left corner:
-         (set! points-l (cons
-                         (cons (car X-ext) y-l-upper)
-                         points-l ))
+         (append! points-l (list (cons (car X-ext) y-l-upper)))
          ))
     ; start calculating right edge borders:
     ; upper-right corner:
     (if need-right-polygon
         (begin
-         (set! points-r (cons
-                         (cons (cdr X-ext) y-r-upper)
-                         points-r ))
+         (set! points-r (list (cons (cdr X-ext) y-r-upper)))
          ; right outer zigzag border:
          (if (and (> r-zigzag-width 0) (not open-on-right))
              (let loop ((cnt y-r-upper))
                (if (> cnt y-r-lower)
                    (begin
                     (if (and (< cnt y-r-upper) (> cnt y-r-lower))
-                        (set! points-r (cons (cons    (cdr X-ext)             cnt                  ) points-r)))
+                        (append! points-r (list (cons    (cdr X-ext)             cnt                  ) )))
                     (if (and (< (- cnt (/ r-zigzag-width 2)) y-r-upper) (> (- cnt (/ r-zigzag-width 2)) y-r-lower))
-                        (set! points-r (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points-r)))
+                        (append! points-r (list (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ))))
                     (loop (- cnt r-zigzag-width))))))
 
          ; lower-right corner:
-         (set! points-r (cons
-                         (cons (cdr X-ext) y-r-lower)
-                         points-r ))
+         (append! points-r (list (cons (cdr X-ext) y-r-lower)))
          ))
 
     ; calculate lower edge borders:
@@ -218,11 +211,11 @@
          ; lower-left corner:
          (set! points-lo (list (cons (car X-ext) y-l-lower)))
          ; upper-left corner:
-         (set! points-lo (cons (cons (car X-ext) (+ y-l-lower border-width)) points-lo))
+         (append! points-lo (list (cons (car X-ext) (+ y-l-lower border-width))))
          ; upper-right corner:
-         (set! points-lo (cons (cons (cdr X-ext) (+ y-r-lower border-width)) points-lo))
+         (append! points-lo (list (cons (cdr X-ext) (+ y-r-lower border-width))))
          ; lower-right corner:
-         (set! points-lo (cons (cons (cdr X-ext) y-r-lower) points-lo))
+         (append! points-lo (list (cons (cdr X-ext) y-r-lower)))
          ))
 
 
@@ -233,11 +226,11 @@
          ; lower-left corner:
          (set! points-up (list (cons (car X-ext) (- y-l-upper border-width) )))
          ; upper-left corner:
-         (set! points-up (cons (cons (car X-ext) y-l-upper) points-up))
+         (append! points-up (list (cons (car X-ext) y-l-upper)))
          ; upper-right corner:
-         (set! points-up (cons (cons (cdr X-ext) y-r-upper) points-up))
+         (append! points-up (list (cons (cdr X-ext) y-r-upper)))
          ; lower-right corner:
-         (set! points-up (cons (cons (cdr X-ext) (- y-r-upper border-width) ) points-up))
+         (append! points-up (list (cons (cdr X-ext) (- y-r-upper border-width) )))
          ))
 
     ; shrink X-ext for use with inner stuff:
@@ -303,8 +296,8 @@
          (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
          )
         (begin
-         (set! points-l (cons (cons xp yp) points-l))
-         (set! points-i (cons (cons xp yp) points-i))
+         (append! points-l (list (cons xp yp)))
+         (set! points-i (list (cons xp yp)))
          (set! yUpperLimit yp))
         )
 
@@ -350,13 +343,13 @@
                (begin
                 (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
                     (begin
-                     (set! points-l (cons (cons    (car X-ext)             cnt                 ) points-l))
-                     (set! points-i (cons (cons    (car X-ext)             cnt                 ) points-i))
+                     (append! points-l (list (cons    (car X-ext)             cnt                 )))
+                     (append! points-i (list (cons    (car X-ext)             cnt                 )))
                      ))
                 (if (and (> (- cnt (/ l-zigzag-width 2)) yLowerLimit) (< (- cnt (/ l-zigzag-width 2)) yUpperLimit))
                     (begin
-                     (set! points-l (cons (cons (- (car X-ext) l-width) (- cnt (/ l-zigzag-width 2)) ) points-l))
-                     (set! points-i (cons (cons (- (car X-ext) l-width) (- cnt (/ l-zigzag-width 2)) ) points-i))
+                     (append! points-l (list (cons (- (car X-ext) l-width) (- cnt (/ l-zigzag-width 2)) )))
+                     (append! points-i (list (cons (- (car X-ext) l-width) (- cnt (/ l-zigzag-width 2)) )))
                      ))
                 (loop (- cnt l-zigzag-width))
                 )
@@ -368,8 +361,8 @@
     ; insert lower-left corner (yes, AFTER the zigzag points, so all the points will be given in clockwise order):
     (if (not (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-lower -1)))
         (begin
-         (set! points-l (cons (cons xp yp) points-l))
-         (set! points-i (cons (cons xp yp) points-i))
+         (append! points-l (list (cons xp yp)))
+         (append! points-i (list (cons xp yp)))
          ))
 
     ; continue calculating right edge borders:
@@ -411,8 +404,8 @@
     (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
         (begin
          (set! yLowerLimit yp)
-         (set! points-r (cons (cons xp yp) points-r))
-         (set! points-i (cons (cons xp yp) points-i))
+         (append! points-r (list (cons xp yp)))
+         (append! points-i (list (cons xp yp)))
          ))
 
 
@@ -461,13 +454,13 @@
                (begin
                 (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
                     (begin
-                     (set! points-r (cons (cons    (cdr X-ext)             cnt                  ) points-r))
-                     (set! points-i (cons (cons    (cdr X-ext)             cnt                  ) points-i))
+                     (append! points-r (list (cons    (cdr X-ext)             cnt                  )))
+                     (append! points-i (list (cons    (cdr X-ext)             cnt                  )))
                      ))
                 (if (and (> (+ cnt (/ r-zigzag-width 2)) yLowerLimit) (< (+ cnt (/ r-zigzag-width 2)) yUpperLimit))
                     (begin
-                     (set! points-r (cons (cons (+ (cdr X-ext) r-width) (+ cnt (/ r-zigzag-width 2)) ) points-r))
-                     (set! points-i (cons (cons (+ (cdr X-ext) r-width) (+ cnt (/ r-zigzag-width 2)) ) points-i))
+                     (append! points-r (list (cons (+ (cdr X-ext) r-width) (+ cnt (/ r-zigzag-width 2)) )))
+                     (append! points-i (list (cons (+ (cdr X-ext) r-width) (+ cnt (/ r-zigzag-width 2)) )))
                      ))
                 (loop (+ cnt r-zigzag-width))
                 )
@@ -477,11 +470,14 @@
         )
 
     ; insert upper-right corner:
+    (newline)
+    (display points-l)
+    (newline)
     (if (not
          (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-upper -1)))
         (begin
-         (set! points-r (cons (cons xp yp) points-r))
-         (set! points-i (cons (cons xp yp) points-i))
+         (append! points-r (list (cons xp yp)))
+         (append! points-i (list (cons xp yp)))
          ))
 
     ; Edge polygons are finished now.
