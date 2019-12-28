@@ -470,9 +470,6 @@
         )
 
     ; insert upper-right corner:
-    (newline)
-    (display points-l)
-    (newline)
     (if (not
          (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-upper -1)))
         (begin
