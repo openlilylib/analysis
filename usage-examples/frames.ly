@@ -85,11 +85,16 @@ spc = \markup \vspace #1
 \pspc
 
 \markup \justify {
-  A frame has a body and a border, which by default are printed both. The
-  color of both elements is controlled with the properties \typewriter
-  color and \typewriter border-color, and they can be suppressed by setting
-  this property to \typewriter white or \typewriter "##f" (for example \typewriter
-  "\\setOption analysis.frames.border-color #green").
+  A frame has a body and a border, which by default are printed both.
+}
+\pspc
+\markup \justify {
+  The color of both elements is controlled with the properties \typewriter
+  color and \typewriter border-color  (for example \typewriter
+  "\\setOption analysis.frames.border-color #green"), 
+  and they can be made invisible by setting
+  this property to \typewriter white , or they can be completely suppressed by 
+  setting it to \typewriter "#f".
 }
 \spc
 
@@ -97,14 +102,14 @@ spc = \markup \vspace #1
   \relative c' {
 
     \genericFrame {
-      c8 ^"Default: fill and frame"
+      c8 ^"Default: body and border"
       e g c g e
     }
     r4
     \genericFrame \with {
-      color = #white
+      color = ##f
     } {
-      c8 ^"Frame only"
+      c8 ^"border only"
       e g c g e
     }
 
@@ -112,7 +117,7 @@ spc = \markup \vspace #1
     \genericFrame \with {
       border-color = ##f
     } {
-      c8 ^"Fill only"
+      c8 ^"body only"
       e g c g e
     }
     r4
@@ -121,14 +126,15 @@ spc = \markup \vspace #1
 
 \markup \column {
   \concat { - " " \typewriter border-width " " (0.25) }
-  \concat { - " " \typewriter border-radius " " (0.5) }
+  \concat { - " " \typewriter border-radius " " (0) }
   \concat { - " " \typewriter shorten-pair " " "#'(0 . 0)" }
 }
 \pspc
 \markup \justify {
   The width (or thickness) of the frame border is controlled with the
   \typewriter border-width Property. \typewriter border-radius applies
-  a rounded effect on the frame. Setting this to \typewriter 0 will
+  a rounded effect on the frame (but will also make it grow outwards). 
+  Leaving this at \typewriter 0 will
   produce a sharply angled frame. With \typewriter shorten-pair the right
   and left padding can be modified. Positive values will make the frame
   narrower while negative values will make it wider. This property should
@@ -184,31 +190,32 @@ spc = \markup \vspace #1
 
 \score {
   \relative c' {
-
+    r8
     \genericFrame \with {
       l-zigzag-width = 2
     } {
-      c8 ^"Left zigzag 2"
-      e g c g e
+      e8 ^"Left zigzag 2"
+      g c g e
     }
     r4
     \genericFrame \with {
       r-zigzag-width = 1
     } {
       c8 ^"Right zigzag 1"
-      e g c g e
+      e g c g
     }
 
-    r4
+    r8 r4
+    r8
     \genericFrame \with {
       l-zigzag-width = 4
       r-zigzag-width = 2
       border-radius = 1
     } {
-      c8 ^"Mixed zigzag 4 / 2, border-radius 1.0"
-      e g c g e
+      e8 ^"Mixed zigzag 4 / 2, border-radius 1.0"
+      g c g
     }
-    r4
+    r8 r4
   }
 }
 
@@ -263,7 +270,7 @@ spc = \markup \vspace #1
 \pageBreak
 
 \markup \column {
-  \concat { - " " \typewriter hide " " (none / staff / all) }
+  \concat { - " " \typewriter hide " " (none / staff / music / all) }
   \concat { - " " \typewriter layer " " (-10) }
   \concat { - " " \typewriter broken-bound-padding " " (4) }
   \concat { - " " \typewriter open-on-bottom " (##f)" }
@@ -277,9 +284,15 @@ spc = \markup \vspace #1
   of elements. If the \typewriter hide property is set to \typewriter staff
   the frame is placed between the staff lines and the music. This is achieved
   by temporarily setting the frame's \typewriter layer to \typewriter 1 and
-  that of the other score elements to \typewriter 2. So this may interfere
+  that of the other score elements to \typewriter 2. 
+  Setting \typewriter hide to \typewriter music will place the frame in layer 
+  \typewriter -1 and the music in layer \typewriter -2.
+  So this may interfere
   with any other \typewriter layer settings the user may have applied
-  otherwise. Setting \typewriter hide to \typewriter all will print the
+  otherwise. 
+  
+  
+  Setting \typewriter hide to \typewriter all will print the
   frame in front of everything else (or concretely at the layer
   \typewriter 5. This can be used to reserve space in exercise sheets.
 }
@@ -297,14 +310,16 @@ spc = \markup \vspace #1
 \pspc
 \markup \justify {
   If frames are broken around line breaks the broken edge will be printed
-  without border and zigzag linese. The amount of protrusion into the
+  without border and zigzag lines. The amount of protrusion into the
   margin can be set with the \typewriter broken-bound-padding property.
 }
 \pspc
 \markup \justify {
   With the boolean \typewriter open-on-top and \typewriter open-on-bottom
   the top and/or bottom borders can be switched off, which can be used to
-  create fake cross-staff Frames.
+  create fake cross-staff Frames. In that case (and also when using frames 
+  broken around line breaks), \typewriter border-radius should be left at 
+  \typewriter 0 .
 }
 \spc
 
@@ -337,7 +352,7 @@ spc = \markup \vspace #1
       } r4
       \genericFrame \with {
         broken-bound-padding = 0
-        r-zigzag-width = 1.5
+        r-zigzag-width = 2
       } {
         c8 ^"broken-bound-padding 0"
         e g c
@@ -376,8 +391,9 @@ spc = \markup \vspace #1
     \new Staff \relative c'{
       \genericFrame \with {
         hide = staff
+        color = #white 
       } {
-        c8 ^"Hide staff"
+        c8 ^"Hide staff, white"
         e g c g e
       } r4
       \genericFrame \with {
@@ -389,7 +405,7 @@ spc = \markup \vspace #1
       } r4
       \genericFrame \with {
         broken-bound-padding = 2
-        r-zigzag-width = 1.5
+        r-zigzag-width = 2
       } {
         c8 ^"broken-bound-padding 2"
         e g c g e
@@ -429,10 +445,10 @@ spc = \markup \vspace #1
     % Lower staff
     \new Staff \relative c'{
       \genericFrame \with {
-        hide = staff
+        hide = music
         color = #white
       } {
-        c8 ^"Hide staff, empty"
+        c8 ^"Hide music, white"
         e g c g e
       } r4
       <<
@@ -453,13 +469,14 @@ spc = \markup \vspace #1
             shorten-pair = #'(0 . -0.5)
             border-color = \colDarkYellow
             color = \colLightYellow
+            layer = -9
           } {
             \hide r4 \hide r8
           }
         }
       >>
       \genericFrame \with {
-        r-zigzag-width = 1.5
+        r-zigzag-width = 2
       } {
         c8 ^"broken-bound-padding 4 (default)"
         e g c g e
