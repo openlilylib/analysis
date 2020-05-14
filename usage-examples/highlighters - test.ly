@@ -24,9 +24,25 @@
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\version "2.19.83"
 
 \include "oll-core/package.ily"
 \loadPackage \with {
-  modules = frames
+  modules = highlighters
 } analysis
 
+\score {
+  \new Staff \relative c'{
+    \highlighter {
+      c4 d e f g f e d
+    }
+    c4 d e f g f e d
+    \highlighter {
+      c4 d e f g f e d
+    }
+    c1
+  }
+
+  \layout {
+  }
+}
