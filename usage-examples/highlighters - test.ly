@@ -33,11 +33,15 @@
 
 \score {
   \new Staff \relative c'{
-    \highlighter {
+    \highlighter \with { 
+      layer = #5 
+    } {
       c4 d e f g f e d
     }
     c4 d e f g f e d
-    \highlighter \with { color = #green } {
+    \highlighter \with { 
+      color = #green 
+    } {
       c4 d e f g f e d
     }
     c1

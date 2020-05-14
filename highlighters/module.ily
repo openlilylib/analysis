@@ -31,6 +31,8 @@
 % Define configuration variables and set defaults
 
 \registerOption analysis.highlighters.color #yellow
+\registerOption analysis.highlighters.layer #-5
+
 
 #(define (get-highlighter-properties ctx-mod)
    "Process the highlighter's options.
@@ -48,9 +50,14 @@
         (if prop-col
             (cdr prop-col)
             (getOption '(analysis highlighters color)))))
+      
+      (layer
+       (or (assq-ref props 'layer)
+           (getOption '(analysis highlighters layer))))
       )
     `(
        (color . ,color)
+       (layer . ,layer)
        )
     )
    )
@@ -92,6 +99,7 @@ highlighter =
       ; difference = length of "mus" except the last element:
       (first-skip (ly:moment-sub len last-skip))
       (color (assq-ref props 'color))
+      (layer (assq-ref props 'layer))
       )
     #{
       <<
@@ -99,7 +107,7 @@ highlighter =
         % \new Voice
         \makeClusters {
           \once \override ClusterSpanner.color = $color
-          % \once \override ClusterSpanner.color = #red
+          \once \override ClusterSpanner.layer = $layer
           \once \override ClusterSpannerBeacon.X-offset = #-1.5  % TODO: replace fixed value with parameter or property
           <<
             $mus
