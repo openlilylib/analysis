@@ -17,7 +17,7 @@
 % GNU Lesser General Public License for more details.                         %
 %                                                                             %
 % You should have received a copy of the GNU General Public License           %
-% along with ScholarLY.  If not, see <http://www.gnu.org/licenses/>.          %
+% along with anaLYsis.  If not, see <http://www.gnu.org/licenses/>.           %
 %                                                                             %
 % anaLYsis is maintained by Urs Liska, ul@openlilylib.org                     %
 % Copyright Klaus Blum & Urs Liska, 2017                                      %
