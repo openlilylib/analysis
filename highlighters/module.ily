@@ -31,7 +31,11 @@
 % Define configuration variables and set defaults
 
 \registerOption analysis.highlighters.color #yellow
+\registerOption analysis.highlighters.thickness #1.0
 \registerOption analysis.highlighters.layer #-5
+\registerOption analysis.highlighters.X-offset #0.6
+\registerOption analysis.highlighters.offset-first #-1.5
+\registerOption analysis.highlighters.offset-last #1.5
 
 
 #(define (get-highlighter-properties ctx-mod)
@@ -51,13 +55,29 @@
             (cdr prop-col)
             (getOption '(analysis highlighters color)))))
       
+      (thickness
+       (or (assq-ref props 'thickness)
+           (getOption '(analysis highlighters thickness))))
       (layer
        (or (assq-ref props 'layer)
            (getOption '(analysis highlighters layer))))
+      (X-offset
+       (or (assq-ref props 'X-offset)
+           (getOption '(analysis highlighters X-offset))))
+      (offset-first
+       (or (assq-ref props 'offset-first)
+           (getOption '(analysis highlighters offset-first))))
+      (offset-last
+       (or (assq-ref props 'offset-last)
+           (getOption '(analysis highlighters offset-last))))
       )
     `(
        (color . ,color)
+       (thickness . ,thickness)
        (layer . ,layer)
+       (X-offset . ,X-offset)
+       (offset-first . ,offset-first)
+       (offset-last . ,offset-last)
        )
     )
    )
@@ -99,7 +119,11 @@ highlighter =
       ; difference = length of "mus" except the last element:
       (first-skip (ly:moment-sub len last-skip))
       (color (assq-ref props 'color))
+      (thickness (assq-ref props 'thickness))
       (layer (assq-ref props 'layer))
+      (X-offset (assq-ref props 'X-offset))
+      (offset-first (assq-ref props 'offset-first))
+      (offset-last (assq-ref props 'offset-last))
       )
     #{
       <<
@@ -107,15 +131,17 @@ highlighter =
         % \new Voice
         \makeClusters {
           \once \override ClusterSpanner.color = $color
+          \once \override ClusterSpanner.padding = $thickness
           \once \override ClusterSpanner.layer = $layer
-          \once \override ClusterSpannerBeacon.X-offset = #-1.5  % TODO: replace fixed value with parameter or property
+          \once \override ClusterSpanner.X-offset = $X-offset
+          \once \override ClusterSpannerBeacon.X-offset = $offset-first
           <<
             $mus
             {
               % skip until last element starts:
               #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
                    (make-music 'SkipEvent 'duration (moment->duration first-skip)))
-              \once \override ClusterSpannerBeacon.X-offset = #1.5  % TODO: replace fixed value with parameter or property
+              \once \override ClusterSpannerBeacon.X-offset = $offset-last
             }
           >>
         }
