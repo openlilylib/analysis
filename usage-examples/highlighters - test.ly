@@ -37,7 +37,7 @@
       c4 d e f g f e d
     }
     c4 d e f g f e d
-    \highlighter {
+    \highlighter \with { color = #green } {
       c4 d e f g f e d
     }
     c1

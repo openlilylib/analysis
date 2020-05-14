@@ -91,14 +91,15 @@ highlighter =
       (last-skip (ly:music-length lst))
       ; difference = length of "mus" except the last element:
       (first-skip (ly:moment-sub len last-skip))
+      (color (assq-ref props 'color))
       )
     #{
       <<
         $mus
         % \new Voice
         \makeClusters {
-          % \once \override ClusterSpanner.color = $col
-          \once \override ClusterSpanner.color = #red
+          \once \override ClusterSpanner.color = $color
+          % \once \override ClusterSpanner.color = #red
           \once \override ClusterSpannerBeacon.X-offset = #-1.5  % TODO: replace fixed value with parameter or property
           <<
             $mus
