@@ -35,18 +35,18 @@
 
 \score {
   \new Staff \relative c'{
-    \highlighter \with { 
+    \highlight \with { 
       thickness = #0.5
     } {
       c4 d e f g f e d
     }
     c4 d e f g f e d
-    \highlighter \with { 
+    \highlight \with { 
       color = #green 
       offset-first = #-1.0
       offset-last = #1.0
     } {
-      c4 d e f g f e d
+      c4 d e f g a b c
     }
     c1
   }

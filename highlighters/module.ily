@@ -102,7 +102,7 @@
      ))
 
 
-highlighter =
+highlight =
 #(define-music-function (properties mus)
    ((ly:context-mod?) ly:music?)
    ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
@@ -125,27 +125,28 @@ highlighter =
       (offset-first (assq-ref props 'offset-first))
       (offset-last (assq-ref props 'offset-last))
       )
-    #{
-      <<
-        $mus
-        % \new Voice
-        \makeClusters {
-          \once \override ClusterSpanner.color = $color
-          \once \override ClusterSpanner.padding = $thickness
-          \once \override ClusterSpanner.layer = $layer
-          \once \override ClusterSpanner.X-offset = $X-offset
-          \once \override ClusterSpannerBeacon.X-offset = $offset-first
-          <<
-            $mus
-            {
-              % skip until last element starts:
-              #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
-                   (make-music 'SkipEvent 'duration (moment->duration first-skip)))
-              \once \override ClusterSpannerBeacon.X-offset = $offset-last
-            }
-          >>
-        }
-      >>
-    #}))
+    (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
+      #{
+        <<
+          $mus
+          % \new Voice
+          \makeClusters {
+            \once \override ClusterSpanner.color = $color
+            \once \override ClusterSpanner.padding = $thickness
+            \once \override ClusterSpanner.layer = $layer
+            \once \override ClusterSpanner.X-offset = $X-offset
+            \once \override ClusterSpannerBeacon.X-offset = $offset-first
+            <<
+              $mus
+              {
+                % skip until last element starts:
+                #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
+                     (make-music 'SkipEvent 'duration (moment->duration first-skip)))
+                \once \override ClusterSpannerBeacon.X-offset = $offset-last
+              }
+            >>
+          }
+        >>
+      #})))
 
 
