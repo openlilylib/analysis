@@ -30,12 +30,12 @@
 
 % Define configuration variables and set defaults
 
-\registerOption analysis.highlighters.color #yellow
+\registerOption analysis.highlighters.color #green
 \registerOption analysis.highlighters.thickness #1.0
 \registerOption analysis.highlighters.layer #-5
 \registerOption analysis.highlighters.X-offset #0.6
-\registerOption analysis.highlighters.offset-first #-1.5
-\registerOption analysis.highlighters.offset-last #1.5
+\registerOption analysis.highlighters.offset-first #-1.2
+\registerOption analysis.highlighters.offset-last #1.2
 
 
 #(define (get-highlighter-properties ctx-mod)
@@ -102,6 +102,15 @@
      ))
 
 
+#(define (custom-moment->duration moment)
+   ;; adapted version to convert ANY moment p/q into duration 1*p/q
+   (let* ((p (ly:moment-main-numerator moment))
+          (q (ly:moment-main-denominator moment))
+          )
+     (ly:make-duration 0 0 p q)
+     ))
+
+
 highlight =
 #(define-music-function (properties mus)
    ((ly:context-mod?) ly:music?)
@@ -125,6 +134,14 @@ highlight =
       (offset-first (assq-ref props 'offset-first))
       (offset-last (assq-ref props 'offset-last))
       )
+    ;; (display "---- len: ")
+    ;; (display len)
+    ;; (display "  ----  last-skip: ")
+    ;; (display last-skip)
+    ;; (display "  ----  first-skip: ")
+    ;; (display first-skip)
+    ;; (display "\n")
+    ;; (display (custom-moment->duration first-skip))
     (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
       #{
         <<
@@ -141,7 +158,7 @@ highlight =
               {
                 % skip until last element starts:
                 #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
-                     (make-music 'SkipEvent 'duration (moment->duration first-skip)))
+                     (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
                 \once \override ClusterSpannerBeacon.X-offset = $offset-last
               }
             >>
