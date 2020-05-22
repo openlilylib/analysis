@@ -160,13 +160,13 @@ spc = \markup \vspace #1
 \score {
   \new Staff{
     \relative c' { 
-      \highlight \with { color = #(rgb-color 1.0 0.0 0.0) } { f4 f' f, } r
-      \highlight \with { color = #(rgb-color 1.0 0.4 0.0) } { f4 f' f, } r
-      \highlight \with { color = #(rgb-color 1.0 0.8 0.0) } { f4 f' f, } r
-      \highlight \with { color = #(rgb-color 1.0 1.0 0.0) } { f4 f' f, } r
-      \highlight \with { color = #(rgb-color 0.8 1.0 0.0) } { f4 f' f, } r
-      \highlight \with { color = #(rgb-color 0.4 1.0 0.0) } { f4 f' f, } r
-      \highlight \with { color = #(rgb-color 0.0 1.0 0.0) } { f4 f' f, } r
+      \highlight \with { color = #(rgb-color 1.0 0.0 0.0) } { f4 g f } r
+      \highlight \with { color = #(rgb-color 1.0 0.4 0.0) } { f4 g f } r
+      \highlight \with { color = #(rgb-color 1.0 0.8 0.0) } { f4 g f } r
+      \highlight \with { color = #(rgb-color 1.0 1.0 0.0) } { f4 g f } r
+      \highlight \with { color = #(rgb-color 0.8 1.0 0.0) } { f4 g f } r
+      \highlight \with { color = #(rgb-color 0.4 1.0 0.0) } { f4 g f } r
+      \highlight \with { color = #(rgb-color 0.0 1.0 0.0) } { f4 g f } r
     }
   }
   
@@ -181,7 +181,7 @@ spc = \markup \vspace #1
 \pspc
 \markup \justify {
   The thickness of the highlighting line can be adjusted. The minimal value is 
-  about 0.25 whereas smaller values will increase the optical thickness
+  0.25 whereas values smaller than that will increase the optical thickness
   again. This is caused by the behavior of the \typewriter ClusterSpanner grob.
 }
 
@@ -246,8 +246,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter offset-first " " " (default: #-1.0)" }
-  \concat { \typewriter offset-last  " " " (default: #1.0)" }
+  \concat { \typewriter X-first " " " (default: #-1.0)" }
+  \concat { \typewriter X-last  " " " (default: #1.0)" }
   \concat { \typewriter X-offset " " " (default: #0.6)" }
 }
 
@@ -255,14 +255,14 @@ spc = \markup \vspace #1
 
 \markup \justify {
   The beginning and the end of the highlighted area can be shifted horizontally 
-  by modifying the \typewriter offset-first and \typewriter offset-last properties. 
+  by modifying the \typewriter X-first and \typewriter X-last properties. 
   By default, there is an offset to the left for the first note and an offset to 
   the right for the last note. In most cases, this helps to have the entire note head
   covered by the highlighed area. 
 }
 \pspc
 \markup \justify {
-  However, in some cases (e.g. large intervals) it can look better to set these values 
+  However, in some cases (e.g. large intervals or small \typewriter thickness values) it can look better to set these values 
   to zero. 
 }
 \pspc
@@ -275,36 +275,37 @@ spc = \markup \vspace #1
 
 \spc
 
+
 \score {
   \new Staff {
     \override TextScript.self-alignment-X = #CENTER
     \relative c' {
-      \highlight { c8^"-1.0"^"first:" d^" "^" "^"offset-" c^"1.0"^"last:" }
+      \highlight { c8^"-1.0"^"first:"^"X-" d c^"1.0"^"last:"^"X-" }
       r8_"X-offset: 0.6 (default)"
       \highlight \with { 
-        offset-first = #0
-        offset-last  = #0
-      } { c8^"0"^"first:" d^" "^" "^"offset-" c^"0"^"last:" }
+        X-first = #0
+        X-last  = #0
+      } { c8^"0"^"first:"^"X-" d c^"0"^"last:"^"X-" }
       r8
       \highlight \with { 
         thickness = #0.5 
       } {  
-        c16^" -1.0"^" first:"^" offset-" a''  c,, a''c,,^"(default)"  a''   c,, 
-        a''^" 1.0"^" last:"^" offset-" } r2
+        c16^" -1.0"^" first:"^" X-" a''  c,, a''c,,^"(default)"  a''   c,, 
+        a''^" 1.0"^" last:"^" X-" } r2
       \highlight \with { 
         thickness = #0.5
-        offset-first = #0
-        offset-last  = #0
+        X-first = #0
+        X-last  = #0
       } {  
-        c,,16^" 0"^" first:"^" offset-" a''  c,, a'' c,, a''   c,, 
-        a''^" 0"^" last:"^" offset-" } r2
+        c,,16^" 0"^" first:"^" X-" a''  c,, a'' c,, a''   c,, 
+        a''^" 0"^" last:"^" X-" } r2
       \highlight \with { 
         thickness = #0.5 
-        offset-first = #0
-        offset-last  = #0
+        X-first = #0
+        X-last  = #0
         X-offset = #0
-      } {  c,,16^" 0"^" first:"^" offset-" a''   c,, a'' c,,_"X-offset: 0" a''   c,, 
-           a''^" 0"^" last:"^" offset-" } r2
+      } {  c,,16^" 0"^" first:"^" X-" a''   c,, a'' c,,_"X-offset: 0" a''   c,, 
+           a''^" 0"^" last:"^" X-" } r2
     }
   }
   
@@ -312,11 +313,57 @@ spc = \markup \vspace #1
   }
 }
 
+\spc
+
+\markup \justify {
+  Non-zero values of \typewriter X-first and \typewriter X-last can have an unwanted side effect: 
+  They can move the highlighted area away from the first or last notehead when covering large 
+  intervals. This can be compensated using the following properties:
+}
 
 \spc
 
+\markup \column {
+  \concat { \typewriter Y-first " " " (default: #0)" }
+  \concat { \typewriter Y-last  " " " (default: #0)" }
+}
 
-\spc \spc \spc \spc
+\pspc
+
+\markup \justify {
+  These properties allow to manually move the beginning and the end of the highlighted area 
+  in vertical direction. Negative values will move the beginning/end down, positive values will
+  move it up.
+}
+
+
+\pspc
+
+
+\score {
+  \new Staff {
+    \override TextScript.self-alignment-X = #CENTER
+    \relative c' { 
+      \highlight \with { 
+        
+      } { c4^" 0"^" first:"^" Y-" e8 e c4^" 0"^" last:"^" Y-" } r
+      \highlight \with { 
+        
+      } { c4^" 0"^" first:"^" Y-" a''8 a c,,4^" 0"^" last:"^" Y-" } r
+      \highlight \with { 
+        Y-first = #-0.8
+        Y-last  = #-1
+      } { c4^" -0.8"^" first:"^" Y-" a''8 a c,,4^" -1.0"^" last:"^" Y-" } r
+    }  
+  }
+  
+  
+  \layout {
+  }
+}
+
+
+\spc 
 
 \markup \bold { some random stuff (to be removed if it cannot be used to demonstrate something useful): }
 
@@ -334,8 +381,8 @@ spc = \markup \vspace #1
     \bar "|" \noBreak
     r16 \highlight \with { 
       thickness = #0.4 
-      offset-first = #0
-      offset-last = #0
+      X-first = #0
+      X-last = #0
     } { 
       a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a'] 
       \bar "|" \noBreak

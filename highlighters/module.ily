@@ -34,8 +34,10 @@
 \registerOption analysis.highlighters.thickness #1.0
 \registerOption analysis.highlighters.layer #-5
 \registerOption analysis.highlighters.X-offset #0.6
-\registerOption analysis.highlighters.offset-first #-1.2
-\registerOption analysis.highlighters.offset-last #1.2
+\registerOption analysis.highlighters.X-first #-1.2
+\registerOption analysis.highlighters.X-last #1.2
+\registerOption analysis.highlighters.Y-first #0
+\registerOption analysis.highlighters.Y-last #0
 
 
 #(define (get-highlighter-properties ctx-mod)
@@ -64,20 +66,28 @@
       (X-offset
        (or (assq-ref props 'X-offset)
            (getOption '(analysis highlighters X-offset))))
-      (offset-first
-       (or (assq-ref props 'offset-first)
-           (getOption '(analysis highlighters offset-first))))
-      (offset-last
-       (or (assq-ref props 'offset-last)
-           (getOption '(analysis highlighters offset-last))))
+      (X-first
+       (or (assq-ref props 'X-first)
+           (getOption '(analysis highlighters X-first))))
+      (X-last
+       (or (assq-ref props 'X-last)
+           (getOption '(analysis highlighters X-last))))
+      (Y-first
+       (or (assq-ref props 'Y-first)
+           (getOption '(analysis highlighters Y-first))))
+      (Y-last
+       (or (assq-ref props 'Y-last)
+           (getOption '(analysis highlighters Y-last))))
       )
     `(
        (color . ,color)
        (thickness . ,thickness)
        (layer . ,layer)
        (X-offset . ,X-offset)
-       (offset-first . ,offset-first)
-       (offset-last . ,offset-last)
+       (X-first . ,X-first)
+       (X-last . ,X-last)
+       (Y-first . ,Y-first)
+       (Y-last . ,Y-last)
        )
     )
    )
@@ -131,17 +141,11 @@ highlight =
       (thickness (assq-ref props 'thickness))
       (layer (assq-ref props 'layer))
       (X-offset (assq-ref props 'X-offset))
-      (offset-first (assq-ref props 'offset-first))
-      (offset-last (assq-ref props 'offset-last))
+      (X-first (assq-ref props 'X-first))
+      (X-last (assq-ref props 'X-last))
+      (Y-first (assq-ref props 'Y-first))
+      (Y-last (assq-ref props 'Y-last))
       )
-    ;; (display "---- len: ")
-    ;; (display len)
-    ;; (display "  ----  last-skip: ")
-    ;; (display last-skip)
-    ;; (display "  ----  first-skip: ")
-    ;; (display first-skip)
-    ;; (display "\n")
-    ;; (display (custom-moment->duration first-skip))
     (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
       #{
         <<
@@ -152,14 +156,16 @@ highlight =
             \once \override ClusterSpanner.padding = $thickness
             \once \override ClusterSpanner.layer = $layer
             \once \override ClusterSpanner.X-offset = $X-offset
-            \once \override ClusterSpannerBeacon.X-offset = $offset-first
+            \once \override ClusterSpannerBeacon.X-offset = $X-first
+            \once \override ClusterSpannerBeacon.Y-offset = $Y-first
             <<
               $mus
               {
                 % skip until last element starts:
                 #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
                      (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
-                \once \override ClusterSpannerBeacon.X-offset = $offset-last
+                \once \override ClusterSpannerBeacon.X-offset = $X-last
+                \once \override ClusterSpannerBeacon.Y-offset = $Y-last
               }
             >>
           }
