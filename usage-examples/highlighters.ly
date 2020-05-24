@@ -79,7 +79,7 @@ spc = \markup \vspace #1
 
 
 \markup \justify {
-  Internally this is done by applying LilyPond's \typewriter "\makeClusters" commmand
+  Internally this is done by applying LilyPond's \typewriter "\makeClusters" command
   to the given music expression. 
   
   Therefore two highlighted passages in the same voice will melt into one as long as 
