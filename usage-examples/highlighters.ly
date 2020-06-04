@@ -44,8 +44,8 @@ spc = \markup \vspace #1
 \markup \fill-line {\bold \huge "Highlighters - Showcase"}
 \spc
 \markup \justify {
-  The \typewriter highlighters module of \typewriter anaLYsis provides a tool to 
-  colorize subsequent noteheads as it would be done with a textmarker on paper. 
+  The \typewriter highlighters module of \typewriter anaLYsis provides a tool to
+  colorize subsequent noteheads as it would be done with a textmarker on paper.
 }
 
 \spc
@@ -63,16 +63,16 @@ spc = \markup \vspace #1
   \new Staff \relative c'{
     r16 \highlight { c d e   f d e c }
     g'8 c b c
-    
-    d16 \highlight { g, a b   c a b g }   
-    d'8 g f g 
-    
-    e16 \highlight \with { color = #red } { a g f   e g f a }   
+
+    d16 \highlight { g, a b   c a b g }
+    d'8 g f g
+
+    e16 \highlight \with { color = #red } { a g f   e g f a }
     g \highlight \with { color = #red } { f e d   c e d f }
-    
+
     e16 \highlight \with { color = #red } { d c b   a c b c }
   }
-  
+
   \layout {
   }
 }
@@ -80,36 +80,36 @@ spc = \markup \vspace #1
 
 \markup \justify {
   Internally this is done by applying LilyPond's \typewriter "\makeClusters" command
-  to the given music expression. 
-  
-  Therefore two highlighted passages in the same voice will melt into one as long as 
+  to the given music expression.
+
+  Therefore two highlighted passages in the same voice will melt into one as long as
   they are not separated by a rest or a (non-highlighted) note.
 }
 
 \pspc
 
 \score {
-  \new Staff{ 
+  \new Staff{
     \time 6/8
     \relative c'{
       \autoBeamOn
       \highlight {c8^"intended:" d c8*1/2 } \hide r16  \highlight {e8 f e8*1/2} \hide r16  \highlight {g8 a g8*1/2} \hide r16  r4.
       \highlight {c,8^"actual result:" d c}  \highlight {e8 f e}  \highlight {g8 a g}  r4.
       \override Rest.color = #grey
-      \highlight {c,8^"tweak: invisible rests" d c8*1/2 }  r16  \highlight {e8 f e8*1/2}  r16  \highlight {g8 a g8*1/2}  r16  
+      \highlight {c,8^"tweak: invisible rests" d c8*1/2 }  r16  \highlight {e8 f e8*1/2}  r16  \highlight {g8 a g8*1/2}  r16
       \revert Rest.color
       r4.
     }
   }
-  
+
   \layout {
   }
 }
 
 
 \markup \justify {
-  To avoid unexpected results, the highlighted passage should not contain multiple voices. 
-  However, it is possible to have chords in the melody. Also, multiple voices appearing 
+  To avoid unexpected results, the highlighted passage should not contain multiple voices.
+  However, it is possible to have chords in the melody. Also, multiple voices appearing
   at the same time can \italic contain highlighted passages.
 }
 
@@ -119,18 +119,20 @@ spc = \markup \vspace #1
       c4 <d b> <e a,> <f c a f> <e c g> <d b g> <e c g c,>
     } r
     \bar "||"
-    << \relative c'' {
-      g4   \highlight { c8 b   c2 }
-      a4    \highlight {d8 c   d2 }
-      b4
-       } \\ 
-       \relative c' {
-         c4    e2    \highlight { f8 e }
-         \highlight { f4 } fis2    \highlight { g8 fis }
-         \highlight { g4 }
-    } >>
+    <<
+      \relative c'' {
+        g4   \highlight { c8 b   c2 }
+        a4    \highlight {d8 c   d2 }
+        b4
+      } \\
+      \relative c' {
+        c4    e2    \highlight { f8 e }
+        \highlight { f4 } fis2    \highlight { g8 fis }
+        \highlight { g4 }
+      }
+    >>
   }
-  
+
   \layout {
   }
 }
@@ -159,7 +161,7 @@ spc = \markup \vspace #1
 
 \score {
   \new Staff{
-    \relative c' { 
+    \relative c' {
       \highlight \with { color = #(rgb-color 1.0 0.0 0.0) } { f4 g f } r
       \highlight \with { color = #(rgb-color 1.0 0.4 0.0) } { f4 g f } r
       \highlight \with { color = #(rgb-color 1.0 0.8 0.0) } { f4 g f } r
@@ -169,7 +171,7 @@ spc = \markup \vspace #1
       \highlight \with { color = #(rgb-color 0.0 1.0 0.0) } { f4 g f } r
     }
   }
-  
+
   \layout {
   }
 }
@@ -180,7 +182,7 @@ spc = \markup \vspace #1
 }
 \pspc
 \markup \justify {
-  The thickness of the highlighting line can be adjusted. The minimal value is 
+  The thickness of the highlighting line can be adjusted. The minimal value is
   0.25 whereas values smaller than that will increase the optical thickness
   again. This is caused by the behavior of the \typewriter ClusterSpanner grob.
 }
@@ -189,11 +191,11 @@ spc = \markup \vspace #1
 
 \score {
   \new Staff \new Voice {
-    << 
-      \relative c'' { 
-        e4^"thickness: 1.0 (default)" f e d    e2 r 
-        e4^"thickness: 0.5" f e d    e2 r 
-        e4^"thickness: 0.25 (minimum)" f e d    e2 r 
+    <<
+      \relative c'' {
+        e4^"thickness: 1.0 (default)" f e d    e2 r
+        e4^"thickness: 0.5" f e d    e2 r
+        e4^"thickness: 0.25 (minimum)" f e d    e2 r
       }
       \relative c'' {
         \highlight { c4 c c b    c2 } r
@@ -207,7 +209,7 @@ spc = \markup \vspace #1
       }
     >>
   }
-  
+
   \layout {
   }
 }
@@ -221,10 +223,10 @@ spc = \markup \vspace #1
 \pspc
 
 \markup \justify {
-  The \typewriter layer property allows detailed control over the stacking 
-  of elements. With values above 1 the highlightings would cover the staff 
+  The \typewriter layer property allows detailed control over the stacking
+  of elements. With values above 1 the highlightings would cover the staff
   lines and notes, therefore the value should always be below zero.
-  By default, \typewriter layer is set to -5 which is between \italic anaLYsis' 
+  By default, \typewriter layer is set to -5 which is between \italic anaLYsis'
   frames and the staff with its contents.
 }
 
@@ -238,7 +240,7 @@ spc = \markup \vspace #1
       \highlight \with {layer = #2 }  {c4^"layer: 2"  e g c  g e c} r
     }
   }
-  
+
   \layout {
   }
 }
@@ -254,22 +256,22 @@ spc = \markup \vspace #1
 \pspc
 
 \markup \justify {
-  The beginning and the end of the highlighted area can be shifted horizontally 
-  by modifying the \typewriter X-first and \typewriter X-last properties. 
-  By default, there is an offset to the left for the first note and an offset to 
+  The beginning and the end of the highlighted area can be shifted horizontally
+  by modifying the \typewriter X-first and \typewriter X-last properties.
+  By default, there is an offset to the left for the first note and an offset to
   the right for the last note. In most cases, this helps to have the entire note head
-  covered by the highlighed area. 
+  covered by the highlighed area.
 }
 \pspc
 \markup \justify {
-  However, in some cases (e.g. large intervals or small \typewriter thickness values) it can look better to set these values 
-  to zero. 
+  However, in some cases (e.g. large intervals or small \typewriter thickness values) it can look better to set these values
+  to zero.
 }
 \pspc
 \markup \justify {
-  The \typewriter X-offset property controls a general shift to the right for the 
+  The \typewriter X-offset property controls a general shift to the right for the
   entire highlighting. By default it is set to 0.6 to have the highlightings aligned
-  to the center of the note heads. Usually there should be no need to change this 
+  to the center of the note heads. Usually there should be no need to change this
   setting.
 }
 
@@ -282,33 +284,37 @@ spc = \markup \vspace #1
     \relative c' {
       \highlight { c8^"-1.0"^"first:"^"X-" d c^"1.0"^"last:"^"X-" }
       r8_"X-offset: 0.6 (default)"
-      \highlight \with { 
+      \highlight \with {
         X-first = #0
         X-last  = #0
       } { c8^"0"^"first:"^"X-" d c^"0"^"last:"^"X-" }
       r8
-      \highlight \with { 
-        thickness = #0.5 
-      } {  
-        c16^" -1.0"^" first:"^" X-" a''  c,, a''c,,^"(default)"  a''   c,, 
-        a''^" 1.0"^" last:"^" X-" } r2
-      \highlight \with { 
+      \highlight \with {
+        thickness = #0.5
+      } {
+        c16^" -1.0"^" first:"^" X-" a''  c,, a''c,,^"(default)"  a''   c,,
+        a''^" 1.0"^" last:"^" X-"
+      } r2
+      \highlight \with {
         thickness = #0.5
         X-first = #0
         X-last  = #0
-      } {  
-        c,,16^" 0"^" first:"^" X-" a''  c,, a'' c,, a''   c,, 
-        a''^" 0"^" last:"^" X-" } r2
-      \highlight \with { 
-        thickness = #0.5 
+      } {
+        c,,16^" 0"^" first:"^" X-" a''  c,, a'' c,, a''   c,,
+        a''^" 0"^" last:"^" X-"
+      } r2
+      \highlight \with {
+        thickness = #0.5
         X-first = #0
         X-last  = #0
         X-offset = #0
-      } {  c,,16^" 0"^" first:"^" X-" a''   c,, a'' c,,_"X-offset: 0" a''   c,, 
-           a''^" 0"^" last:"^" X-" } r2
+      } {
+        c,,16^" 0"^" first:"^" X-" a''   c,, a'' c,,_"X-offset: 0" a''   c,,
+        a''^" 0"^" last:"^" X-"
+      } r2
     }
   }
-  
+
   \layout {
   }
 }
@@ -316,8 +322,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \justify {
-  Non-zero values of \typewriter X-first and \typewriter X-last can have an unwanted side effect: 
-  They can move the highlighted area away from the first or last notehead when covering large 
+  Non-zero values of \typewriter X-first and \typewriter X-last can have an unwanted side effect:
+  They can move the highlighted area away from the first or last notehead when covering large
   intervals. This can be compensated using the following properties:
 }
 
@@ -331,7 +337,7 @@ spc = \markup \vspace #1
 \pspc
 
 \markup \justify {
-  These properties allow to manually move the beginning and the end of the highlighted area 
+  These properties allow to manually move the beginning and the end of the highlighted area
   in vertical direction. Negative values will move the beginning/end down, positive values will
   move it up.
 }
@@ -343,27 +349,175 @@ spc = \markup \vspace #1
 \score {
   \new Staff {
     \override TextScript.self-alignment-X = #CENTER
-    \relative c' { 
-      \highlight \with { 
-        
+    \relative c' {
+      \highlight \with {
+
       } { c4^" 0"^" first:"^" Y-" e8 e c4^" 0"^" last:"^" Y-" } r
-      \highlight \with { 
-        
+      \highlight \with {
+
       } { c4^" 0"^" first:"^" Y-" a''8 a c,,4^" 0"^" last:"^" Y-" } r
-      \highlight \with { 
+      \highlight \with {
         Y-first = #-0.8
         Y-last  = #-1
       } { c4^" -0.8"^" first:"^" Y-" a''8 a c,,4^" -1.0"^" last:"^" Y-" } r
-    }  
+    }
   }
-  
-  
+
+
   \layout {
   }
 }
 
 
-\spc 
+\spc
+
+\markup \column {
+  \concat { \typewriter style  " " " (default: #'ramp)" }
+}
+
+\pspc
+
+\markup \justify {
+  The visual appearance of the highlighted area is controlled by the ClusterSpanner 
+  grob which offers four different styles: 
+  \typewriter ramp, \typewriter leftsided-stairs, \typewriter rightsided-stairs and 
+  \typewriter centered-stairs.
+}
+
+
+\pspc
+
+
+
+\score {
+  \new Staff {
+    % \override TextScript.self-alignment-X = #CENTER
+    \relative c' {
+      \highlight \with {
+        thickness = #0.4
+        X-first = #0
+        X-last  = #0
+        style = #'ramp
+      } { c8^"ramp" e g c g[ e] c } r
+      \highlight \with {
+        thickness = #0.4
+        X-first = #0
+        X-last  = #0
+        style = #'leftsided-stairs
+      } { c8^"leftsided-stairs" e g c g[ e] c } r
+      \highlight \with {
+        thickness = #0.4
+        X-first = #0
+        X-last  = #0
+        style = #'rightsided-stairs
+      } { c8^"rightsided-stairs" e g c g[ e] c } r
+      \highlight \with {
+        thickness = #0.4
+        X-first = #0
+        X-last  = #0
+        style = #'centered-stairs
+      } { c8^"centered-stairs" e g c g[ e] c } r
+
+    }
+  }
+
+
+  \layout {
+  }
+}
+
+
+\spc
+
+\markup \justify {
+  In most cases (e.g. if a motif is marked) the default \typewriter ramp style will be the
+  best choice. 
+  Eventually there might be some cases where another style can be useful, e.g. for
+  illustrating the pitch of long sustained notes in a counterpoint context:
+}
+
+
+\pspc
+
+\score {
+  \new Staff <<
+    \hide Staff.TimeSignature
+    \time 4/2
+    \cadenzaOn
+
+    \new Voice {
+      \voiceOne
+      r2^"ramp"
+      \relative c''
+      {
+        \highlight \with {
+          thickness = #0.25
+          X-first = #0
+          X-last  = #0
+          color = #green
+        }
+        {
+          f2. e4 d c
+          b a g2 c a
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+      \bar "||"
+      r2^"leftsided-stairs"
+      \relative c''
+      {
+        \highlight \with {
+          thickness = #0.25
+          X-first = #0
+          X-last  = #0
+          color = #green
+          style = #'leftsided-stairs
+        }
+        {
+          f2. e4 d c
+          b a g2 c a
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+      \bar "||"
+    }
+
+    \new Voice {
+      \voiceTwo
+      \relative c' {
+        \highlight \with {
+          thickness = #0.4
+          X-first = #0
+          X-last  = #0
+          color = #red
+        }
+        {
+          d1 f g a1
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+      \relative c' {
+        \highlight \with {
+          thickness = #0.4
+          X-first = #0
+          X-last  = #0
+          color = #red
+          style = #'leftsided-stairs
+        }
+        {
+          d1 f g a1
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+    }
+  >>
+}
+
+\spc
 
 \markup \bold { some random stuff (to be removed if it cannot be used to demonstrate something useful): }
 
@@ -371,12 +525,12 @@ spc = \markup \vspace #1
 
 \score {
   \new Staff \relative c'''{
-    \cadenzaOn 
+    \cadenzaOn
     \key d \major
-    r16 \highlight { 
-      a32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a'] 
+    r16 \highlight {
+      a32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a']
       \bar "|" \noBreak
-      \stemDown a,[ 
+      \stemDown a,[
     } \hideNotes a]  s8 \unHideNotes
     \bar "|" \noBreak
     r16 \highlight \with { 
@@ -384,12 +538,12 @@ spc = \markup \vspace #1
       X-first = #0
       X-last = #0
     } { 
-      a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a'] 
+      a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a']
       \bar "|" \noBreak
-      \stemDown a,[ 
-    } \hideNotes a]  s8 
+      \stemDown a,[
+    } \hideNotes a]  s8
   }
-  
+
   \layout {}
 }
 
@@ -397,39 +551,39 @@ spc = \markup \vspace #1
 
 \score {
   \new Staff \relative c''{
-    \cadenzaOn 
+    \cadenzaOn
     \key d \major
-    r16 
-    << 
+    r16
+    <<
       {
         s16 \highlight { fis8[ e d cis8*1/2 ] } \hide r16 \highlight { d8[ cis b a] }
       }
       \\
       {
-        a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a'] 
+        a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a']
         \bar "|" \noBreak
-        \stemDown a,[ 
+        \stemDown a,[
         \hideNotes a]  s8 \unHideNotes
       }
     >>
     \bar "|" \noBreak
-    r16 
-    << 
+    r16
+    <<
       {
-        s16 \hideNotes 
+        s16 \hideNotes
         \highlight { fis'8[ e d cis8*1/2 ] } \hide r16 \highlight { d8[ cis b a] }
         \unHideNotes
       }
       \\
       {
-        a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a'] 
+        a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a']
         \bar "|" \noBreak
-        \stemDown a,[ 
+        \stemDown a,[
         \hideNotes a]  s8 \unHideNotes
       }
     >>
   }
-  
+
   \layout {}
 }
 
