@@ -38,6 +38,7 @@
 \registerOption analysis.highlighters.X-last #1.2
 \registerOption analysis.highlighters.Y-first #0
 \registerOption analysis.highlighters.Y-last #0
+\registerOption analysis.highlighters.style #'ramp
 
 
 #(define (get-highlighter-properties ctx-mod)
@@ -78,6 +79,9 @@
       (Y-last
        (or (assq-ref props 'Y-last)
            (getOption '(analysis highlighters Y-last))))
+      (style
+       (or (assq-ref props 'style)
+           (getOption '(analysis highlighters style))))
       )
     `(
        (color . ,color)
@@ -88,6 +92,7 @@
        (X-last . ,X-last)
        (Y-first . ,Y-first)
        (Y-last . ,Y-last)
+       (style . ,style)
        )
     )
    )
@@ -145,6 +150,7 @@ highlight =
       (X-last (assq-ref props 'X-last))
       (Y-first (assq-ref props 'Y-first))
       (Y-last (assq-ref props 'Y-last))
+      (style (assq-ref props 'style))
       )
     (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
       #{
@@ -152,6 +158,7 @@ highlight =
           $mus
           % \new Voice
           \makeClusters {
+            \once \override ClusterSpanner.style = $style
             \once \override ClusterSpanner.color = $color
             \once \override ClusterSpanner.padding = $thickness
             \once \override ClusterSpanner.layer = $layer
