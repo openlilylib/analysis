@@ -94,8 +94,10 @@ spc = \markup \vspace #1
     \relative c'{
       \autoBeamOn
       \highlight {c8^"intended:" d c8*1/2 } \hide r16  \highlight {e8 f e8*1/2} \hide r16  \highlight {g8 a g8*1/2} \hide r16  r4.
+      \bar "||"
       \highlight {c,8^"actual result:" d c}  \highlight {e8 f e}  \highlight {g8 a g}  r4.
       \override Rest.color = #grey
+      \bar "||"
       \highlight {c,8^"tweak: invisible rests" d c8*1/2 }  r16  \highlight {e8 f e8*1/2}  r16  \highlight {g8 a g8*1/2}  r16
       \revert Rest.color
       r4.
@@ -178,13 +180,13 @@ spc = \markup \vspace #1
 
 
 \markup \column {
-  \concat { \typewriter thickness " " " (default: #1.0)" }
+  \concat { \typewriter thickness " " " (default: #2.0)" }
 }
 \pspc
 \markup \justify {
-  The thickness of the highlighting line can be adjusted. The minimal value is
-  0.25 whereas values smaller than that will increase the optical thickness
-  again. This is caused by the behavior of the \typewriter ClusterSpanner grob.
+  The thickness of the highlighting line, measured in staff-spaces, can be adjusted. The minimal value is
+  0.5 (This is caused by the behavior of the \typewriter ClusterSpanner grob). 
+  Smaller values will be set to 0.5 which will be indicated by a compiler warning.
 }
 
 \pspc
@@ -193,14 +195,14 @@ spc = \markup \vspace #1
   \new Staff \new Voice {
     <<
       \relative c'' {
-        e4^"thickness: 1.0 (default)" f e d    e2 r
-        e4^"thickness: 0.5" f e d    e2 r
-        e4^"thickness: 0.25 (minimum)" f e d    e2 r
+        e4^"thickness: 2.0 (default)" f e d    e2 r
+        e4^"thickness: 1.0" f e d    e2 r
+        e4^"thickness: 0.5 (minimum)" f e d    e2 r
       }
       \relative c'' {
         \highlight { c4 c c b    c2 } r
+        \highlight \with { thickness = #1.0 } { c4 c c b    c2 } r
         \highlight \with { thickness = #0.5 } { c4 c c b    c2 } r
-        \highlight \with { thickness = #0.25 } { c4 c c b    c2 } r
       }
       \relative c'' {
         g4 a g g    g2 r
@@ -290,13 +292,13 @@ spc = \markup \vspace #1
       } { c8^"0"^"first:"^"X-" d c^"0"^"last:"^"X-" }
       r8
       \highlight \with {
-        thickness = #0.5
+        thickness = #1.0
       } {
         c16^" -1.0"^" first:"^" X-" a''  c,, a''c,,^"(default)"  a''   c,,
         a''^" 1.0"^" last:"^" X-"
       } r2
       \highlight \with {
-        thickness = #0.5
+        thickness = #1.0
         X-first = #0
         X-last  = #0
       } {
@@ -304,7 +306,7 @@ spc = \markup \vspace #1
         a''^" 0"^" last:"^" X-"
       } r2
       \highlight \with {
-        thickness = #0.5
+        thickness = #1.0
         X-first = #0
         X-last  = #0
         X-offset = #0
@@ -394,25 +396,25 @@ spc = \markup \vspace #1
     % \override TextScript.self-alignment-X = #CENTER
     \relative c' {
       \highlight \with {
-        thickness = #0.4
+        thickness = #0.8
         X-first = #0
         X-last  = #0
         style = #'ramp
       } { c8^"ramp" e g c g[ e] c } r
       \highlight \with {
-        thickness = #0.4
+        thickness = #0.8
         X-first = #0
         X-last  = #0
         style = #'leftsided-stairs
       } { c8^"leftsided-stairs" e g c g[ e] c } r
       \highlight \with {
-        thickness = #0.4
+        thickness = #0.8
         X-first = #0
         X-last  = #0
         style = #'rightsided-stairs
       } { c8^"rightsided-stairs" e g c g[ e] c } r
       \highlight \with {
-        thickness = #0.4
+        thickness = #0.8
         X-first = #0
         X-last  = #0
         style = #'centered-stairs
@@ -451,7 +453,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          thickness = #0.25
+          thickness = #0.5
           X-first = #0
           X-last  = #0
           color = #green
@@ -468,7 +470,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          thickness = #0.25
+          thickness = #0.5
           X-first = #0
           X-last  = #0
           color = #green
@@ -488,7 +490,7 @@ spc = \markup \vspace #1
       \voiceTwo
       \relative c' {
         \highlight \with {
-          thickness = #0.4
+          thickness = #0.8
           X-first = #0
           X-last  = #0
           color = #red
@@ -501,7 +503,7 @@ spc = \markup \vspace #1
       \hide r8
       \relative c' {
         \highlight \with {
-          thickness = #0.4
+          thickness = #0.8
           X-first = #0
           X-last  = #0
           color = #red
@@ -534,7 +536,7 @@ spc = \markup \vspace #1
     } \hideNotes a]  s8 \unHideNotes
     \bar "|" \noBreak
     r16 \highlight \with { 
-      thickness = #0.4 
+      thickness = #0.8 
       X-first = #0
       X-last = #0
     } { 
