@@ -31,7 +31,7 @@
 % Define configuration variables and set defaults
 
 \registerOption analysis.highlighters.color #green
-\registerOption analysis.highlighters.thickness #1.0
+\registerOption analysis.highlighters.thickness #2.0
 \registerOption analysis.highlighters.layer #-5
 \registerOption analysis.highlighters.X-offset #0.6
 \registerOption analysis.highlighters.X-first #-1.2
@@ -57,7 +57,7 @@
         (if prop-col
             (cdr prop-col)
             (getOption '(analysis highlighters color)))))
-      
+
       (thickness
        (or (assq-ref props 'thickness)
            (getOption '(analysis highlighters thickness))))
@@ -130,7 +130,7 @@ highlight =
 #(define-music-function (properties mus)
    ((ly:context-mod?) ly:music?)
    ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
-   (let* 
+   (let*
     (
       (props (get-highlighter-properties properties))
       (mus-elts (ly:music-property mus 'elements))
@@ -160,7 +160,11 @@ highlight =
           \makeClusters {
             \once \override ClusterSpanner.style = $style
             \once \override ClusterSpanner.color = $color
-            \once \override ClusterSpanner.padding = $thickness
+            \once \override ClusterSpanner.padding =
+            #(if (< thickness 0.5)
+                 (begin (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
+                   0.25)
+                 (/ thickness 2))
             \once \override ClusterSpanner.layer = $layer
             \once \override ClusterSpanner.X-offset = $X-offset
             \once \override ClusterSpannerBeacon.X-offset = $X-first
