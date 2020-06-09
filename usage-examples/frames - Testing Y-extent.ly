@@ -67,13 +67,20 @@ colDarkPurple =   #(rgb-color 0.7  0.3  0.7)
 colLightViolet =  #(rgb-color 0.9  0.8  1.0)
 colDarkViolet =   #(rgb-color 0.6  0.3  0.9)
 
+%{
+\setOption analysis.frames.set-top-edge ##t
+\setOption analysis.frames.set-bottom-edge ##t
+\setOption analysis.frames.set-left-edge ##t
+\setOption analysis.frames.set-right-edge ##t
+%}
+
 pspc = \markup \vspace #0.25
 spc = \markup \vspace #1
 
 
 \score {
   \relative c'' {
-%{
+    % {
     \genericFrame \with {
       y-lower = -3
       y-upper = 3
@@ -82,27 +89,29 @@ spc = \markup \vspace #1
       c8 g
     }
     r4
-%}
+    %}
+    % \override HorizontalBracket.ignore-collision = ##t
+    
     \genericFrame \with {
-      y-lower = #'(-4 . -3)
-      y-upper = #'(9 . 6)
+      y-lower = #'(-7 . -3)
+      y-upper = #'(12 . 6)
       % caption = "Caption"
       caption-halign = -1
       % angle = 20
       % caption-align-bottom = ##t
       % border-radius = 2
-      \override HorizontalBracket.ignore-collision = ##t
-      
+
+
     } {
-      c8^"I'm a markup"\ff g c g c g\fermata
+      c8_"I'm a markup"\ff g c^"I'm a markup" g c c' \fermata
     }
     r4
-%{
+    % {
     \genericFrame \with {
       y-lower = -4
       y-upper = 4
     } {
-      c8 g
+      c,8 g
     }
     r4
 
@@ -115,7 +124,7 @@ spc = \markup \vspace #1
       c8 g
     }
     r4
-%}
+    %}
 
   }
 }
