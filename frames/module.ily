@@ -54,6 +54,10 @@
 \registerOption analysis.frames.caption-color  ##f  % ##f will use border-color
 \registerOption analysis.frames.caption-keep-y ##f
 \registerOption analysis.frames.caption-translate-x 0
+\registerOption analysis.frames.set-top-edge ##f
+\registerOption analysis.frames.set-bottom-edge ##f
+\registerOption analysis.frames.set-left-edge ##f
+\registerOption analysis.frames.set-right-edge ##f
 
 
 #(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
@@ -188,6 +192,10 @@
      (caption-color (assq-ref props 'caption-color))
      (caption-keep-y (assq-ref props 'caption-keep-y))
      (caption-translate-x (assq-ref props 'caption-translate-x))
+     (set-top-edge (assq-ref props 'set-top-edge))
+     (set-bottom-edge (assq-ref props 'set-bottom-edge))
+     (set-left-edge (assq-ref props 'set-left-edge))
+     (set-right-edge (assq-ref props 'set-right-edge))
 
      (layout (ly:grob-layout grob))
      (caption-props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
@@ -295,6 +303,12 @@
      (need-right-polygon (and (and (> border-width 0) (not open-on-right))  (color? border-color)))
      (need-inner-polygon (color? color))
      (need-caption (markup? caption))
+
+     ;; stencils to be placed on the topmost/leftmost/... border (ugly hack to set the actual X-extent):
+     (top-edge-stencil empty-stencil)
+     (bottom-edge-stencil empty-stencil)
+     (left-edge-stencil empty-stencil)
+     (right-edge-stencil empty-stencil)
      )
 
     ;; set grob properties that can be set from within the stencil callback
@@ -766,8 +780,33 @@
     ; (display stencil-ext)
     ; (display "\n")
 
-    (ly:grob-set-property! grob 'X-extent (car stencil-ext))
-    (ly:grob-set-property! grob 'Y-extent (cdr stencil-ext))
+    ;; (ly:grob-set-property! grob 'X-extent (car stencil-ext))
+    ;; (ly:grob-set-property! grob 'Y-extent (cdr stencil-ext))
+
+    (set! top-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons 0 (cdr (cdr stencil-ext)))
+           )
+          )
+    (set! bottom-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons 0 (car (cdr stencil-ext)))
+           )
+          )
+    (set! left-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons (car (car stencil-ext)) 0)
+           )
+          )
+    (set! right-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons (cdr (car stencil-ext)) 0)
+           )
+          )
 
 
     (ly:stencil-add
@@ -818,6 +857,11 @@
           frame-angle rotation-center-x rotation-center-y)
          empty-stencil)
 
+     (if set-top-edge top-edge-stencil empty-stencil)
+     (if set-bottom-edge bottom-edge-stencil empty-stencil)
+     (if set-left-edge left-edge-stencil empty-stencil)
+     (if set-right-edge right-edge-stencil empty-stencil)
+
      )
     )
    )
@@ -863,6 +907,18 @@
      (caption-keep-y
       (or (assq-ref props 'caption-keep-y)
           (getOption '(analysis frames caption-keep-y))))
+     (set-top-edge
+      (or (assq-ref props 'set-top-edge)
+          (getOption '(analysis frames set-top-edge))))
+     (set-bottom-edge
+      (or (assq-ref props 'set-bottom-edge)
+          (getOption '(analysis frames set-bottom-edge))))
+     (set-left-edge
+      (or (assq-ref props 'set-left-edge)
+          (getOption '(analysis frames set-left-edge))))
+     (set-right-edge
+      (or (assq-ref props 'set-right-edge)
+          (getOption '(analysis frames set-right-edge))))
      (caption-translate-x
       (or (assq-ref props 'caption-translate-x)
           (getOption '(analysis frames caption-translate-x))))
@@ -959,6 +1015,10 @@
       (caption-color . ,caption-color)
       (caption-keep-y . ,caption-keep-y)
       (caption-translate-x . ,caption-translate-x)
+      (set-top-edge . ,set-top-edge)
+      (set-bottom-edge . ,set-bottom-edge)
+      (set-left-edge . ,set-left-edge)
+      (set-right-edge . ,set-right-edge)
       )))
 
 #(define (offset-shorten-pair props)
