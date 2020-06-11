@@ -200,6 +200,7 @@
      (layout (ly:grob-layout grob))
      (caption-props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
      (caption-stencil empty-stencil)
+     (caption-markup empty-markup)
      (caption-x 0)
      (caption-y 0)
      (caption-width 0)
@@ -214,6 +215,7 @@
      (caption-upper-edge 0)
      (caption-mid-x 0)
      (caption-angle 0)
+     (caption-angle-rad 0)
 
 
      ;; store polygon points.
@@ -648,19 +650,20 @@
          (set! y-without-descender (car (ly:stencil-extent caption-stencil Y)) )
          (set! descender-height (- y-without-descender y-with-descender))
 
-         (set! caption-stencil (interpret-markup layout caption-props
-                                 (markup #:on-box caption-radius (if (color? caption-color) caption-color border-color)
-                                   #:pad-markup caption-padding
-                                   (if caption-keep-y
-                                       caption
-                                       (markup
-                                        #:combine caption
-                                        #:transparent
-                                        #:scale (cons 0.1 1)
-                                        #:combine "É" "j"
-                                        )
-                                       )
-                                   )))
+         (set! caption-markup
+               (markup #:on-box caption-radius (if (color? caption-color) caption-color border-color)
+                 #:pad-markup caption-padding
+                 (if caption-keep-y
+                     caption
+                     (markup
+                      #:combine caption
+                      #:transparent
+                      #:scale (cons 0.1 1)
+                      #:combine "É" "j"
+                      )
+                     )
+                 ))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
          (set! caption-width  (- (cdr (ly:stencil-extent caption-stencil X)) (car (ly:stencil-extent caption-stencil X)) ))
          (set! caption-height (- (cdr (ly:stencil-extent caption-stencil Y)) (car (ly:stencil-extent caption-stencil Y)) ))
          (set! caption-space-factor
@@ -704,19 +707,43 @@
              (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height) descender-height))
              (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
              )
-         (set! caption-stencil (ly:stencil-translate caption-stencil (cons caption-x caption-y)))
+         ; (set! caption-stencil (ly:stencil-translate caption-stencil (cons caption-x caption-y)))
+         (set! caption-markup (markup #:translate (cons caption-x caption-y) caption-markup))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
+
          (set! caption-left-edge  (car (ly:stencil-extent caption-stencil X)))
          (set! caption-right-edge (cdr (ly:stencil-extent caption-stencil X)))
          (set! caption-lower-edge (car (ly:stencil-extent caption-stencil Y)))
          (set! caption-upper-edge (cdr (ly:stencil-extent caption-stencil Y)))
          (set! caption-mid-x (/ (+ caption-left-edge caption-right-edge) 2))
-         (set! caption-angle (* (atan (if caption-align-bottom slope-lower slope-upper)) (/ 180 3.14159265)))
+         (set! caption-angle-rad (atan (if caption-align-bottom slope-lower slope-upper)))
+         (set! caption-angle (* caption-angle-rad (/ 180 3.141592653589)))
+
+         #!
          (set! caption-stencil (ly:stencil-rotate
                                 caption-stencil
                                 caption-angle
                                 0
                                 (if caption-align-bottom 1 -1)
                                 ))
+         !#
+         ; ----- replaced by:
+         (set! caption-markup
+               (markup #:translate
+                 (if caption-align-bottom
+                     (cons
+                      (* (sin caption-angle-rad) (/ caption-height 2))
+                      (* (- 1 (cos caption-angle-rad)) (/ caption-height 2))
+                      )
+                     (cons
+                      (- 0 (* (sin caption-angle-rad) (/ caption-height 2)))
+                      (- 0 (* (- 1 (cos caption-angle-rad)) (/ caption-height 2)))
+                      )
+                     )
+                 (markup #:rotate caption-angle caption-markup)))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
+         ; -----
+
          ; determine overall stencil-extent
          ; test caption corners: (top-left)
          (set! stencil-ext
