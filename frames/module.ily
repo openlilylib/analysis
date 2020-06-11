@@ -777,9 +777,38 @@
                    (cons caption-right-edge caption-lower-edge)
                    caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
                   frame-angle rotation-center-x rotation-center-y)))
+
+         #!
+    (set! caption-stencil
+          (ly:stencil-rotate-absolute
+           caption-stencil
+           frame-angle rotation-center-x rotation-center-y))
+         !#
+         ; ----- replaced by:
+         ;   re-use caption-angle-rad:
+         (set! caption-angle-rad (* frame-angle (/ 3.141592653589 180)))
+         ;   re-use caption-x and caption-y as current caption center:
+         (set! caption-x (/ (+ (car (ly:stencil-extent caption-stencil X)) (cdr (ly:stencil-extent caption-stencil X))) 2))
+         (set! caption-y (/ (+ (car (ly:stencil-extent caption-stencil Y)) (cdr (ly:stencil-extent caption-stencil Y))) 2))
+
+         (set! caption-markup
+               (markup
+                #:translate
+                (cons
+                 (+
+                  (* (- rotation-center-x caption-x) (- 1 (cos caption-angle-rad)))
+                  (* (- rotation-center-y caption-y) (sin caption-angle-rad))
+                  )
+                 (+
+                  (* (- caption-x rotation-center-x) (sin caption-angle-rad))
+                  (* (- rotation-center-y caption-y) (- 1 (cos caption-angle-rad)))
+                  )
+                 )
+                #:rotate frame-angle caption-markup))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
          ))
-    
-    
+    ; -----
+
     ; determine overall stencil-extent
     ; start with frame's top-left corner:
     (set! stencil-ext
@@ -805,36 +834,6 @@
             (rotate-point
              (cons (cdr frame-X-extent) (- y-r-lower (/ border-radius 2)))
              frame-angle rotation-center-x rotation-center-y)))
-
-    #!
-    (set! caption-stencil
-          (ly:stencil-rotate-absolute
-           caption-stencil
-           frame-angle rotation-center-x rotation-center-y))
-    !#
-    ; ----- replaced by:
-    ;   re-use caption-angle-rad:
-    (set! caption-angle-rad (* frame-angle (/ 3.141592653589 180)))
-    ;   re-use caption-x and caption-y as current caption center:
-    (set! caption-x (/ (+ (car (ly:stencil-extent caption-stencil X)) (cdr (ly:stencil-extent caption-stencil X))) 2))
-    (set! caption-y (/ (+ (car (ly:stencil-extent caption-stencil Y)) (cdr (ly:stencil-extent caption-stencil Y))) 2))
-
-    (set! caption-markup
-          (markup
-           #:translate
-           (cons
-            (+
-             (* (- rotation-center-x caption-x) (- 1 (cos caption-angle-rad)))
-             (* (- rotation-center-y caption-y) (sin caption-angle-rad))
-             )
-            (+
-             (* (- caption-x rotation-center-x) (sin caption-angle-rad))
-             (* (- rotation-center-y caption-y) (- 1 (cos caption-angle-rad)))
-             )
-            )
-           #:rotate frame-angle caption-markup))
-    (set! caption-stencil (interpret-markup layout caption-props caption-markup))
-    ; -----
 
     ; (display stencil-ext)
     ; (display "\n")
