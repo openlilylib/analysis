@@ -58,6 +58,7 @@
 \registerOption analysis.frames.set-bottom-edge ##f
 \registerOption analysis.frames.set-left-edge ##f
 \registerOption analysis.frames.set-right-edge ##f
+\registerOption analysis.frames.set-caption-extent ##f
 
 
 #(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
@@ -196,6 +197,7 @@
      (set-bottom-edge (assq-ref props 'set-bottom-edge))
      (set-left-edge (assq-ref props 'set-left-edge))
      (set-right-edge (assq-ref props 'set-right-edge))
+     (set-caption-extent (assq-ref props 'set-caption-extent))
 
      (layout (ly:grob-layout grob))
      (caption-props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
@@ -805,6 +807,10 @@
                   )
                  )
                 #:rotate frame-angle caption-markup))
+
+         (if (not set-caption-extent)
+             (set! caption-markup (markup #:with-dimensions (cons 0 0) (cons 0 0) caption-markup)))
+
          (set! caption-stencil (interpret-markup layout caption-props caption-markup))
          ))
     ; -----
@@ -973,6 +979,9 @@
      (set-right-edge
       (or (assq-ref props 'set-right-edge)
           (getOption '(analysis frames set-right-edge))))
+     (set-caption-extent
+      (or (assq-ref props 'set-caption-extent)
+          (getOption '(analysis frames set-caption-extent))))
      (caption-translate-x
       (or (assq-ref props 'caption-translate-x)
           (getOption '(analysis frames caption-translate-x))))
@@ -1073,6 +1082,7 @@
       (set-bottom-edge . ,set-bottom-edge)
       (set-left-edge . ,set-left-edge)
       (set-right-edge . ,set-right-edge)
+      (set-caption-extent . ,set-caption-extent)
       )))
 
 #(define (offset-shorten-pair props)
