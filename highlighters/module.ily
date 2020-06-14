@@ -30,6 +30,7 @@
 
 % Define configuration variables and set defaults
 
+\registerOption analysis.highlighters.active ##t
 \registerOption analysis.highlighters.color #green
 \registerOption analysis.highlighters.thickness #2.0
 \registerOption analysis.highlighters.layer #-5
@@ -152,35 +153,36 @@ highlight =
       (Y-last (assq-ref props 'Y-last))
       (style (assq-ref props 'style))
       )
-    (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
-      #{
-        <<
-          $mus
-          % \new Voice
-          \makeClusters {
-            \once \override ClusterSpanner.style = $style
-            \once \override ClusterSpanner.color = $color
-            \once \override ClusterSpanner.padding =
-            #(if (< thickness 0.5)
-                 (begin (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
-                   0.25)
-                 (/ thickness 2))
-            \once \override ClusterSpanner.layer = $layer
-            \once \override ClusterSpanner.X-offset = $X-offset
-            \once \override ClusterSpannerBeacon.X-offset = $X-first
-            \once \override ClusterSpannerBeacon.Y-offset = $Y-first
+    (if (getOption '(analysis highlighters active))
+        (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
+          #{
             <<
               $mus
-              {
-                % skip until last element starts:
-                #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
-                     (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
-                \once \override ClusterSpannerBeacon.X-offset = $X-last
-                \once \override ClusterSpannerBeacon.Y-offset = $Y-last
+              % \new Voice
+              \makeClusters {
+                \once \override ClusterSpanner.style = $style
+                \once \override ClusterSpanner.color = $color
+                \once \override ClusterSpanner.padding =
+                #(if (< thickness 0.5)
+                     (begin (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
+                       0.25)
+                     (/ thickness 2))
+                \once \override ClusterSpanner.layer = $layer
+                \once \override ClusterSpanner.X-offset = $X-offset
+                \once \override ClusterSpannerBeacon.X-offset = $X-first
+                \once \override ClusterSpannerBeacon.Y-offset = $Y-first
+                <<
+                  $mus
+                  {
+                    % skip until last element starts:
+                    #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
+                         (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
+                    \once \override ClusterSpannerBeacon.X-offset = $X-last
+                    \once \override ClusterSpannerBeacon.Y-offset = $Y-last
+                  }
+                >>
               }
             >>
-          }
-        >>
-      #})))
-
-
+          #})
+        mus
+        )))
