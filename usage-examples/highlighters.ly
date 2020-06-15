@@ -591,6 +591,10 @@ spc = \markup \vspace #1
 
 \pspc
 
+% Play around with these to see the effect of en/disabling stylesheets
+%\setOption analysis.highlighters.use-only #'(cantus counterpoint)
+%\setOption analysis.highlighters.ignore #'(counterpoint)
+
 \score {
   \new Staff <<
     \hide Staff.TimeSignature
@@ -655,6 +659,33 @@ spc = \markup \vspace #1
       \hide r8
     }
   >>
+}
+
+\spc
+
+\markup \bold { Enable/disable stylesheets }
+
+\spc
+
+\markup \column {
+  \concat { \typewriter use-only  " " " (default: #'())" }
+  \concat { \typewriter ignore  " " " (default: #'())" }
+}
+
+\pspc
+
+\markup \justify {
+  If the \typewriter use-only option is set to a list of stylesheet names
+  only highlighters with these stylesheets are active. Highlighters with
+  different or no stylesheets will be ignored.
+}
+
+\pspc
+
+\markup \justify {
+  If the \typewriter ignore option is set to a list of stylesheet names
+  highlighters included in the list will be ignored. Highlighters without
+  stylesheet are not affected.
 }
 
 \spc

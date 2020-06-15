@@ -34,6 +34,8 @@
 \registerOption analysis.highlighters.active ##t
 % Collection of stylesheet definitions
 \registerOption analysis.highlighters.stylesheets #'()
+\registerOption analysis.highlighters.use-only #'()
+\registerOption analysis.highlighters.ignore #'()
 
 % Predicate for valid highlighter styles
 % (list allowed names here)
@@ -110,9 +112,8 @@
     ;; then with given props (if present).
     (for-each
      (lambda (stylesheet-prop)
-       (if (not (eq? (car stylesheet-prop) 'stylesheet))
-           (set! props
-                 (assoc-set! props (car stylesheet-prop) (cdr stylesheet-prop)))))
+       (set! props
+             (assoc-set! props (car stylesheet-prop) (cdr stylesheet-prop))))
      (append stylesheet given-props))
     props))
 
@@ -151,64 +152,89 @@ setHighlightingStyle =
      (ly:make-duration 0 0 p q)
      ))
 
+#(define (filtered-by-stylesheet props)
+   "Test if the highlighter can be used due to stylesheet configuration.
+    Returns ##t (highlighting filtered/suppressed) if
+    - use-only = ##t:
+      stylesheet is not in the use-only list
+      or no stylesheet is used at all
+    - ignore = ##t:
+      one of the ignored stylesheets is used
+    "
+   (let*
+    ((use-only (getOption '(analysis highlighters use-only)))
+     (ignore (getOption '(analysis highlighters ignore)))
+     (stylesheet (assq-ref props 'stylesheet))
+     )
+    (or
+     (and use-only
+          (or
+           (not stylesheet)
+           (not (member stylesheet use-only))))
+     (and ignore (member stylesheet ignore))
+     )
+    ))
 
 highlight =
 #(with-options define-music-function (mus) (ly:music?)
    highlighting-style-propset
-   (if (getOption '(analysis highlighters active))
-       ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
-       (let*
-        (
-          (props (process-properties props))
-          (mus-elts (ly:music-property mus 'elements))
-          ; last music-element:
-          (lst (last mus-elts)) ; TODO test for list? and ly:music?
-          ; length of entire music expression "mus":
-          (len (ly:music-length mus))
-          ; length of last element only:
-          (last-skip (ly:music-length lst))
-          ; difference = length of "mus" except the last element:
-          (first-skip (ly:moment-sub len last-skip))
-          (color (assq-ref props 'color))
-          (thickness (assq-ref props 'thickness))
-          (layer (assq-ref props 'layer))
-          (X-offset (assq-ref props 'X-offset))
-          (X-first (assq-ref props 'X-first))
-          (X-last (assq-ref props 'X-last))
-          (Y-first (assq-ref props 'Y-first))
-          (Y-last (assq-ref props 'Y-last))
-          (style (assq-ref props 'style))
-          )
-        (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
-          #{
-            <<
-              $mus
-              % \new Voice
-              \makeClusters {
-                \once \override ClusterSpanner.style = $style
-                \once \override ClusterSpanner.color = $color
-                \once \override ClusterSpanner.padding =
-                #(if (< thickness 0.5)
-                     (begin (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
-                       0.25)
-                     (/ thickness 2))
-                \once \override ClusterSpanner.layer = $layer
-                \once \override ClusterSpanner.X-offset = $X-offset
-                \once \override ClusterSpannerBeacon.X-offset = $X-first
-                \once \override ClusterSpannerBeacon.Y-offset = $Y-first
-                <<
-                  $mus
-                  {
-                    % skip until last element starts:
-                    #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
-                         (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
-                    \once \override ClusterSpannerBeacon.X-offset = $X-last
-                    \once \override ClusterSpannerBeacon.Y-offset = $Y-last
-                  }
-                >>
-              }
-            >>
-          #})
-        )
-       mus
-       ))
+   (or
+    (and
+     (getOption '(analysis highlighters active))
+     ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
+     (let*
+      ((props (process-properties props)))
+      (if (filtered-by-stylesheet props)
+          #f
+          (let*
+           ((mus-elts (ly:music-property mus 'elements))
+            ; last music-element:
+            (lst (last mus-elts)) ; TODO test for list? and ly:music?
+            ; length of entire music expression "mus":
+            (len (ly:music-length mus))
+            ; length of last element only:
+            (last-skip (ly:music-length lst))
+            ; difference = length of "mus" except the last element:
+            (first-skip (ly:moment-sub len last-skip))
+            (color (assq-ref props 'color))
+            (thickness (assq-ref props 'thickness))
+            (layer (assq-ref props 'layer))
+            (X-offset (assq-ref props 'X-offset))
+            (X-first (assq-ref props 'X-first))
+            (X-last (assq-ref props 'X-last))
+            (Y-first (assq-ref props 'Y-first))
+            (Y-last (assq-ref props 'Y-last))
+            (style (assq-ref props 'style))
+            )
+           (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
+             #{
+               <<
+                 $mus
+                 % \new Voice
+                 \makeClusters {
+                   \once \override ClusterSpanner.style = $style
+                   \once \override ClusterSpanner.color = $color
+                   \once \override ClusterSpanner.padding =
+                   #(if (< thickness 0.5)
+                        (begin (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
+                          0.25)
+                        (/ thickness 2))
+                   \once \override ClusterSpanner.layer = $layer
+                   \once \override ClusterSpanner.X-offset = $X-offset
+                   \once \override ClusterSpannerBeacon.X-offset = $X-first
+                   \once \override ClusterSpannerBeacon.Y-offset = $Y-first
+                   <<
+                     $mus
+                     {
+                       % skip until last element starts:
+                       #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
+                            (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
+                       \once \override ClusterSpannerBeacon.X-offset = $X-last
+                       \once \override ClusterSpannerBeacon.Y-offset = $Y-last
+                     }
+                   >>
+                 }
+               >>
+             #})))))
+    mus
+    ))
