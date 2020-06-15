@@ -32,73 +32,97 @@
 
 % Control on/off state
 \registerOption analysis.highlighters.active ##t
-\registerOption analysis.highlighters.color #green
-\registerOption analysis.highlighters.thickness #2.0
-\registerOption analysis.highlighters.layer #-5
-\registerOption analysis.highlighters.X-offset #0.6
-\registerOption analysis.highlighters.X-first #-1.2
-\registerOption analysis.highlighters.X-last #1.2
-\registerOption analysis.highlighters.Y-first #0
-\registerOption analysis.highlighters.Y-last #0
-\registerOption analysis.highlighters.style #'ramp
+% Collection of stylesheet definitions
+\registerOption analysis.highlighters.stylesheets #'()
 
+% Predicate for valid highlighter styles
+% (list allowed names here)
+#(define (highlighter-style? obj)
+   (if (member
+        obj
+        '(ramp
+          leftsided-stairs
+          rightsided-stairs
+          centered-stairs))
+       #t
+       #f))
 
-#(define (get-highlighter-properties ctx-mod)
+% Initialize variable to be used for command validation
+#(define highlighting-style-propset
+   `(strict
+     (? ,symbol? stylesheet)
+     ))
+
+% Populate defaults and set up structures
+#(let*
+  ((defaults
+    ;; define options with type and default
+    `((color ,color? ,green)
+      (thickness ,number? 2)
+      (layer ,integer? -5)
+      (X-offset ,number? 0.6)
+      (X-first ,number? -1.2)
+      (X-last ,number? 1.2)
+      (Y-first ,number? 0)
+      (Y-last ,number? 0)
+      (style ,highlighter-style? ramp))))
+  ;; define list of option names to iterate over
+  (registerOption '(analysis highlighters _prop-names) (map car defaults))
+  (for-each
+   (lambda (default)
+     ;; Create options and populate with default values
+     (setChildOption '(analysis highlighters)
+       (first default)
+       (third default))
+     ;; Create propset for the command validation
+     (set! highlighting-style-propset
+           (append highlighting-style-propset
+             (append
+              (list '?)
+              default))))
+   defaults))
+
+#(define (process-properties given-props)
    "Process the highlighter's options.
     All properties are initially populated with (default) values
     of the corresponding options and may be overridden with values
-    from the actual highlighter's \\with clause."
+    from 
+    - an optional stylesheet or
+    - the actual highlighter's \\with clause."
    (let*
-    (
-      (props (if ctx-mod
-                 (context-mod->props ctx-mod)
-                 '()))
-      (color
-       (let*
-        ((prop-col (assq 'color props)))
-        (if prop-col
-            (cdr prop-col)
-            (getOption '(analysis highlighters color)))))
+    ((props
+      ;; initialize props with defaults/current option values
+      (map (lambda (prop-name)
+             (cons prop-name (getChildOption '(analysis highlighters) prop-name)))
+        (getOption '(analysis highlighters _prop-names))))
+     ;; check if a stylesheet has been named
+     (stylesheet-name (assq-ref given-props 'stylesheet))
+     ;; if so override defaults with properties from the stylesheet
+     (stylesheet
+      (if stylesheet-name
+          (getChildOptionWithFallback
+           '(analysis highlighters stylesheets)
+           stylesheet-name
+           '())
+          '()))
+     )
+    ;; Override presets, first with stylesheet (if present),
+    ;; then with given props (if present).
+    (for-each
+     (lambda (stylesheet-prop)
+       (if (not (eq? (car stylesheet-prop) 'stylesheet))
+           (set! props
+                 (assoc-set! props (car stylesheet-prop) (cdr stylesheet-prop)))))
+     (append stylesheet given-props))
+    props))
 
-      (thickness
-       (or (assq-ref props 'thickness)
-           (getOption '(analysis highlighters thickness))))
-      (layer
-       (or (assq-ref props 'layer)
-           (getOption '(analysis highlighters layer))))
-      (X-offset
-       (or (assq-ref props 'X-offset)
-           (getOption '(analysis highlighters X-offset))))
-      (X-first
-       (or (assq-ref props 'X-first)
-           (getOption '(analysis highlighters X-first))))
-      (X-last
-       (or (assq-ref props 'X-last)
-           (getOption '(analysis highlighters X-last))))
-      (Y-first
-       (or (assq-ref props 'Y-first)
-           (getOption '(analysis highlighters Y-first))))
-      (Y-last
-       (or (assq-ref props 'Y-last)
-           (getOption '(analysis highlighters Y-last))))
-      (style
-       (or (assq-ref props 'style)
-           (getOption '(analysis highlighters style))))
-      )
-    `(
-       (color . ,color)
-       (thickness . ,thickness)
-       (layer . ,layer)
-       (X-offset . ,X-offset)
-       (X-first . ,X-first)
-       (X-last . ,X-last)
-       (Y-first . ,Y-first)
-       (Y-last . ,Y-last)
-       (style . ,style)
-       )
-    )
-   )
-
+% Define a stylesheet to be applied later.
+% Pass a \with {} block with any options to be specified
+% and a name.
+setHighlightingStyle =
+#(with-required-options define-void-function (name)(symbol?)
+   highlighting-style-propset
+   (setChildOption '(analysis highlighters stylesheets) name props))
 
 #(define (moment->duration moment)
    ;; see duration.cc in Lilypond sources (Duration::Duration)
@@ -129,12 +153,12 @@
 
 
 highlight =
-#(define-music-function (properties mus)
-   ((ly:context-mod?) ly:music?)
+#(with-options define-music-function (mus) (ly:music?)
+   highlighting-style-propset
    ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
    (let*
     (
-      (props (get-highlighter-properties properties))
+      (props (process-properties props))
       (mus-elts (ly:music-property mus 'elements))
       ; last music-element:
       (lst (last mus-elts)) ; TODO test for list? and ly:music?

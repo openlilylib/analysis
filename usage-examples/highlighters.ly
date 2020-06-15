@@ -129,7 +129,8 @@ spc = \markup \vspace #1
       } \\
       \relative c' {
         c4    e2    \highlight { f8 e }
-        \highlight { f4 } fis2    \highlight { g8 fis }
+        \highlight { f4 } fis2
+        \highlight { g8 fis }
         \highlight { g4 }
       }
     >>
@@ -214,7 +215,7 @@ spc = \markup \vspace #1
 \pspc
 \markup \justify {
   The thickness of the highlighting line, measured in staff-spaces, can be adjusted. The minimal value is
-  0.5 (This is caused by the behavior of the \typewriter ClusterSpanner grob). 
+  0.5 (This is caused by the behavior of the \typewriter ClusterSpanner grob).
   Smaller values will be set to 0.5 which will be indicated by a compiler warning.
 }
 
@@ -409,9 +410,9 @@ spc = \markup \vspace #1
 \pspc
 
 \markup \justify {
-  The visual appearance of the highlighted area is controlled by the ClusterSpanner 
-  grob which offers four different styles: 
-  \typewriter ramp, \typewriter leftsided-stairs, \typewriter rightsided-stairs and 
+  The visual appearance of the highlighted area is controlled by the ClusterSpanner
+  grob which offers four different styles:
+  \typewriter ramp, \typewriter leftsided-stairs, \typewriter rightsided-stairs and
   \typewriter centered-stairs.
 }
 
@@ -462,7 +463,7 @@ spc = \markup \vspace #1
 
 \markup \justify {
   In most cases (e.g. if a motif is marked) the default \typewriter ramp style will be the
-  best choice. 
+  best choice.
   Eventually there might be some cases where another style can be useful, e.g. for
   illustrating the pitch of long sustained notes in a counterpoint context:
 }
@@ -550,6 +551,114 @@ spc = \markup \vspace #1
 
 \spc
 
+\markup \bold Stylesheets
+
+\spc
+
+\markup \justify  {
+  In order to avoid redundancy in specifying multiple instances
+  of identical settings, and to enable semantic markup of highlighted
+  music, \italic stylesheets may be provided with the \typewriter
+  "\\setHighlightingStyle" command. This expects a \typewriter "\\with { }"
+  block where any of the available options can be specified, plus a name
+  for the stylesheet.
+}
+
+\pspc
+
+\markup \justify {
+  When a highligting command is encountered the options are first populated
+  with the values from the currently active option settings. If a stylesheet
+  is requested for the instance all options defined in the stylesheet are
+  overridden. Finally any options given explicitly take precedents over the
+  previous two elements. This way it is possible to semantically mark up a
+  section and still apply some custom styling for a given instance.
+}
+
+\setHighlightingStyle \with {
+  thickness = #0.5
+  X-first = #0
+  X-last  = #0
+  color = #green
+} counterpoint
+
+\setHighlightingStyle \with {
+  thickness = 0.5
+  X-first = #0
+  color = #darkgreen
+  style = #'leftsided-stairs
+} cantus
+
+\pspc
+
+\score {
+  \new Staff <<
+    \hide Staff.TimeSignature
+    \time 4/2
+    \cadenzaOn
+
+    \new Voice {
+      \voiceOne
+      r2 ^"counterpoint"
+      \relative c''
+      {
+        \highlight \with {
+          stylesheet = #'counterpoint
+        }
+        {
+          f2. e4 d c
+          b a g2 c a
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+      \bar "||"
+      r2^"counterpoint with color override"
+      \relative c''
+      {
+        \highlight \with {
+          stylesheet = #'counterpoint
+          color = #blue
+        }
+        {
+          f2. e4 d c
+          b a g2 c a
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+      \bar "||"
+    }
+
+    \new Voice {
+      \voiceTwo
+      \relative c' {
+        \highlight \with {
+          stylesheet = #'cantus
+        }
+        {
+          d1 _"cantus" f g a1
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+      \relative c' {
+        \highlight \with {
+          stylesheet = #'cantus
+          X-first = #2
+        }
+        {
+          d1 _"cantus with X-first override" f g a1
+          \hideNotes a8 \unHideNotes
+        }
+      }
+      \hide r8
+    }
+  >>
+}
+
+\spc
+
 \markup \bold { some random stuff (to be removed if it cannot be used to demonstrate something useful): }
 
 \spc
@@ -564,11 +673,11 @@ spc = \markup \vspace #1
       \stemDown a,[
     } \hideNotes a]  s8 \unHideNotes
     \bar "|" \noBreak
-    r16 \highlight \with { 
-      thickness = #0.8 
+    r16 \highlight \with {
+      thickness = #0.8
       X-first = #0
       X-last = #0
-    } { 
+    } {
       a'32[ g fis16 a]    e[ a d, a']    cis,[ a' d, a']   cis,[ a' b, a']
       \bar "|" \noBreak
       \stemDown a,[
