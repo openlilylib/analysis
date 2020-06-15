@@ -34,8 +34,8 @@
 \registerOption analysis.highlighters.active ##t
 % Collection of stylesheet definitions
 \registerOption analysis.highlighters.stylesheets #'()
-\registerOption analysis.highlighters.use-only #'()
-\registerOption analysis.highlighters.ignore #'()
+\registerOption analysis.highlighters.use-only-stylesheets #'()
+\registerOption analysis.highlighters.ignore-stylesheets #'()
 
 % Predicate for valid highlighter styles
 % (list allowed names here)
@@ -153,25 +153,30 @@ setHighlightingStyle =
      ))
 
 #(define (filtered-by-stylesheet props)
-   "Test if the highlighter can be used due to stylesheet configuration.
+   "Test if the highlighter can be useignored due to stylesheet configuration.
     Returns ##t (highlighting filtered/suppressed) if
-    - use-only = ##t:
-      stylesheet is not in the use-only list
+    - use-only-stylesheets = ##t:
+      no stylesheet is applied
+    - use-only-stylesheet is a non-empty list:
+      stylesheet is not in the use-only-stylesheets list
       or no stylesheet is used at all
-    - ignore = ##t:
+    - ignore-stylesheets is a non-empty list:
       one of the ignored stylesheets is used
     "
    (let*
-    ((use-only (getOption '(analysis highlighters use-only)))
-     (ignore (getOption '(analysis highlighters ignore)))
+    ((use-only-stylesheets (getOption '(analysis highlighters use-only-stylesheets)))
+     (ignore-stylesheets (getOption '(analysis highlighters ignore-stylesheets)))
      (stylesheet (assq-ref props 'stylesheet))
      )
     (or
-     (and use-only
+     (and (eq? use-only-stylesheets #t) (not stylesheet))
+     (and (list? use-only-stylesheets)
+          (not (null? use-only-stylesheets))
           (or
            (not stylesheet)
-           (not (member stylesheet use-only))))
-     (and ignore (member stylesheet ignore))
+           (not (member stylesheet use-only-stylesheets))))
+     (and (not (null? ignore-stylesheets))
+          (member stylesheet ignore-stylesheets))
      )
     ))
 
