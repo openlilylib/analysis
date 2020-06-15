@@ -155,30 +155,30 @@ setHighlightingStyle =
 highlight =
 #(with-options define-music-function (mus) (ly:music?)
    highlighting-style-propset
-   ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
-   (let*
-    (
-      (props (process-properties props))
-      (mus-elts (ly:music-property mus 'elements))
-      ; last music-element:
-      (lst (last mus-elts)) ; TODO test for list? and ly:music?
-      ; length of entire music expression "mus":
-      (len (ly:music-length mus))
-      ; length of last element only:
-      (last-skip (ly:music-length lst))
-      ; difference = length of "mus" except the last element:
-      (first-skip (ly:moment-sub len last-skip))
-      (color (assq-ref props 'color))
-      (thickness (assq-ref props 'thickness))
-      (layer (assq-ref props 'layer))
-      (X-offset (assq-ref props 'X-offset))
-      (X-first (assq-ref props 'X-first))
-      (X-last (assq-ref props 'X-last))
-      (Y-first (assq-ref props 'Y-first))
-      (Y-last (assq-ref props 'Y-last))
-      (style (assq-ref props 'style))
-      )
-    (if (getOption '(analysis highlighters active))
+   (if (getOption '(analysis highlighters active))
+       ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
+       (let*
+        (
+          (props (process-properties props))
+          (mus-elts (ly:music-property mus 'elements))
+          ; last music-element:
+          (lst (last mus-elts)) ; TODO test for list? and ly:music?
+          ; length of entire music expression "mus":
+          (len (ly:music-length mus))
+          ; length of last element only:
+          (last-skip (ly:music-length lst))
+          ; difference = length of "mus" except the last element:
+          (first-skip (ly:moment-sub len last-skip))
+          (color (assq-ref props 'color))
+          (thickness (assq-ref props 'thickness))
+          (layer (assq-ref props 'layer))
+          (X-offset (assq-ref props 'X-offset))
+          (X-first (assq-ref props 'X-first))
+          (X-last (assq-ref props 'X-last))
+          (Y-first (assq-ref props 'Y-first))
+          (Y-last (assq-ref props 'Y-last))
+          (style (assq-ref props 'style))
+          )
         (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
           #{
             <<
@@ -209,5 +209,6 @@ highlight =
               }
             >>
           #})
-        mus
-        )))
+        )
+       mus
+       ))
