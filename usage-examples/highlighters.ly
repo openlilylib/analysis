@@ -139,6 +139,11 @@ spc = \markup \vspace #1
   }
 }
 
+
+\markup  \bold { Appearance: }
+
+\spc
+
 \markup \justify {
   The appearance of the highlighting
   can be specified either persistently with openLilyLib options in the
@@ -148,6 +153,30 @@ spc = \markup \vspace #1
 
 \spc
 
+\markup \bold { Activate: }
+
+\spc
+
+\markup \column {
+  \concat { \typewriter active " " " (default: ##t)" }
+}
+
+\markup \justify
+{
+  With \typewriter "\\setOption analysis.highlighters.active ##f" it is possible
+  to - globally or within the music - suppress the application of highlighters.
+}
+
+\pspc
+
+\markup \justify
+{
+  Note that this works within music expressions as well as with toplevel expressions.
+  This means that you have to take care of switching highlighting back on if you
+  disable it within a music expression. The effect of the setting will be visible
+  throughout the whole following LilyPond input, even in subsequent scores.
+}
+\spc
 
 \markup \bold { Options: }
 

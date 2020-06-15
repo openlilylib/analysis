@@ -30,6 +30,7 @@
 
 % Define configuration variables and set defaults
 
+% Control on/off state
 \registerOption analysis.highlighters.active ##t
 \registerOption analysis.highlighters.color #green
 \registerOption analysis.highlighters.thickness #2.0
