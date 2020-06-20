@@ -17,7 +17,7 @@
 % GNU Lesser General Public License for more details.                         %
 %                                                                             %
 % You should have received a copy of the GNU General Public License           %
-% along with ScholarLY.  If not, see <http://www.gnu.org/licenses/>.          %
+% along with anaLYsis.  If not, see <http://www.gnu.org/licenses/>.          %
 %                                                                             %
 % anaLYsis is maintained by Urs Liska, ul@openlilylib.org                     %
 % Copyright Klaus Blum & Urs Liska, 2017                                      %
@@ -33,7 +33,7 @@
 \registerOption analysis.frames.border-width 0.25
 \registerOption analysis.frames.padding 0
 \registerOption analysis.frames.broken-bound-padding 4
-\registerOption analysis.frames.border-radius 0.5
+\registerOption analysis.frames.border-radius 0
 \registerOption analysis.frames.shorten-pair #'(0 . 0)
 \registerOption analysis.frames.y-lower -4
 \registerOption analysis.frames.y-upper 4
@@ -46,8 +46,33 @@
 \registerOption analysis.frames.color #(rgb-color 0.8  0.8  1.0)
 \registerOption analysis.frames.hide "none"
 \registerOption analysis.frames.angle 0
+\registerOption analysis.frames.caption ##f
+\registerOption analysis.frames.caption-padding 0.25
+\registerOption analysis.frames.caption-radius 0.25
+\registerOption analysis.frames.caption-align-bottom ##f
+\registerOption analysis.frames.caption-halign -1  % from -1=left to 1=right
+\registerOption analysis.frames.caption-color  ##f  % ##f will use border-color
+\registerOption analysis.frames.caption-keep-y ##f
+\registerOption analysis.frames.caption-translate-x 0
+\registerOption analysis.frames.set-top-edge ##f
+\registerOption analysis.frames.set-bottom-edge ##f
+\registerOption analysis.frames.set-left-edge ##f
+\registerOption analysis.frames.set-right-edge ##f
+\registerOption analysis.frames.set-caption-extent ##f
 
 
+#(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
+   (let* ((stencil (interpret-markup layout props arg))
+          (X-ext (ly:stencil-extent stencil X))
+          (Y-ext (ly:stencil-extent stencil Y)))
+     (if (color? color)
+         (ly:stencil-add (ly:make-stencil
+                          (list 'color color
+                            (ly:stencil-expr (ly:round-filled-box X-ext Y-ext radius))
+                            X-ext Y-ext)) stencil)
+         stencil)
+     )
+   )
 
 #(define (get-live-properties grob)
    "Return the properties that have to be retrieved from the actual grob"
@@ -59,12 +84,88 @@
       (open-on-left . ,open-on-left)
       (open-on-right . ,open-on-right))))
 
+#(define (rotate-point point-to-add rotation x-center y-center)
+   "Rotate the given point (point-to-add) around (x-center, y-center) by
+     the given rotation angle (in degrees)."
+   (let*
+    (
+      (x-to-add (car point-to-add))
+      (y-to-add (cdr point-to-add))
+      ; convert (x-to-add | y-to-add) to polar coordinates (distance ; direction):
+      (x-diff (- x-to-add x-center))
+      (y-diff (- y-to-add y-center))
+      (distance (sqrt (+ (expt x-diff 2) (expt y-diff 2))))
+      (direction
+       (if (eq? 0 x-diff)
+           ;(then...)
+           (if (> y-diff 0) 90 -90)
+           ;(else...)
+           (+ (atan (/ y-diff x-diff)) (if (< x-diff 0) 3.141592653589 0))
+           )
+       )
+      ; apply rotation:
+      (new-direction (+ direction (* rotation (/ 3.14159265 180))))
+      (new-x (+ x-center (* distance (cos new-direction))))
+      (new-y (+ y-center (* distance (sin new-direction))))
+      )
+    #!
+    (display "X: ")
+    (display x-to-add)
+    (display " - ")
+    (display x-center)
+    (display " = ")
+    (display x-diff)
+    (display "  |  Y: ")
+    (display y-to-add)
+    (display " - ")
+    (display y-center)
+    (display " = ")
+    (display y-diff)
+    (display "  |  dist=")
+    (display distance)
+    (display "  dir=")
+    (display (* direction (/ 180 3.14159265)))
+    (display "\n")
+    !#
+    ; return rotated point as pair of coordinates:
+    (cons new-x new-y)
+    )
+   )
+
+#(define (expand-range range point-to-add)
+   "Expand the borders of the given range until it contains the added point.
+    Return the expanded range."
+   (let*
+    ; split pair of pairs into separate variables for better usability:
+    (
+      (x-lo (car (car range)))
+      (x-hi (cdr (car range)))
+      (y-lo (car (cdr range)))
+      (y-hi (cdr (cdr range)))
+      (x-to-add (car point-to-add))
+      (y-to-add (cdr point-to-add))
+      )
+    ; initial values are #f. Replace them, if present:
+    (if (eq? #f x-lo) (set! x-lo x-to-add))
+    (if (eq? #f x-hi) (set! x-hi x-to-add))
+    (if (eq? #f y-lo) (set! y-lo y-to-add))
+    (if (eq? #f y-hi) (set! y-hi y-to-add))
+    ; now expand borders:
+    (if (< x-to-add x-lo) (set! x-lo x-to-add))
+    (if (> x-to-add x-hi) (set! x-hi x-to-add))
+    (if (< y-to-add y-lo) (set! y-lo y-to-add))
+    (if (> y-to-add y-hi) (set! y-hi y-to-add))
+    ; return expanded range as pair of pairs:
+    (cons (cons x-lo x-hi) (cons y-lo y-hi))
+    )
+   )
+
 #(define (make-frame-stencil grob props)
    "Create the actual frame stencil using both live and configuration props."
    (let*
     ;; make properties available
     ((live-props (get-live-properties grob))
-     (frame-angle (assq-ref props 'frame-angle))
+     (frame-angle (assq-ref props 'angle))
      (border-width (assq-ref props 'border-width))
      (border-radius (assq-ref props 'border-radius))
      (y-l-lower (assq-ref props 'y-l-lower))
@@ -78,12 +179,46 @@
      (r-zigzag-width (assq-ref props 'r-zigzag-width))
      (open-on-bottom (assq-ref props 'open-on-bottom))
      (open-on-top (assq-ref props 'open-on-top))
-     (border-width (assq-ref props 'border-width))
+     ;; (border-width (assq-ref props 'border-width))    ;; already done above...
      (padding (assq-ref props 'padding))
      (bb-pad (assq-ref props 'broken-bound-padding))
      (frame-X-extent (assq-ref live-props 'frame-X-extent))
      (open-on-left (assq-ref live-props 'open-on-left))
      (open-on-right (assq-ref live-props 'open-on-right))
+     (caption (assq-ref props 'caption))
+     (caption-padding (assq-ref props 'caption-padding))
+     (caption-radius (assq-ref props 'caption-radius))
+     (caption-align-bottom (assq-ref props 'caption-align-bottom))
+     (caption-halign (assq-ref props 'caption-halign))
+     (caption-color (assq-ref props 'caption-color))
+     (caption-keep-y (assq-ref props 'caption-keep-y))
+     (caption-translate-x (assq-ref props 'caption-translate-x))
+     (set-top-edge (assq-ref props 'set-top-edge))
+     (set-bottom-edge (assq-ref props 'set-bottom-edge))
+     (set-left-edge (assq-ref props 'set-left-edge))
+     (set-right-edge (assq-ref props 'set-right-edge))
+     (set-caption-extent (assq-ref props 'set-caption-extent))
+
+     (layout (ly:grob-layout grob))
+     (caption-props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
+     (caption-stencil empty-stencil)
+     (caption-markup empty-markup)
+     (caption-x 0)
+     (caption-y 0)
+     (caption-width 0)
+     (caption-height 0)
+     (y-with-descender 0)
+     (y-without-descender 0)
+     (descender-height 0)
+     (temp-value 0)
+     (caption-left-edge 0)
+     (caption-right-edge 0)
+     (caption-lower-edge 0)
+     (caption-upper-edge 0)
+     (caption-mid-x 0)
+     (caption-angle 0)
+     (caption-angle-rad 0)
+
 
      ;; store polygon points.
      ;; retrieve list of all inner or outer points
@@ -108,17 +243,19 @@
                     (add-points side (cons p outer-point)))))
 
      ;; each entry is a pair of two pairs with coordinates of inner and outer point
-     (left-points '())
-     (top-points '())
-     (right-points '())
-     (bottom-points '())
-     (all-points (lambda ()
-                   (append left-points top-points right-points bottom-points)))
+     ;; (left-points '())
+     ;; (top-points '())
+     ;; (right-points '())
+     ;; (bottom-points '())
+     ;; (all-points (lambda ()
+     ;;              (append left-points top-points right-points bottom-points)))
      ;; start calculations
      (h-border-width (* border-width (sqrt 2)))  ; X-distance between left and right edges of inner and outer polygon. Must be "border-width" * sqrt 2  (Pythagoras)
      (l-width (* l-zigzag-width  0.5))   ; X-distance of zigzag corners
      (r-width (* r-zigzag-width 0.5))
-     (Y-ext (cons y-l-lower y-r-upper))            ; dummy, needed for ly:stencil-expr  (is there a way without it?)
+     (Y-ext (cons 0 0))  ; dummy, needed for ly:stencil-expr  (is there a way without it?)
+     (stencil-ext (cons (cons #f #f) (cons #f #f)))  ; will be used to set the stencil's dimensions
+     ;                     ( x-lo x-hi ) ( y-lo y-hi )
      (X-ext (cons
              (if (> l-zigzag-width 0)    ; left edge has zigzag shape
                  (- (+ (car frame-X-extent) (/ l-width 2)) h-border-width)  ; Half of the zigzag space will be taken from inside, other half from the outside. Frame space taken from outside.
@@ -131,7 +268,16 @@
      (X-ext (cons
              (if open-on-left  (- (+ (car X-ext) bb-pad) (/ l-width 2)) (car X-ext))     ; shorten/lengthen by broken-bound-bb-padding if spanner is broken
              (if open-on-right (+ (- (cdr X-ext) bb-pad) (/ r-width 2)) (cdr X-ext))))
-     (points (list))       ; will contain coordinates for outer polygon
+     ; Now X-ext represents the overall X-extent WITHOUT the zigzag attachments
+     (frame-X-extent (cons
+                      (- (- (car X-ext) (/ border-radius 2)) l-width)
+                      (+ (+ (cdr X-ext) (/ border-radius 2)) r-width)
+                      ))
+     ; Now frame-X-extent represents the overall X-extent including everything...
+     (points-up (list))    ; will contain coordinates for upper edge polygon
+     (points-lo (list))    ; will contain coordinates for lower edge polygon
+     (points-l (list))     ; will contain coordinates for left  edge polygon
+     (points-r (list))     ; will contain coordinates for right edge polygon
      (points-i (list))     ; will contain coordinates for inner polygon
      (slope-upper (/ (- y-r-upper y-l-upper) (- (cdr X-ext) (car X-ext))))  ; slope of the polygon's upper edge
 
@@ -140,6 +286,14 @@
      ; Y-distance between upper edges of inner and outer polygon. Equal to "border-width" if upper edge is horizontal.
      ; Increases as the upper edge's slope increases.
      (d-lower (if open-on-bottom 0  (* border-width (sqrt (+ (expt slope-lower 2) 1)))))  ; same for lower edge
+     ; Where to find the center points for rotation:
+     (rotation-center-x (/ (- (cdr X-ext) (car X-ext)) 2))
+     (rotation-center-y (/ (+ y-l-upper y-r-upper y-l-lower y-r-lower) 4))
+     (caption-left (car X-ext))
+     (caption-right (cdr X-ext))
+     (caption-space-factor 1)
+     (caption-x-deficit 0)
+
      ; stuff for later calculations:
      (xtemp 0)
      (yLowerLimit 0)
@@ -147,53 +301,102 @@
      (xp 0)
      (yp 0)
      (jumps 0)
+     (need-upper-polygon (and (and (> border-width 0) (not open-on-top))    (color? border-color)))
+     (need-lower-polygon (and (and (> border-width 0) (not open-on-bottom)) (color? border-color)))
+     (need-left-polygon  (and (and (> border-width 0) (not open-on-left))   (color? border-color)))
+     (need-right-polygon (and (and (> border-width 0) (not open-on-right))  (color? border-color)))
+     (need-inner-polygon (color? color))
+     (need-caption (markup? caption))
+
+     ;; stencils to be placed on the topmost/leftmost/... border (ugly hack to set the actual X-extent):
+     (top-edge-stencil empty-stencil)
+     (bottom-edge-stencil empty-stencil)
+     (left-edge-stencil empty-stencil)
+     (right-edge-stencil empty-stencil)
      )
 
     ;; set grob properties that can be set from within the stencil callback
     (ly:grob-set-property! grob 'layer layer)
     (ly:grob-set-property! grob 'Y-offset 0)
 
-    (add-corner (cons 0 0) left-points -1 -1 #f)
+    ;; (add-corner (cons 0 0) left-points -1 -1 #f)
 
-    ; calculate outer polygon's borders:
+    ; (calculate outer polygon's borders:)
 
+    ; start calculating left edge borders:
     ; lower-left corner:
-    (set! points (list (cons (car X-ext) y-l-lower)))
+    (if need-left-polygon
+        (begin
+         (set! points-l (list (cons (car X-ext) y-l-lower)))
 
-    ; calculate coordinates for left (outer) zigzag border:
-    (if (and (> l-zigzag-width 0) (not open-on-left))
-        (let loop ((cnt y-l-lower))
-          (if (< cnt y-l-upper)
-              (begin
-               (if (and (< cnt y-l-upper) (> cnt y-l-lower))  ; only add to list if point is inside the given Y-range
-                   (set! points (cons (cons    (car X-ext)             cnt                 ) points)))
-               (if (and (< (+ cnt (/ l-zigzag-width 2)) y-l-upper) (> (+ cnt (/ l-zigzag-width 2)) y-l-lower))
-                   (set! points (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points)))
-               (loop (+ cnt l-zigzag-width))))))
+         ; calculate coordinates for left (outer) zigzag border:
+         (if (and (> l-zigzag-width 0) (not open-on-left))
+             (let loop ((cnt y-l-lower))
+               (if (< cnt y-l-upper)
+                   (begin
+                    (if (and (< cnt y-l-upper) (> cnt y-l-lower))  ; only add to list if point is inside the given Y-range
+                        (set! points-l (cons (cons    (car X-ext)             cnt                 ) points-l)))
+                    (if (and (< (+ cnt (/ l-zigzag-width 2)) y-l-upper) (> (+ cnt (/ l-zigzag-width 2)) y-l-lower))
+                        (set! points-l (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points-l)))
+                    (loop (+ cnt l-zigzag-width))))))
 
-    ; upper-left corner:
-    (set! points (cons
-                  (cons (car X-ext) y-l-upper)
-                  points ))
+         ; upper-left corner:
+         (set! points-l (cons
+                         (cons (car X-ext) y-l-upper)
+                         points-l ))
+         ))
+    ; start calculating right edge borders:
     ; upper-right corner:
-    (set! points (cons
-                  (cons (cdr X-ext) y-r-upper)
-                  points ))
-    ; right outer zigzag border:
-    (if (and (> r-zigzag-width 0) (not open-on-right))
-        (let loop ((cnt y-r-upper))
-          (if (> cnt y-r-lower)
-              (begin
-               (if (and (< cnt y-r-upper) (> cnt y-r-lower))
-                   (set! points (cons (cons    (cdr X-ext)             cnt                  ) points)))
-               (if (and (< (- cnt (/ r-zigzag-width 2)) y-r-upper) (> (- cnt (/ r-zigzag-width 2)) y-r-lower))
-                   (set! points (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points)))
-               (loop (- cnt r-zigzag-width))))))
+    (if need-right-polygon
+        (begin
+         (set! points-r (cons
+                         (cons (cdr X-ext) y-r-upper)
+                         points-r ))
+         ; right outer zigzag border:
+         (if (and (> r-zigzag-width 0) (not open-on-right))
+             (let loop ((cnt y-r-upper))
+               (if (> cnt y-r-lower)
+                   (begin
+                    (if (and (< cnt y-r-upper) (> cnt y-r-lower))
+                        (set! points-r (cons (cons    (cdr X-ext)             cnt                  ) points-r)))
+                    (if (and (< (- cnt (/ r-zigzag-width 2)) y-r-upper) (> (- cnt (/ r-zigzag-width 2)) y-r-lower))
+                        (set! points-r (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points-r)))
+                    (loop (- cnt r-zigzag-width))))))
 
-    ; lower-right corner:
-    (set! points (cons
-                  (cons (cdr X-ext) y-r-lower)
-                  points ))
+         ; lower-right corner:
+         (set! points-r (cons
+                         (cons (cdr X-ext) y-r-lower)
+                         points-r ))
+         ))
+
+    ; calculate lower edge borders:
+
+    (if need-lower-polygon
+        (begin
+         ; lower-left corner:
+         (set! points-lo (list (cons (car X-ext) y-l-lower)))
+         ; upper-left corner:
+         (set! points-lo (cons (cons (car X-ext) (+ y-l-lower border-width)) points-lo))
+         ; upper-right corner:
+         (set! points-lo (cons (cons (cdr X-ext) (+ y-r-lower border-width)) points-lo))
+         ; lower-right corner:
+         (set! points-lo (cons (cons (cdr X-ext) y-r-lower) points-lo))
+         ))
+
+
+    ; calculate upper edge borders:
+
+    (if need-upper-polygon
+        (begin
+         ; lower-left corner:
+         (set! points-up (list (cons (car X-ext) (- y-l-upper border-width) )))
+         ; upper-left corner:
+         (set! points-up (cons (cons (car X-ext) y-l-upper) points-up))
+         ; upper-right corner:
+         (set! points-up (cons (cons (cdr X-ext) y-r-upper) points-up))
+         ; lower-right corner:
+         (set! points-up (cons (cons (cdr X-ext) (- y-r-upper border-width) ) points-up))
+         ))
 
     ; shrink X-ext for use with inner stuff:
     (if (not open-on-left)
@@ -210,52 +413,17 @@
         )
     ; Now X-ext represents INNER polygon's width WITHOUT the zigzag corners.
 
-    ; Now calculate inner borders:
+    ; Now, finish left-edge and right-edge polygons.
+    ; Use the same points to build the inner polygon.
     ; xp and yp will be the coordinates of the corner currently being calculated
 
-    ; calculate lower-left corner:
+    ; continue calculating left edge coordinates:
 
     (set! yLowerLimit y-l-lower)
     (set! yUpperLimit y-l-upper)
 
-    (if open-on-left
-        (begin
-         (set! xp (car X-ext))
-         (set! yp (+ y-l-lower d-lower))
-         )
-        (if (> l-zigzag-width 0)
-            (if (not (eq? slope-lower -1))
-                (begin
-                 (set! jumps 0)
-                 (while (> (- (+ (* slope-lower h-border-width) d-lower) (* jumps l-zigzag-width)) l-zigzag-width)
-                   (set! jumps (+ 1 jumps)))
-                 (set! xtemp (/ (- (+ h-border-width (* jumps l-zigzag-width)) d-lower) (+ slope-lower 1)))
-                 ; results from the solution for a system of two equations. Forgive me, I'm a maths teacher :-)
-                 (if (< xtemp (- h-border-width (/ l-zigzag-width 2)))
-                     (if (= 1 slope-lower)
-                         (set! xtemp h-border-width)
-                         (set! xtemp
-                               (/ (+ (- d-lower (* l-zigzag-width (+ 1 jumps))) h-border-width) (- 1 slope-lower)))))  ; another system of 2 equations...
-                 (set! xp (+ (- (car X-ext) h-border-width) xtemp))
-                 (set! yp (+ (+ y-l-lower (* slope-lower xtemp)) d-lower))
-                 )
-                )
-            (begin
-             (set! xp (car X-ext))
-             (set! yp (+ (+ y-l-lower (* border-width slope-lower)) d-lower))
-             )
-            )
-        )
-
-    ; insert lower-left corner's coordinates into list:
-    (if (not (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-lower -1)))
-        (begin
-         (set! points-i (cons (cons xp yp) points-i))
-         (set! yLowerLimit yp)
-         )
-        )
-
     ; calculate upper-left corner:
+    ; (LEFT border of inner polygon = RIGHT border of left-edge polygon)
     (if open-on-left
         (begin
          (set! xp (car X-ext))
@@ -288,42 +456,125 @@
             )
         )
 
+    ; insert upper-left corner's coordinates into list:
     (if (not
          (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
          )
-        (set! yUpperLimit yp))
+        (begin
+         (set! points-l (cons (cons xp yp) points-l))
+         (set! points-i (cons (cons xp yp) points-i))
+         (set! yUpperLimit yp))
+        )
 
+    ; calculate lower-left corner:
+    (if open-on-left
+        (begin
+         (set! xp (car X-ext))
+         (set! yp (+ y-l-lower d-lower))
+         )
+        (if (> l-zigzag-width 0)
+            (if (not (eq? slope-lower -1))
+                (begin
+                 (set! jumps 0)
+                 (while (> (- (+ (* slope-lower h-border-width) d-lower) (* jumps l-zigzag-width)) l-zigzag-width)
+                   (set! jumps (+ 1 jumps)))
+                 (set! xtemp (/ (- (+ h-border-width (* jumps l-zigzag-width)) d-lower) (+ slope-lower 1)))
+                 ; results from the solution for a system of two equations. Forgive me, I'm a maths teacher :-)
+                 (if (< xtemp (- h-border-width (/ l-zigzag-width 2)))
+                     (if (= 1 slope-lower)
+                         (set! xtemp h-border-width)
+                         (set! xtemp
+                               (/ (+ (- d-lower (* l-zigzag-width (+ 1 jumps))) h-border-width) (- 1 slope-lower)))))  ; another system of 2 equations...
+                 (set! xp (+ (- (car X-ext) h-border-width) xtemp))
+                 (set! yp (+ (+ y-l-lower (* slope-lower xtemp)) d-lower))
+                 )
+                )
+            (begin
+             (set! xp (car X-ext))
+             (set! yp (+ (+ y-l-lower (* border-width slope-lower)) d-lower))
+             )
+            )
+        )
+
+    (if (not (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-lower -1)))
+        (set! yLowerLimit yp)
+        )
 
     ; left (inner) zigzag:
     (if (and (> l-zigzag-width 0) (not open-on-left))
         (begin
-         (let loop ((cnt y-l-lower))
-           (if (< cnt y-l-upper)
+         (let loop ((cnt y-l-upper))
+           (if (> cnt y-l-lower)
                (begin
                 (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
-                    (set! points-i (cons (cons    (car X-ext)             cnt                 ) points-i))
-                    )
-                (if (and (> (+ cnt (/ l-zigzag-width 2)) yLowerLimit) (< (+ cnt (/ l-zigzag-width 2)) yUpperLimit))
-                    (set! points-i (cons (cons (- (car X-ext) l-width) (+ cnt (/ l-zigzag-width 2)) ) points-i))
-                    )
-                (loop (+ cnt l-zigzag-width))
+                    (begin
+                     (set! points-l (cons (cons    (car X-ext)             cnt                 ) points-l))
+                     (set! points-i (cons (cons    (car X-ext)             cnt                 ) points-i))
+                     ))
+                (if (and (> (- cnt (/ l-zigzag-width 2)) yLowerLimit) (< (- cnt (/ l-zigzag-width 2)) yUpperLimit))
+                    (begin
+                     (set! points-l (cons (cons (- (car X-ext) l-width) (- cnt (/ l-zigzag-width 2)) ) points-l))
+                     (set! points-i (cons (cons (- (car X-ext) l-width) (- cnt (/ l-zigzag-width 2)) ) points-i))
+                     ))
+                (loop (- cnt l-zigzag-width))
                 )
                )
            )
          )
         )
 
-    ; insert upper-left corner (yes, AFTER the zigzag points, so all the points will be given in clockwise order):
-    (if (not
-         (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-upper 1))
-         )
-        (set! points-i (cons (cons xp yp) points-i)))
+    ; insert lower-left corner (yes, AFTER the zigzag points, so all the points will be given in clockwise order):
+    (if (not (and (and (not open-on-left) (> l-zigzag-width 0)) (eq? slope-lower -1)))
+        (begin
+         (set! points-l (cons (cons xp yp) points-l))
+         (set! points-i (cons (cons xp yp) points-i))
+         ))
 
-    ; calculate upper-right corner:
+    ; continue calculating right edge borders:
 
     (set! yLowerLimit y-r-lower)
     (set! yUpperLimit y-r-upper)
 
+    ; calculate lower-right corner:
+    ; (RIGHT border of inner polygon = LEFT border of right-edge polygon)
+    (if open-on-right
+        (begin
+         (set! xp (cdr X-ext))
+         (set! yp (+ y-r-lower d-lower))
+         )
+        (if (> r-zigzag-width 0)
+            (if (not (eq? slope-lower 1))
+                (begin
+                 (set! jumps 0)
+                 (while (> (- (- d-lower (* slope-lower h-border-width)) (* jumps r-zigzag-width)) r-zigzag-width)
+                   (set! jumps (+ 1 jumps)))
+                 (set! xtemp (/ (- (+ h-border-width (* jumps r-zigzag-width)) d-lower) (- slope-lower 1)))
+                 (if (> xtemp (- (/ r-zigzag-width 2) h-border-width)   )
+                     (if (= -1 slope-lower)
+                         (set! xtemp (- h-border-width))
+                         (set! xtemp
+                               (/ (+ (- d-lower (* r-zigzag-width (+ 1 jumps))) h-border-width) (- -1 slope-lower)))))
+                 (set! xp (+ (+ (cdr X-ext) h-border-width) xtemp))
+                 (set! yp (+ (+ y-r-lower (* slope-lower xtemp)) d-lower))
+                 )
+                )
+            (begin
+             (set! xp (cdr X-ext))
+             (set! yp (+ (- y-r-lower (* border-width slope-lower)) d-lower))
+             )
+            )
+        )
+
+    ; insert lower-right corner:
+    (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
+        (begin
+         (set! yLowerLimit yp)
+         (set! points-r (cons (cons xp yp) points-r))
+         (set! points-i (cons (cons xp yp) points-i))
+         ))
+
+
+    ; calculate upper-right corner:
     (if open-on-right
         (begin
          (set! xp (cdr X-ext))
@@ -356,79 +607,321 @@
             )
         )
 
-    ; insert upper-right corner:
     (if (not
          (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-upper -1)))
-        (begin
-         (set! points-i (cons (cons xp yp) points-i))
-         (set! yUpperLimit yp)))
-
-    ; calculate lower-right corner:
-    (if open-on-right
-        (begin
-         (set! xp (cdr X-ext))
-         (set! yp (+ y-r-lower d-lower))
-         )
-        (if (> r-zigzag-width 0)
-            (if (not (eq? slope-lower 1))
-                (begin
-                 (set! jumps 0)
-                 (while (> (- (- d-lower (* slope-lower h-border-width)) (* jumps r-zigzag-width)) r-zigzag-width)
-                   (set! jumps (+ 1 jumps)))
-                 (set! xtemp (/ (- (+ h-border-width (* jumps r-zigzag-width)) d-lower) (- slope-lower 1)))
-                 (if (> xtemp (- (/ r-zigzag-width 2) h-border-width)   )
-                     (if (= -1 slope-lower)
-                         (set! xtemp (- h-border-width))
-                         (set! xtemp
-                               (/ (+ (- d-lower (* r-zigzag-width (+ 1 jumps))) h-border-width) (- -1 slope-lower)))))
-                 (set! xp (+ (+ (cdr X-ext) h-border-width) xtemp))
-                 (set! yp (+ (+ y-r-lower (* slope-lower xtemp)) d-lower))
-                 )
-                )
-            (begin
-             (set! xp (cdr X-ext))
-             (set! yp (+ (- y-r-lower (* border-width slope-lower)) d-lower))
-             )
-            )
-        )
-
-    (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
-        (set! yLowerLimit yp))
+        (set! yUpperLimit yp))
 
     ; right zigzag:
     (if (and (> r-zigzag-width 0) (not open-on-right))
         (begin
-         (let loop ((cnt y-r-upper))
-           (if (> cnt y-r-lower)
+         (let loop ((cnt y-r-lower))
+           (if (< cnt y-r-upper)
                (begin
                 (if (and (> cnt yLowerLimit) (< cnt yUpperLimit))
-                    (set! points-i (cons (cons    (cdr X-ext)             cnt                  ) points-i)))
-                (if (and (> (- cnt (/ r-zigzag-width 2)) yLowerLimit) (< (- cnt (/ r-zigzag-width 2)) yUpperLimit))
-                    (set! points-i (cons (cons (+ (cdr X-ext) r-width) (- cnt (/ r-zigzag-width 2)) ) points-i)))
-                (loop (- cnt r-zigzag-width))
+                    (begin
+                     (set! points-r (cons (cons    (cdr X-ext)             cnt                  ) points-r))
+                     (set! points-i (cons (cons    (cdr X-ext)             cnt                  ) points-i))
+                     ))
+                (if (and (> (+ cnt (/ r-zigzag-width 2)) yLowerLimit) (< (+ cnt (/ r-zigzag-width 2)) yUpperLimit))
+                    (begin
+                     (set! points-r (cons (cons (+ (cdr X-ext) r-width) (+ cnt (/ r-zigzag-width 2)) ) points-r))
+                     (set! points-i (cons (cons (+ (cdr X-ext) r-width) (+ cnt (/ r-zigzag-width 2)) ) points-i))
+                     ))
+                (loop (+ cnt r-zigzag-width))
                 )
                )
            )
          )
         )
 
-    ; insert lower-right corner:
-    (if (not (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-lower 1)))
-        (set! points-i (cons (cons xp yp) points-i)))
+    ; insert upper-right corner:
+    (if (not
+         (and (and (not open-on-right) (> r-zigzag-width 0)) (eq? slope-upper -1)))
+        (begin
+         (set! points-r (cons (cons xp yp) points-r))
+         (set! points-i (cons (cons xp yp) points-i))
+         ))
+
+    ; Edge polygons are finished now.
+
+    (if need-caption
+        (begin
+         (set! caption-stencil (interpret-markup layout caption-props (markup "j")))
+         (set! y-with-descender    (car (ly:stencil-extent caption-stencil Y)) )
+         (set! caption-stencil (interpret-markup layout caption-props (markup "i")))
+         (set! y-without-descender (car (ly:stencil-extent caption-stencil Y)) )
+         (set! descender-height (- y-without-descender y-with-descender))
+
+         (set! caption-markup
+               (markup #:on-box caption-radius (if (color? caption-color) caption-color border-color)
+                 #:pad-markup caption-padding
+                 (if caption-keep-y
+                     caption
+                     (markup
+                      #:combine caption
+                      #:transparent
+                      #:scale (cons 0.1 1)
+                      #:combine "É" "j"
+                      )
+                     )
+                 ))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
+         (set! caption-width  (- (cdr (ly:stencil-extent caption-stencil X)) (car (ly:stencil-extent caption-stencil X)) ))
+         (set! caption-height (- (cdr (ly:stencil-extent caption-stencil Y)) (car (ly:stencil-extent caption-stencil Y)) ))
+         (set! caption-space-factor
+               (/
+                (+
+                 caption-right
+                 (- caption-left)
+                 (- (* caption-width (cos (atan (if caption-align-bottom slope-lower slope-upper))))))
+                (- caption-right caption-left)
+                )
+               )
+         (set! caption-x-deficit (* 0.5 caption-width (- 1 (cos (atan (if caption-align-bottom slope-lower slope-upper))))))
+         (set! caption-x    ; cross-fade between left and right position:
+               (+
+                (* (/ (- 1 caption-halign) 2)   ; factor between 1 and 0  (caption-halign is between -1=left and 1=right)
+                  (+ caption-left caption-padding (- (/ border-radius 2)) (- caption-x-deficit))  ; left-edge position
+                  )
+                (* (/ (+ 1 caption-halign) 2)   ; factor between 0 and 1
+                  (+ caption-right caption-padding (/ border-radius 2) (- caption-width) caption-x-deficit)  ; right-edge position
+                  )
+                caption-translate-x
+                )
+               )
+         (set! caption-y
+               (+
+                (* (+
+                    (/ (- 1 (* caption-halign caption-space-factor)) 2)   ; factor between 1 and 0  (caption-halign is between -1=left and 1=right)
+                    (/ caption-translate-x (- caption-left caption-right))
+                    )
+                  (if caption-align-bottom y-l-lower y-l-upper)  ; left-edge position
+                  )
+                (* (+
+                    (/ (+ 1 (* caption-halign caption-space-factor)) 2)   ; factor between 0 and 1
+                    (/ caption-translate-x (- caption-right caption-left))
+                    )
+                  (if caption-align-bottom y-r-lower y-r-upper)  ; right-edge position
+                  )
+                )
+               )
+         (if caption-align-bottom
+             (set! caption-y (+ (- 0.04) caption-y caption-padding border-width (- (/ border-radius 2)) (- caption-height) descender-height))
+             (set! caption-y (+ 0.04 caption-y caption-padding (- border-width) (/ border-radius 2) descender-height))
+             )
+         ; (set! caption-stencil (ly:stencil-translate caption-stencil (cons caption-x caption-y)))
+         (set! caption-markup (markup #:translate (cons caption-x caption-y) caption-markup))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
+
+         (set! caption-left-edge  (car (ly:stencil-extent caption-stencil X)))
+         (set! caption-right-edge (cdr (ly:stencil-extent caption-stencil X)))
+         (set! caption-lower-edge (car (ly:stencil-extent caption-stencil Y)))
+         (set! caption-upper-edge (cdr (ly:stencil-extent caption-stencil Y)))
+         (set! caption-mid-x (/ (+ caption-left-edge caption-right-edge) 2))
+         (set! caption-angle-rad (atan (if caption-align-bottom slope-lower slope-upper)))
+         (set! caption-angle (* caption-angle-rad (/ 180 3.141592653589)))
+
+         #!
+         (set! caption-stencil (ly:stencil-rotate
+                                caption-stencil
+                                caption-angle
+                                0
+                                (if caption-align-bottom 1 -1)
+                                ))
+         !#
+         ; ----- replaced by:
+         (set! caption-markup
+               (markup #:translate
+                 (if caption-align-bottom
+                     (cons
+                      (* (sin caption-angle-rad) (/ caption-height 2))
+                      (* (- 1 (cos caption-angle-rad)) (/ caption-height 2))
+                      )
+                     (cons
+                      (- 0 (* (sin caption-angle-rad) (/ caption-height 2)))
+                      (- 0 (* (- 1 (cos caption-angle-rad)) (/ caption-height 2)))
+                      )
+                     )
+                 (markup #:rotate caption-angle caption-markup)))
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
+         ; -----
+
+         ; determine overall stencil-extent
+         ; test caption corners: (top-left)
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-left-edge caption-upper-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+         ; bottom-left corner:
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-left-edge caption-lower-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+         ; top-right corner:
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-right-edge caption-upper-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+         ; bottom-right corner:
+         (set! stencil-ext
+               (expand-range stencil-ext
+                 (rotate-point
+                  (rotate-point
+                   (cons caption-right-edge caption-lower-edge)
+                   caption-angle caption-mid-x (if caption-align-bottom caption-upper-edge caption-lower-edge))
+                  frame-angle rotation-center-x rotation-center-y)))
+
+         #!
+    (set! caption-stencil
+          (ly:stencil-rotate-absolute
+           caption-stencil
+           frame-angle rotation-center-x rotation-center-y))
+         !#
+         ; ----- replaced by:
+         ;   re-use caption-angle-rad:
+         (set! caption-angle-rad (* frame-angle (/ 3.141592653589 180)))
+         ;   re-use caption-x and caption-y as current caption center:
+         (set! caption-x (/ (+ (car (ly:stencil-extent caption-stencil X)) (cdr (ly:stencil-extent caption-stencil X))) 2))
+         (set! caption-y (/ (+ (car (ly:stencil-extent caption-stencil Y)) (cdr (ly:stencil-extent caption-stencil Y))) 2))
+
+         (set! caption-markup
+               (markup
+                #:translate
+                (cons
+                 (+
+                  (* (- rotation-center-x caption-x) (- 1 (cos caption-angle-rad)))
+                  (* (- rotation-center-y caption-y) (sin caption-angle-rad))
+                  )
+                 (+
+                  (* (- caption-x rotation-center-x) (sin caption-angle-rad))
+                  (* (- rotation-center-y caption-y) (- 1 (cos caption-angle-rad)))
+                  )
+                 )
+                #:rotate frame-angle caption-markup))
+
+         (if (not set-caption-extent)
+             (set! caption-markup (markup #:with-dimensions (cons 0 0) (cons 0 0) caption-markup)))
+
+         (set! caption-stencil (interpret-markup layout caption-props caption-markup))
+         ))
+    ; -----
+
+    ; determine overall stencil-extent
+    ; start with frame's top-left corner:
+    (set! stencil-ext
+          (expand-range stencil-ext
+            (rotate-point
+             (cons (car frame-X-extent) (+ y-l-upper (/ border-radius 2)))
+             frame-angle rotation-center-x rotation-center-y)))
+    ; bottom-left corner:
+    (set! stencil-ext
+          (expand-range stencil-ext
+            (rotate-point
+             (cons (car frame-X-extent) (- y-l-lower (/ border-radius 2)))
+             frame-angle rotation-center-x rotation-center-y)))
+    ; top-right corner:
+    (set! stencil-ext
+          (expand-range stencil-ext
+            (rotate-point
+             (cons (cdr frame-X-extent) (+ y-r-upper (/ border-radius 2)))
+             frame-angle rotation-center-x rotation-center-y)))
+    ; bottom-right corner:
+    (set! stencil-ext
+          (expand-range stencil-ext
+            (rotate-point
+             (cons (cdr frame-X-extent) (- y-r-lower (/ border-radius 2)))
+             frame-angle rotation-center-x rotation-center-y)))
+
+    ; (display stencil-ext)
+    ; (display "\n")
+
+    ;; (ly:grob-set-property! grob 'X-extent (car stencil-ext))
+    ;; (ly:grob-set-property! grob 'Y-extent (cdr stencil-ext))
+
+    (set! top-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons 0 (cdr (cdr stencil-ext)))
+           )
+          )
+    (set! bottom-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons 0 (car (cdr stencil-ext)))
+           )
+          )
+    (set! left-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons (car (car stencil-ext)) 0)
+           )
+          )
+    (set! right-edge-stencil
+          (ly:stencil-translate
+           (interpret-markup layout caption-props (markup #:with-dimensions (cons 0 0) (cons 0 0) " "))
+           (cons (cdr (car stencil-ext)) 0)
+           )
+          )
+
 
     (ly:stencil-add
-     ; draw outer polygon:
-     (if (color? border-color)  ; only add stencil if set to a valid color (could also be set to ##f)
+     ; draw upper edge:
+     (if need-upper-polygon
          (ly:make-stencil (list 'color border-color
-                            (ly:stencil-expr (ly:round-filled-polygon points border-radius))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-up border-radius 0)
+                                              frame-angle rotation-center-x rotation-center-y))
+                            X-ext Y-ext))
+         empty-stencil)
+     ; draw lower edge:
+     (if need-lower-polygon
+         (ly:make-stencil (list 'color border-color
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-lo border-radius 0)
+                                              frame-angle rotation-center-x rotation-center-y))
+                            X-ext Y-ext))
+         empty-stencil)
+     ; draw left edge:
+     (if need-left-polygon
+         (ly:make-stencil (list 'color border-color
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-l  border-radius 0)
+                                              frame-angle rotation-center-x rotation-center-y))
+                            X-ext Y-ext))
+         empty-stencil)
+     ; draw right edge:
+     (if need-right-polygon
+         (ly:make-stencil (list 'color border-color
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-r  border-radius 0)
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
      ; draw inner polygon:
-     (if (color? color)   ; only add stencil if set to a valid color (could also be set to ##f)
+     (if need-inner-polygon
          (ly:make-stencil (list 'color color
-                            (ly:stencil-expr (ly:round-filled-polygon points-i border-radius))
+                            (ly:stencil-expr (ly:stencil-rotate-absolute
+                                              (ly:round-filled-polygon points-i  border-radius 0)
+                                              frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
+     ; draw caption:
+     (if need-caption caption-stencil empty-stencil)
+     ; invisible null-dimension markups to set stencil extent:
+     (if set-top-edge top-edge-stencil empty-stencil)
+     (if set-bottom-edge bottom-edge-stencil empty-stencil)
+     (if set-left-edge left-edge-stencil empty-stencil)
+     (if set-right-edge right-edge-stencil empty-stencil)
+
      )
     )
    )
@@ -456,6 +949,45 @@
      (frame-angle
       (or (assq-ref props 'angle)
           (getOption '(analysis frames angle))))
+     (caption
+      (or (assq-ref props 'caption)
+          (getOption '(analysis frames caption))))
+     (caption-padding
+      (or (assq-ref props 'caption-padding)
+          (getOption '(analysis frames caption-padding))))
+     (caption-radius
+      (or (assq-ref props 'caption-radius)
+          (getOption '(analysis frames caption-radius))))
+     (caption-halign
+      (or (assq-ref props 'caption-halign)
+          (getOption '(analysis frames caption-halign))))
+     (caption-color
+      (or (assq-ref props 'caption-color)
+          (getOption '(analysis frames caption-color))))
+     (caption-keep-y
+      (or (assq-ref props 'caption-keep-y)
+          (getOption '(analysis frames caption-keep-y))))
+     (set-top-edge
+      (or (assq-ref props 'set-top-edge)
+          (getOption '(analysis frames set-top-edge))))
+     (set-bottom-edge
+      (or (assq-ref props 'set-bottom-edge)
+          (getOption '(analysis frames set-bottom-edge))))
+     (set-left-edge
+      (or (assq-ref props 'set-left-edge)
+          (getOption '(analysis frames set-left-edge))))
+     (set-right-edge
+      (or (assq-ref props 'set-right-edge)
+          (getOption '(analysis frames set-right-edge))))
+     (set-caption-extent
+      (or (assq-ref props 'set-caption-extent)
+          (getOption '(analysis frames set-caption-extent))))
+     (caption-translate-x
+      (or (assq-ref props 'caption-translate-x)
+          (getOption '(analysis frames caption-translate-x))))
+     (caption-align-bottom
+      (or (assq-ref props 'caption-align-bottom)
+          (getOption '(analysis frames caption-align-bottom))))
      (border-width
       (or (assq-ref props 'border-width)
           (getOption '(analysis frames border-width))))
@@ -537,6 +1069,20 @@
       (border-color . ,border-color)
       (color . ,color)
       (hide . ,hide)
+      (angle . ,frame-angle)
+      (caption . ,caption)
+      (caption-padding . ,caption-padding)
+      (caption-radius . ,caption-radius)
+      (caption-align-bottom . ,caption-align-bottom)
+      (caption-halign . ,caption-halign)
+      (caption-color . ,caption-color)
+      (caption-keep-y . ,caption-keep-y)
+      (caption-translate-x . ,caption-translate-x)
+      (set-top-edge . ,set-top-edge)
+      (set-bottom-edge . ,set-bottom-edge)
+      (set-left-edge . ,set-left-edge)
+      (set-right-edge . ,set-right-edge)
+      (set-caption-extent . ,set-caption-extent)
       )))
 
 #(define (offset-shorten-pair props)
@@ -573,11 +1119,23 @@ genericFrame =
           #{
             #(set! props (assq-set! props 'layer 1))
             \temporary \override NoteHead.layer = 2
+            \temporary \override Staff.LedgerLineSpanner.layer = 2
             \temporary \override Stem.layer = 2
             \temporary \override Beam.layer = 2
             \temporary \override Flag.layer = 2
             \temporary \override Rest.layer = 2
             \temporary \override Accidental.layer = 2
+          #})
+         ((music)
+          #{
+            #(set! props (assq-set! props 'layer -1))
+            \temporary \override NoteHead.layer = -2
+            \temporary \override Staff.LedgerLineSpanner.layer = -2
+            \temporary \override Stem.layer = -2
+            \temporary \override Beam.layer = -2
+            \temporary \override Flag.layer = -2
+            \temporary \override Rest.layer = -2
+            \temporary \override Accidental.layer = -2
           #})
          ((all)
           (set! props (assq-set! props 'layer 5))))
@@ -1623,15 +2181,19 @@ colorFrame = #(define-music-function (y-lower y-upper border-color)
                 #{  \genericFrame $y-lower $y-upper $y-lower $y-upper $border-color #0 #0 ##f ##f  #})
 
 
-
-#(define-markup-command (on-color layout props color arg) (color? markup?)
+#(define-markup-command (on-color layout props color arg) (scheme? markup?)
    (let* ((stencil (interpret-markup layout props arg))
           (X-ext (ly:stencil-extent stencil X))
           (Y-ext (ly:stencil-extent stencil Y)))
-     (ly:stencil-add (ly:make-stencil
-                      (list 'color color
-                        (ly:stencil-expr (ly:round-filled-box X-ext Y-ext 0))
-                        X-ext Y-ext)) stencil)))
+     (if (color? color)
+         (ly:stencil-add (ly:make-stencil
+                          (list 'color color
+                            (ly:stencil-expr (ly:round-filled-box X-ext Y-ext 0))
+                            X-ext Y-ext)) stencil)
+         stencil)
+     )
+   )
+
 
 #(define-markup-command (sticker layout props border-color color arg) (color? color? markup?)
    (let* ((stencil (interpret-markup layout props arg))
