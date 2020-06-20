@@ -5,7 +5,7 @@
 name: analysis
 display-name: anaLYsis
 short-description: <
-  Graphical highlighing for musical analysis
+  Graphical highlighting for musical analysis
   with GNU LilyPond
   >
 description: <
@@ -15,6 +15,7 @@ description: <
 modules: [
   arrows
   frames
+  highlighters
   ]
 dependencies: [
   first one
