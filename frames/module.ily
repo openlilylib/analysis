@@ -30,35 +30,172 @@
 
 % Define configuration variables and set defaults
 
-\registerOption analysis.frames.border-width 0.25
-\registerOption analysis.frames.padding 0
-\registerOption analysis.frames.broken-bound-padding 4
-\registerOption analysis.frames.border-radius 0
-\registerOption analysis.frames.shorten-pair #'(0 . 0)
-\registerOption analysis.frames.y-lower -4
-\registerOption analysis.frames.y-upper 4
-\registerOption analysis.frames.l-zigzag-width 0
-\registerOption analysis.frames.r-zigzag-width 0
-\registerOption analysis.frames.open-on-bottom ##f
-\registerOption analysis.frames.open-on-top ##f
-\registerOption analysis.frames.layer -10
-\registerOption analysis.frames.border-color #(rgb-color 0.3  0.3  0.9)
-\registerOption analysis.frames.color #(rgb-color 0.8  0.8  1.0)
-\registerOption analysis.frames.hide "none"
-\registerOption analysis.frames.angle 0
-\registerOption analysis.frames.caption ##f
-\registerOption analysis.frames.caption-padding 0.25
-\registerOption analysis.frames.caption-radius 0.25
-\registerOption analysis.frames.caption-align-bottom ##f
-\registerOption analysis.frames.caption-halign -1  % from -1=left to 1=right
-\registerOption analysis.frames.caption-color  ##f  % ##f will use border-color
-\registerOption analysis.frames.caption-keep-y ##f
-\registerOption analysis.frames.caption-translate-x 0
-\registerOption analysis.frames.set-top-edge ##f
-\registerOption analysis.frames.set-bottom-edge ##f
-\registerOption analysis.frames.set-left-edge ##f
-\registerOption analysis.frames.set-right-edge ##f
-\registerOption analysis.frames.set-caption-extent ##f
+\registerOption analysis.frames #'()
+\registerOption analysis.frames.stylesheets #'()
+
+% Necessary predicates
+#(define (color-or-false? obj)
+   (or (color? obj) (eq? obj #f)))
+
+#(define (hide-target? obj)
+   (if (member
+        obj
+        #'("none"
+           "staff"
+           "music"
+           "all"))
+       #t
+       #f))
+
+#(define (caption? obj)
+   (or (string? obj)
+       (markup? obj)
+       (eq? obj #f)))
+
+% Initialize variable to be used for command validation
+#(define frame-style-propset
+   `(strict
+     (? ,symbol? stylesheet)
+     ))
+
+% Populate defaults and set up structures
+#(let*
+  ((defaults
+    ;; define options with type and default
+    `((border-width ,number? 0.25)
+      (padding ,number? 0)
+      (broken-bound-padding ,number? 4)
+      (border-radius ,number? 0)
+      (shorten-pair ,number-pair? #'(0 . 0))
+      (y-lower ,number? -4)
+      (y-upper ,number? 4)
+      (l-zigzag-width ,number? 0)
+      (r-zigzag-width ,number? 0)
+      (open-on-bottom ,boolean? ,#f)
+      (open-on-top ,boolean? ,#f)
+      (layer ,integer? -10)
+      (border-color ,color-or-false? ,(rgb-color 0.3  0.3  0.9))
+      (color ,color-or-false? ,(rgb-color 0.8  0.8  1.0))
+      (hide ,hide-target? "none")
+      (angle ,number? 0)
+      (caption ,caption? ,#f)
+      (caption-padding ,number? 0.25)
+      (caption-radius ,number? 0.25)
+      (caption-align-bottom ,boolean? ,#f)
+      (caption-halign ,number? -1)  ; from -1=left to 1=right
+      (caption-color ,color-or-false? ,#f)  ; ##f will use border-color
+      (caption-keep-y ,boolean? ,#f)
+      (caption-translate-x ,number? 0)
+      (set-top-edge ,boolean? ,#f)
+      (set-bottom-edge ,boolean? ,#f)
+      (set-left-edge ,boolean? ,#f)
+      (set-right-edge ,boolean? ,#f)
+      (set-caption-extent ,boolean? ,#f)
+      )))
+
+  ;; define list of option names to iterate over
+  (registerOption '(analysis frames _prop-names) (map car defaults))
+  (for-each
+   (lambda (default)
+     ;; Create options and populate with default values
+     (setChildOption '(analysis frames)
+       (first default)
+       (third default))
+     ;; Create propset for the command validation
+     (set! frame-style-propset
+           (append frame-style-propset
+             (append
+              (list '?)
+              default))))
+   defaults))
+
+#(define (process-calculated-frame-properties props)
+   "Process the frame's options.
+    This function handles the properties that have to be
+    processed instead of only be looked up.
+"
+   (let*
+    ((y-lower (assq-ref props 'y-lower))
+     (y-upper (assq-ref props 'y-upper))
+     (processed-props
+      `((broken-bound-padding .
+          ,(* -1 (assq-ref props 'broken-bound-padding)))
+        (shorten-pair .
+          ,(let*
+            ((sp
+              (assq-ref props 'shorten-pair)))
+            (if (pair? sp)
+                sp
+                (cons sp sp))))
+        (y-l-lower .
+          ,(if (number? y-lower) y-lower (car y-lower)))
+        (y-r-lower .
+          ,(if (number? y-lower) y-lower (cdr y-lower)))
+        (y-l-upper .
+          ,(if (number? y-upper) y-upper (car y-upper)))
+        (y-r-upper .
+          ,(if (number? y-upper) y-upper (cdr y-upper)))
+        (border-color .
+          ,(let ((col (assq 'border-color props)))
+             (if col (cdr col) (getOption '(analysis frames border-color)))))
+        (color .
+          ,(let*
+            ((prop-col (assq 'color props)))
+            (if prop-col
+                (cdr prop-col)
+                (getOption '(analysis frames color)))))
+        (hide .
+          ,(let ((col (assq 'hide props)))
+             (if col
+                 (string->symbol (cdr col))
+                 (string->symbol (getOption '(analysis frames hide)))))))))
+    (for-each
+     (lambda (prop)
+       (set! props
+             (assoc-set! props (car prop) (cdr prop))))
+     processed-props)
+    props))
+
+#(define (process-frame-properties given-props)
+   "Process the stylesheet and given options.
+    All properties are initially populated with (default) values
+    of the corresponding options and may be overridden with values
+    from 
+    - an optional stylesheet or
+    - the actual highlighter's \\with clause."
+   (let*
+    ((props
+      ;; initialize props with defaults/current option values
+      (map (lambda (prop-name)
+             (cons prop-name (getChildOption '(analysis frames) prop-name)))
+        (getOption '(analysis frames _prop-names))))
+     ;; check if a stylesheet has been named
+     (stylesheet-name (assq-ref given-props 'stylesheet))
+     ;; if so override defaults with properties from the stylesheet
+     (stylesheet
+      (if stylesheet-name
+          (getChildOptionWithFallback
+           '(analysis frames stylesheets)
+           (string->symbol stylesheet-name)
+           '())
+          '()))
+     )
+    ;; Override presets, first with stylesheet (if present),
+    ;; then with given props (if present).
+    (for-each
+     (lambda (stylesheet-prop)
+       (set! props
+             (assoc-set! props (car stylesheet-prop) (cdr stylesheet-prop))))
+     (append stylesheet given-props))
+    (process-calculated-frame-properties props)))
+
+% Define a stylesheet to be applied later.
+% Pass a \with {} block with any options to be specified
+% and a name.
+defineFrameStylesheet =
+#(with-required-options define-void-function (name)(symbol?)
+   frame-style-propset
+   (setChildOption '(analysis frames stylesheets) name props))
 
 
 #(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
@@ -932,159 +1069,6 @@
 
 
 
-
-
-
-
-
-#(define (get-frame-properties ctx-mod)
-   "Process the frame's options.
-    All properties are initially populated with (default) values
-    of the corresponding options and may be overridden with values
-    from the actual frame's \\with clause."
-   (let*
-    ((props (if ctx-mod
-                (context-mod->props ctx-mod)
-                '()))
-     (frame-angle
-      (or (assq-ref props 'angle)
-          (getOption '(analysis frames angle))))
-     (caption
-      (or (assq-ref props 'caption)
-          (getOption '(analysis frames caption))))
-     (caption-padding
-      (or (assq-ref props 'caption-padding)
-          (getOption '(analysis frames caption-padding))))
-     (caption-radius
-      (or (assq-ref props 'caption-radius)
-          (getOption '(analysis frames caption-radius))))
-     (caption-halign
-      (or (assq-ref props 'caption-halign)
-          (getOption '(analysis frames caption-halign))))
-     (caption-color
-      (or (assq-ref props 'caption-color)
-          (getOption '(analysis frames caption-color))))
-     (caption-keep-y
-      (or (assq-ref props 'caption-keep-y)
-          (getOption '(analysis frames caption-keep-y))))
-     (set-top-edge
-      (or (assq-ref props 'set-top-edge)
-          (getOption '(analysis frames set-top-edge))))
-     (set-bottom-edge
-      (or (assq-ref props 'set-bottom-edge)
-          (getOption '(analysis frames set-bottom-edge))))
-     (set-left-edge
-      (or (assq-ref props 'set-left-edge)
-          (getOption '(analysis frames set-left-edge))))
-     (set-right-edge
-      (or (assq-ref props 'set-right-edge)
-          (getOption '(analysis frames set-right-edge))))
-     (set-caption-extent
-      (or (assq-ref props 'set-caption-extent)
-          (getOption '(analysis frames set-caption-extent))))
-     (caption-translate-x
-      (or (assq-ref props 'caption-translate-x)
-          (getOption '(analysis frames caption-translate-x))))
-     (caption-align-bottom
-      (or (assq-ref props 'caption-align-bottom)
-          (getOption '(analysis frames caption-align-bottom))))
-     (border-width
-      (or (assq-ref props 'border-width)
-          (getOption '(analysis frames border-width))))
-     (padding
-      (or (assq-ref props 'padding)
-          (getOption '(analysis frames padding))))
-     (broken-bound-padding
-      (* -1
-        (or (assq-ref props 'broken-bound-padding)
-            (getOption '(analysis frames broken-bound-padding)))))
-     (border-radius
-      (or (assq-ref props 'border-radius)
-          (getOption '(analysis frames border-radius))))
-     (shorten-pair
-      (let*
-       ((sp
-         (or (assq-ref props 'shorten-pair)
-             (getOption '(analysis frames shorten-pair)))))
-       (if (pair? sp)
-           sp (cons sp sp))))
-     (y-lower
-      (or (assq-ref props 'y-lower)
-          (getOption '(analysis frames y-lower))))
-     (y-upper
-      (or (assq-ref props 'y-upper)
-          (getOption '(analysis frames y-upper))))
-     (y-l-lower
-      (if (number? y-lower) y-lower (car y-lower)))
-     (y-r-lower
-      (if (number? y-lower) y-lower (cdr y-lower)))
-     (y-l-upper
-      (if (number? y-upper) y-upper (car y-upper)))
-     (y-r-upper
-      (if (number? y-upper) y-upper (cdr y-upper)))
-     (l-zigzag-width
-      (or (assq-ref props 'l-zigzag-width)
-          (getOption '(analysis frames l-zigzag-width))))
-     (r-zigzag-width
-      (or (assq-ref props 'r-zigzag-width)
-          (getOption '(analysis frames r-zigzag-width))))
-     (open-on-bottom
-      (or (assq-ref props 'open-on-bottom)
-          (getOption '(analysis frames open-on-bottom))))
-     (open-on-top
-      (or (assq-ref props 'open-on-top)
-          (getOption '(analysis frames open-on-top))))
-     (layer
-      (or (assq-ref props 'layer)
-          (getOption '(analysis frames layer))))
-     (border-color
-      (let ((col (assq 'border-color props)))
-        (if col (cdr col) (getOption '(analysis frames border-color)))))
-     (color
-      (let*
-       ((prop-col (assq 'color props)))
-       (if prop-col
-           (cdr prop-col)
-           (getOption '(analysis frames color)))))
-     (hide
-      (let ((col (assq 'hide props)))
-        (if col
-            (string->symbol (cdr col))
-            (string->symbol (getOption '(analysis frames hide))))))
-     )
-    `((border-width . ,border-width)
-      (padding . ,padding)
-      (broken-bound-padding . ,broken-bound-padding)
-      (border-radius . ,border-radius)
-      (shorten-pair . ,shorten-pair)
-      (y-l-lower . ,y-l-lower)
-      (y-l-upper . ,y-l-upper)
-      (y-r-lower . ,y-r-lower)
-      (y-r-upper . ,y-r-upper)
-      (l-zigzag-width . ,l-zigzag-width)
-      (r-zigzag-width . ,r-zigzag-width)
-      (open-on-bottom . ,open-on-bottom)
-      (open-on-top . ,open-on-top)
-      (layer . ,layer)
-      (border-color . ,border-color)
-      (color . ,color)
-      (hide . ,hide)
-      (angle . ,frame-angle)
-      (caption . ,caption)
-      (caption-padding . ,caption-padding)
-      (caption-radius . ,caption-radius)
-      (caption-align-bottom . ,caption-align-bottom)
-      (caption-halign . ,caption-halign)
-      (caption-color . ,caption-color)
-      (caption-keep-y . ,caption-keep-y)
-      (caption-translate-x . ,caption-translate-x)
-      (set-top-edge . ,set-top-edge)
-      (set-bottom-edge . ,set-bottom-edge)
-      (set-left-edge . ,set-left-edge)
-      (set-right-edge . ,set-right-edge)
-      (set-caption-extent . ,set-caption-extent)
-      )))
-
 #(define (offset-shorten-pair props)
    "Offset the shorten-pair property by -0.3 on both sides,
     which is our default 'origin'."
@@ -1097,10 +1081,11 @@
 % It takes an optional \with {} block for configuration
 % and a music expression which will be enclosed by the frame.
 genericFrame =
-#(define-music-function (properties mus)
-   ((ly:context-mod?) ly:music?)
+#(with-options define-music-function (mus)
+   (ly:music?)
+   frame-style-propset
    (let*
-    ((props (get-frame-properties properties))
+    ((props (process-frame-properties props))
      (mus-elts (ly:music-property mus 'elements))
      (frst (first mus-elts)) ; TODO test for list? and ly:music?
      (lst (last mus-elts)) ; TODO test for list? and ly:music?

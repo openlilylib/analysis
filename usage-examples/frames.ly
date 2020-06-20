@@ -913,21 +913,21 @@ spc = \markup \vspace #1
 \noPageBreak
 \markup \line {
   The overall height of a markup depends on whether it contains
-  ascenders or descenders: 
+  ascenders or descenders:
 }
 \markup \line {
-  \box É \box E \box e \box g \box "-" 
+  \box É \box E \box e \box g \box "-"
   \box Pa \box pa \box ge \box no
 }
 \markup \justify {
-  This would make it impossible to always correctly align the labels to the 
+  This would make it impossible to always correctly align the labels to the
   upper or lower frame border.
-  Therefore caption labels are extended to a height that leaves enough space 
+  Therefore caption labels are extended to a height that leaves enough space
   for ascenders and descenders:
 }
 \markup \line {
-  \box \extend-height É \box \extend-height E \box \extend-height e 
-  \box \extend-height g \box \extend-height "-" 
+  \box \extend-height É \box \extend-height E \box \extend-height e
+  \box \extend-height g \box \extend-height "-"
   \box \extend-height Pa \box \extend-height pa \box \extend-height ge \box \extend-height no
 }
 \markup \justify {
@@ -935,8 +935,8 @@ spc = \markup \vspace #1
   stencil to every markup:
 }
 \markup \line {
-  \box \extend-public É \box \extend-public E \box \extend-public e 
-  \box \extend-public g \box \extend-public "-" 
+  \box \extend-public É \box \extend-public E \box \extend-public e
+  \box \extend-public g \box \extend-public "-"
   \box \extend-public Pa \box \extend-public pa \box \extend-public ge \box \extend-public no
 }
 
@@ -1070,8 +1070,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \justify {
-  This behaviour can lead to unwanted results, e.g. when applying markup commands that 
-  change the size or position of the text. 
+  This behaviour can lead to unwanted results, e.g. when applying markup commands that
+  change the size or position of the text.
   It can be turned off by setting the \typewriter caption-keep-y
   property to \concat { \typewriter "#t" "." } Then the \typewriter "\\translate"
   markup command can be used to manually move the caption:
