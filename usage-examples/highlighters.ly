@@ -429,25 +429,25 @@ spc = \markup \vspace #1
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = #'ramp
+        style = ramp
       } { c8^"ramp" e g c g[ e] c } r
       \highlight \with {
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = #'leftsided-stairs
+        style = leftsided-stairs
       } { c8^"leftsided-stairs" e g c g[ e] c } r
       \highlight \with {
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = #'rightsided-stairs
+        style = rightsided-stairs
       } { c8^"rightsided-stairs" e g c g[ e] c } r
       \highlight \with {
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = #'centered-stairs
+        style = centered-stairs
       } { c8^"centered-stairs" e g c g[ e] c } r
 
     }
@@ -504,7 +504,7 @@ spc = \markup \vspace #1
           X-first = #0
           X-last  = #0
           color = #green
-          style = #'leftsided-stairs
+          style = leftsided-stairs
         }
         {
           f2. e4 d c
@@ -537,7 +537,7 @@ spc = \markup \vspace #1
           X-first = #0
           X-last  = #0
           color = #red
-          style = #'leftsided-stairs
+          style = leftsided-stairs
         }
         {
           d1 f g a1
@@ -586,7 +586,7 @@ spc = \markup \vspace #1
   thickness = 0.5
   X-first = #0
   color = #darkgreen
-  style = #'leftsided-stairs
+  style = leftsided-stairs
 } cantus
 
 \pspc

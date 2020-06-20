@@ -42,10 +42,10 @@
 #(define (highlighter-style? obj)
    (if (member
         obj
-        '(ramp
-          leftsided-stairs
-          rightsided-stairs
-          centered-stairs))
+        '("ramp"
+          "leftsided-stairs"
+          "rightsided-stairs"
+          "centered-stairs"))
        #t
        #f))
 
@@ -67,7 +67,7 @@
       (X-last ,number? 1.2)
       (Y-first ,number? 0)
       (Y-last ,number? 0)
-      (style ,highlighter-style? ramp))))
+      (style ,highlighter-style? "ramp"))))
   ;; define list of option names to iterate over
   (registerOption '(analysis highlighters _prop-names) (map car defaults))
   (for-each
@@ -209,7 +209,7 @@ highlight =
             (X-last (assq-ref props 'X-last))
             (Y-first (assq-ref props 'Y-first))
             (Y-last (assq-ref props 'Y-last))
-            (style (assq-ref props 'style))
+            (style (string->symbol (assq-ref props 'style)))
             )
            (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
              #{
