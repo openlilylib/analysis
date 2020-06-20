@@ -609,7 +609,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          stylesheet = #'counterpoint
+          stylesheet = counterpoint
         }
         {
           f2. e4 d c
@@ -623,7 +623,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          stylesheet = #'counterpoint
+          stylesheet = counterpoint
           color = #blue
         }
         {
@@ -640,7 +640,7 @@ spc = \markup \vspace #1
       \voiceTwo
       \relative c' {
         \highlight \with {
-          stylesheet = #'cantus
+          stylesheet = cantus
         }
         {
           d1 _"cantus" f g a1
@@ -650,7 +650,7 @@ spc = \markup \vspace #1
       \hide r8
       \relative c' {
         \highlight \with {
-          stylesheet = #'cantus
+          stylesheet = cantus
           X-first = #2
         }
         {

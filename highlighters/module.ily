@@ -104,7 +104,7 @@
       (if stylesheet-name
           (getChildOptionWithFallback
            '(analysis highlighters stylesheets)
-           stylesheet-name
+           (string->symbol stylesheet-name)
            '())
           '()))
      )
