@@ -17,7 +17,7 @@
 % GNU Lesser General Public License for more details.                         %
 %                                                                             %
 % You should have received a copy of the GNU General Public License           %
-% along with ScholarLY.  If not, see <http://www.gnu.org/licenses/>.          %
+% along with anaLYsis.  If not, see <http://www.gnu.org/licenses/>.          %
 %                                                                             %
 % anaLYsis is maintained by Urs Liska, ul@openlilylib.org                     %
 % Copyright Klaus Blum & Urs Liska, 2017                                      %
@@ -72,7 +72,9 @@ colDarkViolet =   #(rgb-color 0.6  0.3  0.9)
 \setOption analysis.frames.set-bottom-edge ##t
 \setOption analysis.frames.set-left-edge ##t
 \setOption analysis.frames.set-right-edge ##t
+\setOption analysis.frames.set-caption-extent ##t
 %}
+
 
 pspc = \markup \vspace #0.25
 spc = \markup \vspace #1
@@ -86,16 +88,25 @@ spc = \markup \vspace #1
       y-upper = 3
       shorten-pair = #'(-10 . 0)
     } {
-      c8 g
+      c8 
+      ^\markup 
+      \with-dimensions-from \null
+      \translate #'(-11.1 . -6)
+      % \with-dimensions-from \null 
+      \with-color #red \bold \sans x
+      g
     }
     r4
     %}
+    % \override HorizontalBracket.direction = #UP
+    % \override HorizontalBracket.side-axis = #1
     % \override HorizontalBracket.ignore-collision = ##t
+    % \override HorizontalBracket.outside-staff-priority = #1
     
     \genericFrame \with {
       y-lower = #'(-7 . -3)
       y-upper = #'(12 . 6)
-      % caption = "Caption"
+      caption = "Caption"
       caption-halign = -1
       % angle = 20
       % caption-align-bottom = ##t
