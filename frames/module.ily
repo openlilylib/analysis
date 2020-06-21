@@ -41,9 +41,9 @@
    (if (member
         obj
         #'("none"
-           "staff"
-           "music"
-           "all"))
+            "staff"
+            "music"
+            "all"))
        #t
        #f))
 
@@ -56,6 +56,7 @@
 #(define frame-style-propset
    `(strict
      (? ,symbol? stylesheet)
+     (? ,string? default)
      ))
 
 % Populate defaults and set up structures
@@ -156,6 +157,16 @@
      processed-props)
     props))
 
+#(define (update-alist alst props)
+   "Return a copy of the association list alst,
+    superseded with properties from the association list props."
+   (for-each
+    (lambda (prop)
+      (set! alst
+            (assoc-set! alst (car prop) (cdr prop))))
+    props)
+   alst)
+
 #(define (process-frame-properties given-props)
    "Process the stylesheet and given options.
     All properties are initially populated with (default) values
@@ -179,23 +190,28 @@
            (string->symbol stylesheet-name)
            '())
           '()))
+     ;; Override presets, first with stylesheet (if present),
+     ;; then with given props (if present).
+     (props (update-alist props (append stylesheet given-props)))
      )
-    ;; Override presets, first with stylesheet (if present),
-    ;; then with given props (if present).
-    (for-each
-     (lambda (stylesheet-prop)
-       (set! props
-             (assoc-set! props (car stylesheet-prop) (cdr stylesheet-prop))))
-     (append stylesheet given-props))
-    (process-calculated-frame-properties props)))
+    (process-calculated-frame-properties props))
+   )
 
 % Define a stylesheet to be applied later.
 % Pass a \with {} block with any options to be specified
 % and a name.
+% if an option 'parent is given first all properties of the
+% parent stylesheet are loaded before the newly given
+% properties are applied.
 defineFrameStylesheet =
 #(with-required-options define-void-function (name)(symbol?)
    frame-style-propset
-   (setChildOption '(analysis frames stylesheets) name props))
+   (let ((parent (assq-ref props 'parent)))
+     (if parent
+         (set! props (update-alist props
+           (getChildOptionWithFallback '(analysis frames stylesheets)
+             (string->symbol parent) '()))))
+     (setChildOption '(analysis frames stylesheets) name props)))
 
 
 #(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
