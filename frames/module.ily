@@ -31,6 +31,9 @@
 % Define configuration variables and set defaults
 
 \registerOption analysis.frames #'()
+\registerOption analysis.frames.active ##t
+\registerOption analysis.frames.use-only-stylesheets #'()
+\registerOption analysis.frames.ignore-stylesheets #'()
 \registerOption analysis.frames.stylesheets #'()
 
 % Necessary predicates
@@ -1080,9 +1083,40 @@ defineFrameStylesheet =
    )
 
 
+#(define (filtered-by-stylesheet props)
+   "Test if the frame can be useignored due to stylesheet configuration.
+    Returns ##t (highlighting filtered/suppressed) if
+    - use-only-stylesheets = ##t:
+      no stylesheet is applied
+    - use-only-stylesheet is a non-empty list:
+      stylesheet is not in the use-only-stylesheets list
+      or no stylesheet is used at all
+    - ignore-stylesheets is a non-empty list:
+      one of the ignored stylesheets is used
+    "
+   (let*
+    ((use-only-stylesheets (getOption '(analysis frames use-only-stylesheets)))
+     (ignore-stylesheets (getOption '(analysis frames ignore-stylesheets)))
+     (stylesheet (assq-ref props 'stylesheet))
+     )
+    (or
+     (and (eq? use-only-stylesheets #t) (not stylesheet))
+     (and (list? use-only-stylesheets)
+          (not (null? use-only-stylesheets))
+          (or
+           (not stylesheet)
+           (not (member (string->symbol stylesheet) use-only-stylesheets))))
+     (and (not (null? ignore-stylesheets))
+          (member stylesheet ignore-stylesheets))
+     )
+    ))
 
 
 
+#(define (show-frame props)
+    (and
+     (getOption '(analysis frames active))
+     (not (filtered-by-stylesheet props))))
 
 
 #(define (offset-shorten-pair props)
@@ -1101,8 +1135,10 @@ genericFrame =
    (ly:music?)
    frame-style-propset
    (let*
-    ((props (process-frame-properties props))
-     (mus-elts (ly:music-property mus 'elements))
+    ((props (process-frame-properties props)))
+    (if (show-frame props)
+        (let*
+     ((mus-elts (ly:music-property mus 'elements))
      (frst (first mus-elts)) ; TODO test for list? and ly:music?
      (lst (last mus-elts)) ; TODO test for list? and ly:music?
      (frst-artic (ly:music-property frst 'articulations '())) ; look for eventchords ...
@@ -1154,7 +1190,8 @@ genericFrame =
              \revert Rest.layer
              \revert Accidental.layer
            #})
-    #}))
+    #})
+        mus)))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
