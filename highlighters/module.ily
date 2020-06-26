@@ -43,9 +43,9 @@
    (if (member
         obj
         '("ramp"
-          "leftsided-stairs"
-          "rightsided-stairs"
-          "centered-stairs"))
+           "leftsided-stairs"
+           "rightsided-stairs"
+           "centered-stairs"))
        #t
        #f))
 
