@@ -33,6 +33,9 @@
 % http://www.mail-archive.com/lilypond-user%40gnu.org/msg60732.html
 % Contributed by Klaus Blum
 
+
+\include "mmeyn/analysisKey.ily" 
+
 \paper {
   indent = 0
   ragged-right = ##f
