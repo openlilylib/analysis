@@ -38,6 +38,7 @@
   system-system-spacing.basic-distance = 18
 }
 
+
 pspc = \markup \vspace #0.25
 spc = \markup \vspace #1
 
@@ -56,11 +57,9 @@ spc = \markup \vspace #1
 
 \pspc
 
-
-
-
 \score {
   \new Staff \relative c'{
+    r16 \highlight { c d e   f d e c }
     r16 \highlight { c d e   f d e c }
     g'8 c b c
 
@@ -141,30 +140,19 @@ spc = \markup \vspace #1
 }
 
 
-\markup  \bold { Appearance: }
-
-\spc
-
-\markup \justify {
-  The appearance of the highlighting
-  can be specified either persistently with openLilyLib options in the
-  \typewriter "\setOption analysis.highlighters" tree or individually by overriding
-  properties in a \typewriter "\\with {}" block (for details see below).
-}
-
-\spc
-
-\markup \bold { Activate: }
+\markup \bold { Activate highlighters: }
 
 \spc
 
 \markup \column {
-  \concat { \typewriter active " " " (default: ##t)" }
+  \concat { \typewriter { analysis.highlighters.config.active } " " " (default: " \typewriter { "##t" } ")" }
 }
+
+\pspc
 
 \markup \justify
 {
-  With \typewriter "\\setOption analysis.highlighters.active ##f" it is possible
+  With \typewriter "\\setProperty analysis.highlighters.config active ##f" it is possible
   to - globally or within the music - suppress the application of highlighters.
 }
 
@@ -179,7 +167,30 @@ spc = \markup \vspace #1
 }
 \spc
 
-\markup \bold { Options: }
+\markup  \bold { Appearance: }
+
+\spc
+
+\markup \justify {
+  The appearance of the highlighting   can be specified either persistently
+  with openLilyLib properties in the \typewriter "analysis.highlighters.appearance"
+  property set or individually by overriding properties in a 
+  \typewriter "\\with {}" block (for details see below).
+}
+
+\pspc
+
+\markup \justify {
+  Properties can be changed at any point in the document (including at the
+  beginning, resulting in a global setting) with
+  \typewriter "\\setProperty analysis.highlighters.appearance <property> <value>"
+  or by overriding it locally in a with block \typewriter "\\with { <property> = <value> }".
+  A third way, using presets, is discussed below.
+}
+
+\spc
+
+\markup \bold { Properties: }
 
 \spc
 
@@ -419,8 +430,6 @@ spc = \markup \vspace #1
 
 \pspc
 
-
-
 \score {
   \new Staff {
     % \override TextScript.self-alignment-X = #CENTER
@@ -429,25 +438,25 @@ spc = \markup \vspace #1
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = ramp
+        style = #'ramp
       } { c8^"ramp" e g c g[ e] c } r
       \highlight \with {
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = leftsided-stairs
+        style = #'leftsided-stairs
       } { c8^"leftsided-stairs" e g c g[ e] c } r
       \highlight \with {
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = rightsided-stairs
+        style = #'rightsided-stairs
       } { c8^"rightsided-stairs" e g c g[ e] c } r
       \highlight \with {
         thickness = #0.8
         X-first = #0
         X-last  = #0
-        style = centered-stairs
+        style = #'centered-stairs
       } { c8^"centered-stairs" e g c g[ e] c } r
 
     }
@@ -457,7 +466,6 @@ spc = \markup \vspace #1
   \layout {
   }
 }
-
 
 \spc
 
@@ -504,7 +512,7 @@ spc = \markup \vspace #1
           X-first = #0
           X-last  = #0
           color = #green
-          style = leftsided-stairs
+          style = #'leftsided-stairs
         }
         {
           f2. e4 d c
@@ -537,7 +545,7 @@ spc = \markup \vspace #1
           X-first = #0
           X-last  = #0
           color = #red
-          style = leftsided-stairs
+          style = #'leftsided-stairs
         }
         {
           d1 f g a1
@@ -545,56 +553,66 @@ spc = \markup \vspace #1
         }
       }
       \hide r8
-    }
+    }1
   >>
 }
 
 \spc
 
-\markup \bold Stylesheets
+\markup \bold { Presets/Stylesheets }
 
 \spc
 
 \markup \justify  {
-  In order to avoid redundancy in specifying multiple instances
-  of identical settings, and to enable semantic markup of highlighted
-  music, \italic stylesheets may be provided with the \typewriter
-  "\\setHighlightingStyle" command. This expects a \typewriter "\\with { }"
-  block where any of the available options can be specified, plus a name
-  for the stylesheet.
+  Using \italic presets it is possible to preconfigure a subset of the highlighters'
+  properties and load it with a semantic name. All properties present in the
+  preset will be overridden, the others will use the currently active properties.
 }
 
 \pspc
 
 \markup \justify {
-  When a highligting command is encountered the options are first populated
-  with the values from the currently active option settings. If a stylesheet
-  is requested for the instance all options defined in the stylesheet are
-  overridden. Finally any options given explicitly take precedents over the
-  previous two elements. This way it is possible to semantically mark up a
-  section and still apply some custom styling for a given instance.
+  Finally the properties specified manually in the command take precedence,
+  so it is easily possible to control the exact behaviour and encoding very
+  closely. See the \typewriter oll-core documentation for more details.
 }
 
-\setHighlightingStyle \with {
-  thickness = #0.5
-  X-first = #0
-  X-last  = #0
-  color = #green
-} counterpoint
-
-\setHighlightingStyle \with {
+\definePreset \with {
   thickness = 0.5
   X-first = #0
-  color = #darkgreen
-  style = leftsided-stairs
-} cantus
+} analysis.highlighters.appearance default
 
-\pspc
+\definePreset \with {
+  parent = default
+  X-last  = #0
+  color = #green
+} analysis.highlighters.appearance counterpoint
+
+\definePreset \with {
+  parent = default
+  color = #darkgreen
+  style = #'leftsided-stairs
+} analysis.highlighters.appearance cantus
+
+\spc
+
+\markup \justify {
+  By setting \typewriter "\\setProperty OLL.presets use-presets #'(counterpoint)" or
+  alternatively   \typewriter "\\setProperty OLL.presets ignore-presets #'(counterpoint)"
+  it is possible to control which highlighters are displayed. For more information also
+  refer to the   \typewriter oll-core documentation. Keep in mind that this is a global
+  option so unique preset names are required throughout the document in order to avoid
+  unexpected behaviour.
+}
+
+\spc
+%\setProperty OLL.presets use-presets #'(counterpoint)
+
 
 % Play around with these to see the effect of en/disabling stylesheets
 %\setOption analysis.highlighters.use-only-stylesheets #'(cantus counterpoint)
 %\setOption analysis.highlighters.use-only-stylesheets #'(cantus)
-\setOption analysis.highlighters.use-only-stylesheets ##t
+%\setOption analysis.highlighters.use-only-stylesheets ##tTrying to define preset for non-existent property
 %\setOption analysis.highlighters.ignore-stylesheets #'(counterpoint)
 
 \score {
@@ -609,7 +627,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          stylesheet = counterpoint
+          preset = #'counterpoint
         }
         {
           f2. e4 d c
@@ -623,7 +641,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          stylesheet = counterpoint
+          preset = #'counterpoint
           color = #blue
         }
         {
@@ -640,7 +658,7 @@ spc = \markup \vspace #1
       \voiceTwo
       \relative c' {
         \highlight \with {
-          stylesheet = cantus
+          preset = #'cantus
         }
         {
           d1 _"cantus" f g a1
@@ -650,7 +668,7 @@ spc = \markup \vspace #1
       \hide r8
       \relative c' {
         \highlight \with {
-          stylesheet = cantus
+          preset = #'cantus
           X-first = #2
         }
         {
@@ -661,34 +679,6 @@ spc = \markup \vspace #1
       \hide r8
     }
   >>
-}
-
-\spc
-
-\markup \bold { Enable/disable stylesheets }
-
-\spc
-
-\markup \column {
-  \concat { \typewriter use-only-stylesheets  " " " (list or ##t, default: #'())" }
-  \concat { \typewriter ignore-stylesheets  " " " (default: #'())" }
-}
-
-\pspc
-
-\markup \justify {
-  If the \typewriter use-only-stylesheets option is set to a list of stylesheet names
-  only highlighters with these stylesheets are active. Highlighters with
-  different or no stylesheets will be ignored. If it is set to \typewriter "##t" then
-  highlighters with explicit (but any) stylesheets will be applied.
-}
-
-\pspc
-
-\markup \justify {
-  If the \typewriter ignore-stylesheets option is set to a list of stylesheet names
-  highlighters included in the list will be ignored. Highlighters without
-  stylesheet are not affected.
 }
 
 \spc
@@ -761,3 +751,4 @@ spc = \markup \vspace #1
   \layout {}
 }
 
+%}
