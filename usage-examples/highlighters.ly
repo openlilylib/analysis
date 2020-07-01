@@ -174,7 +174,7 @@ spc = \markup \vspace #1
 \markup \justify {
   The appearance of the highlighting   can be specified either persistently
   with openLilyLib properties in the \typewriter "analysis.highlighters.appearance"
-  property set or individually by overriding properties in a 
+  property set or individually by overriding properties in a
   \typewriter "\\with {}" block (for details see below).
 }
 
