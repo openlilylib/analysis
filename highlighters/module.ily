@@ -31,7 +31,7 @@
 % Define configuration variables and set defaults
 
 % Control on/off state
-\definePropset analysis.highlighters.config
+\definePropertySet analysis.highlighters.config
 #`((active ,boolean? #t))
 
 % Predicate for valid highlighter styles
@@ -46,7 +46,7 @@
        #t
        #f))
 
-\definePropset analysis.highlighters.appearance
+\definePropertySet analysis.highlighters.appearance
 #`((color ,color? ,green)
    (thickness ,number? 2)
    (layer ,integer? -5)
