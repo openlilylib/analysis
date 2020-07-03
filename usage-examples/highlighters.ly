@@ -609,7 +609,7 @@ spc = \markup \vspace #1
 
 
 % Play around with these to see the effect of en/disabling presets0
-%\setPresetSettings analysis.highlighters.appearance use-only-presets counterpoint
+%\setPresetFilters analysis.highlighters.appearance use-only-presets counterpoint
 
 \score {
   \new Staff <<
