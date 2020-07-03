@@ -606,14 +606,10 @@ spc = \markup \vspace #1
 }
 
 \spc
-%\setProperty OLL.presets use-presets #'(counterpoint)
 
 
-% Play around with these to see the effect of en/disabling stylesheets
-%\setOption analysis.highlighters.use-only-stylesheets #'(cantus counterpoint)
-%\setOption analysis.highlighters.use-only-stylesheets #'(cantus)
-%\setOption analysis.highlighters.use-only-stylesheets ##tTrying to define preset for non-existent property
-%\setOption analysis.highlighters.ignore-stylesheets #'(counterpoint)
+% Play around with these to see the effect of en/disabling presets0
+%\setPresetSettings analysis.highlighters.appearance use-only-presets counterpoint
 
 \score {
   \new Staff <<
