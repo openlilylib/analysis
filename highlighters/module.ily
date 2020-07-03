@@ -88,7 +88,7 @@
 % TODO: Replace with new functionality
 
 highlight =
-#(with-propset define-music-function (mus)(ly:music?)
+#(with-property-set define-music-function (mus)(ly:music?)
    `(analysis highlighters appearance)
    (or
     ;; if all checks return true return highlighted music
@@ -147,7 +147,7 @@ highlight =
                 }
               >>
             #})
-          
+
           )
          #f))
     mus))
