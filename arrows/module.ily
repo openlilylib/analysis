@@ -28,16 +28,82 @@
   This file implements support for drawing analysis arrows
 %}
 
-% TODO:
-% Make layer stuff configurable
-
 % --------------------------------------------------------------------------
 %    Arrows
 % --------------------------------------------------------------------------
 
+#(define (arrow-direction? obj)
+   (member obj '("forward" "backward" "both")))
+
+\definePropertySet analysis.arrows.appearance
+#`((thickness ,number? 5)
+   (color ,color? ,red)
+   (layer ,integer? -2)
+   (arrow-width ,number? 1.2)
+   (arrow-length ,number? 3.2)
+   (padding-left ,number? 2)
+   (padding-right ,number? 1.7)
+   (direction ,arrow-direction? "forward")
+   )
+
+% Draw an analysis arrow from the anchor note/chord
+% to the next note that follows (will skip rests and skips).
+% Internally creates a glissando object
+% By default an arrow head is created at the right edge.
+arrow =
+#(with-property-set define-music-function (anchor) (ly:music?)
+   `(analysis arrows appearance)
+   (let*
+    ((thickness (property 'thickness))
+     (color (property 'color))
+     (arrow-width (property 'arrow-width))
+     (arrow-length (property 'arrow-length))
+     (padding-left (property 'padding-left))
+     (padding-right (property 'padding-right))
+     (arrow-left (if (member (property 'direction) '("backward" "both")) #t #f))
+     (arrow-right (if (member (property 'direction) '("forward" "both")) #t #f))
+     )
+    #{ 
+      \once \override Glissando.thickness = #thickness
+      \once \override Glissando.color = #color
+      \once \override Glissando.arrow-width =  #arrow-width
+      \once \override Glissando.arrow-length = #arrow-length
+      \once \override Glissando.bound-details.left.padding = #padding-left
+      \once \override Glissando.bound-details.right.padding = #padding-right
+      \once \override Glissando.bound-details.left.arrow = #arrow-left
+      \once \override Glissando.bound-details.right.arrow = #arrow-right
+      #anchor \glissando
+    #}))
+
+% Draw an analysis arrow in a separate (hidden) voice.
+% A \with block is passed along to \arrow
+% Expects three arguments:
+% - anchor 1: note/chord to start the arrow from
+% - skip: "music" (typically skips) to define the length. May include aStaff change.
+% - anchor 2: note/chord to end the arrow at
+arrowV =
+#(define-music-function (opts anchor1 skip anchor2)
+   ((ly:context-mod? (ly:make-context-mod)) ly:music? ly:music? ly:music?)
+   #{
+     \new Voice {
+     \hideNotes
+     \temporary \override NoteColumn.ignore-collision = ##t
+     \arrow #opts #anchor1
+     #skip
+     #anchor2
+     \unHideNotes
+     \revert NoteColumn.ignore-collision
+     }
+   #}
+   )
+
+% Deprecated functions
 
 forwardArrow = #(define-music-function (color)
                   (color?)
+                  (oll:warn "
+Deprecated use of '\\forwardArrow'.
+Please use \\arrow instead.")
                   #{ % Cross-staff arrows are made using the VoiceFollower:
                     % \once \override VoiceFollower.layer = #-2
                     % To have the arrow behind the staff, choose a value below 0 for the layer.
@@ -65,6 +131,9 @@ forwardArrow = #(define-music-function (color)
 
 backwardArrow = #(define-music-function (parser location color)
                    (color?)
+                  (oll:warn "
+Deprecated use of '\\backwardArrow'.
+Please use \\arrow instead.")
                    #{
                      % \once \override VoiceFollower.layer = #-2
                      \once \set Voice.followVoice = ##t
@@ -94,6 +163,9 @@ backwardArrow = #(define-music-function (parser location color)
 
 forwardArrowSized = #(define-music-function (parser location size pad color)
                        (number? number? color?)
+                  (oll:warn "
+Deprecated use of '\\forwardArrowSized'.
+Please use \\arrow instead.")
                        #{ % Cross-staff arrows are made using the VoiceFollower:
                          % \once \override VoiceFollower.layer = #-2
                          % To have the arrow behind the staff, choose a value below 0 for the layer.
@@ -121,6 +193,9 @@ forwardArrowSized = #(define-music-function (parser location size pad color)
 
 backwardArrowSized = #(define-music-function (parser location size pad color)
                         (number? number? color?)
+                                          (oll:warn "
+Deprecated use of '\\backwardArrowSized'.
+Please use \\arrow instead.")
                         #{ % \once \override VoiceFollower.layer = #-2
                           \once \set Voice.followVoice = ##t
                           \once \override VoiceFollower.thickness = $size    % line thickness

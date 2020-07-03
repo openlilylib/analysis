@@ -1,3 +1,5 @@
+\version "2.20.0"
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 % This file is part of anaLYsis,                                              %
@@ -24,15 +26,8 @@
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%{
-  This file loads the whole ScholarLY library,
-  currently only the annotate module is implemented
-%}
-
 \include "oll-core/package.ily"
-\loadPackage \with {
-  modules = arrows
-} analysis
+\loadModule analysis.arrows
 
 % --------------------------------------------------------------------------
 %    Arrows
@@ -55,26 +50,29 @@
 \score {
   \relative c' {
     <<
-      % Usage: place the arrow function call before the note, the glissando statement after the note
-      \new Staff = upper {c4 d e \forwardArrowSized #5 #2 #red c \glissando   R1   g'4_\markup \with-color #red "Transposition" a b g}
-      \new Staff = middle
-      <<
-        \new Voice {R1    c,4_\markup \with-color #green "Imitation" d e c   R1}
-        \new Voice
+      % Usage: place the arrow function call before a single note or chord
+      \new Staff = upper <<
         {
-          \override NoteColumn #'ignore-collision = ##t
-          % Cross-staff arrows use an additional voice with hidden notes between them.
-          % To make these notes visible, uncomment the following line:
-          %     \override NoteHead.color = #cyan \override NoteHead.layer = #2
-          % and remove the following "\hideNotes" line:
-          \hideNotes
-          \set Voice.followVoice = ##t
-          \change Staff = "upper"  c4 s2.
-          % place the arrow function call immediately before the staff change:
-          \forwardArrowSized #5 #2 #green
-          \change Staff = "middle"  c4 s2.
+          c4 d e \arrow \with { direction = both } c
+          R1
+          g'4_\markup \with-color #red "Transposition" a b g
         }
+        % "polyphonic" arrow, creates a new hidden voice
+        \arrowV \with {
+          color = #green
+        }
+        c,4 % first anchor note
+        { s2. \change Staff = "middle" } % hidden skip
+        c4 % second anchor note
       >>
+      \new Staff = middle
+        \new Voice {
+          R1
+          c4_\markup \with-color #green "Imitation" d e c
+          R1
+        }
+
+
     >>
   }
 }
