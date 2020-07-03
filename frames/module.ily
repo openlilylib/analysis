@@ -32,21 +32,13 @@
 
 \registerOption analysis.frames #'()
 \registerOption analysis.frames.active ##t
-\registerOption analysis.frames.use-only-stylesheets #'()
-\registerOption analysis.frames.ignore-stylesheets #'()
-\registerOption analysis.frames.stylesheets #'()
 
 % Necessary predicates
 #(define (color-or-false? obj)
    (or (color? obj) (eq? obj #f)))
 
 #(define (hide-target? obj)
-   (if (member
-        obj
-        #'("none"
-            "staff"
-            "music"
-            "all"))
+   (if (member obj '("none" "staff" "music" "all"))
        #t
        #f))
 
@@ -55,63 +47,44 @@
        (markup? obj)
        (eq? obj #f)))
 
-% Initialize variable to be used for command validation
-#(define frame-style-propset
-   `(strict
-     (? ,symbol? stylesheet)
-     (? ,string? default)
-     ))
+#(define (number-or-number-pair? obj)
+   (or
+    (number? obj)
+    (number-pair? obj)))
 
-% Populate defaults and set up structures
-#(let*
-  ((defaults
-    ;; define options with type and default
-    `((border-width ,number? 0.25)
-      (padding ,number? 0)
-      (broken-bound-padding ,number? 4)
-      (border-radius ,number? 0)
-      (shorten-pair ,number-pair? #'(0 . 0))
-      (y-lower ,number? -4)
-      (y-upper ,number? 4)
-      (l-zigzag-width ,number? 0)
-      (r-zigzag-width ,number? 0)
-      (open-on-bottom ,boolean? ,#f)
-      (open-on-top ,boolean? ,#f)
-      (layer ,integer? -10)
-      (border-color ,color-or-false? ,(rgb-color 0.3  0.3  0.9))
-      (color ,color-or-false? ,(rgb-color 0.8  0.8  1.0))
-      (hide ,hide-target? "none")
-      (angle ,number? 0)
-      (caption ,caption? ,#f)
-      (caption-padding ,number? 0.25)
-      (caption-radius ,number? 0.25)
-      (caption-align-bottom ,boolean? ,#f)
-      (caption-halign ,number? -1)  ; from -1=left to 1=right
-      (caption-color ,color-or-false? ,#f)  ; ##f will use border-color
-      (caption-keep-y ,boolean? ,#f)
-      (caption-translate-x ,number? 0)
-      (set-top-edge ,boolean? ,#f)
-      (set-bottom-edge ,boolean? ,#f)
-      (set-left-edge ,boolean? ,#f)
-      (set-right-edge ,boolean? ,#f)
-      (set-caption-extent ,boolean? ,#f)
-      )))
+\definePropertySet analysis.frames.appearance
+#`((border-width ,number? 0.25)
+   (padding ,number? 0)
+   (broken-bound-padding ,number? 4)
+   (border-radius ,number? 0)
+   (shorten-pair ,number-pair? #'(0 . 0))
+   (y-lower ,number-or-number-pair? -4)
+   (y-upper ,number-or-number-pair? 4)
+   (l-zigzag-width ,number? 0)
+   (r-zigzag-width ,number? 0)
+   (open-on-bottom ,boolean? ,#f)
+   (open-on-top ,boolean? ,#f)
+   (layer ,integer? -10)
+   (border-color ,color-or-false? ,(rgb-color 0.3  0.3  0.9))
+   (color ,color-or-false? ,(rgb-color 0.8  0.8  1.0))
+   (hide ,hide-target? "none")
+   (angle ,number? 0)
+   (caption ,caption? ,#f)
+   (caption-padding ,number? 0.25)
+   (caption-radius ,number? 0.25)
+   (caption-align-bottom ,boolean? ,#f)
+   (caption-halign ,number? -1)  ; from -1=left to 1=right
+   (caption-color ,color-or-false? ,#f)  ; ##f will use border-color
+   (caption-keep-y ,boolean? ,#f)
+   (caption-translate-x ,number? 0)
+   (set-top-edge ,boolean? ,#f)
+   (set-bottom-edge ,boolean? ,#f)
+   (set-left-edge ,boolean? ,#f)
+   (set-right-edge ,boolean? ,#f)
+   (set-caption-extent ,boolean? ,#f))
 
-  ;; define list of option names to iterate over
-  (registerOption '(analysis frames _prop-names) (map car defaults))
-  (for-each
-   (lambda (default)
-     ;; Create options and populate with default values
-     (setChildOption '(analysis frames)
-       (first default)
-       (third default))
-     ;; Create propset for the command validation
-     (set! frame-style-propset
-           (append frame-style-propset
-             (append
-              (list '?)
-              default))))
-   defaults))
+
+
 
 #(define (process-calculated-frame-properties props)
    "Process the frame's options.
@@ -159,62 +132,6 @@
              (assoc-set! props (car prop) (cdr prop))))
      processed-props)
     props))
-
-#(define (update-alist alst props)
-   "Return a copy of the association list alst,
-    superseded with properties from the association list props."
-   (for-each
-    (lambda (prop)
-      (set! alst
-            (assoc-set! alst (car prop) (cdr prop))))
-    props)
-   alst)
-
-#(define (process-frame-properties given-props)
-   "Process the stylesheet and given options.
-    All properties are initially populated with (default) values
-    of the corresponding options and may be overridden with values
-    from 
-    - an optional stylesheet or
-    - the actual highlighter's \\with clause."
-   (let*
-    ((props
-      ;; initialize props with defaults/current option values
-      (map (lambda (prop-name)
-             (cons prop-name (getChildOption '(analysis frames) prop-name)))
-        (getOption '(analysis frames _prop-names))))
-     ;; check if a stylesheet has been named
-     (stylesheet-name (assq-ref given-props 'stylesheet))
-     ;; if so override defaults with properties from the stylesheet
-     (stylesheet
-      (if stylesheet-name
-          (getChildOptionWithFallback
-           '(analysis frames stylesheets)
-           (string->symbol stylesheet-name)
-           '())
-          '()))
-     ;; Override presets, first with stylesheet (if present),
-     ;; then with given props (if present).
-     (props (update-alist props (append stylesheet given-props)))
-     )
-    (process-calculated-frame-properties props))
-   )
-
-% Define a stylesheet to be applied later.
-% Pass a \with {} block with any options to be specified
-% and a name.
-% if an option 'parent is given first all properties of the
-% parent stylesheet are loaded before the newly given
-% properties are applied.
-defineFrameStylesheet =
-#(with-required-options define-void-function (name)(symbol?)
-   frame-style-propset
-   (let ((parent (assq-ref props 'parent)))
-     (if parent
-         (set! props (update-alist props
-           (getChildOptionWithFallback '(analysis frames stylesheets)
-             (string->symbol parent) '()))))
-     (setChildOption '(analysis frames stylesheets) name props)))
 
 
 #(define-markup-command (on-box layout props radius color arg) (number? scheme? markup?)
@@ -1083,41 +1000,6 @@ defineFrameStylesheet =
    )
 
 
-#(define (filtered-by-stylesheet props)
-   "Test if the frame can be useignored due to stylesheet configuration.
-    Returns ##t (highlighting filtered/suppressed) if
-    - use-only-stylesheets = ##t:
-      no stylesheet is applied
-    - use-only-stylesheet is a non-empty list:
-      stylesheet is not in the use-only-stylesheets list
-      or no stylesheet is used at all
-    - ignore-stylesheets is a non-empty list:
-      one of the ignored stylesheets is used
-    "
-   (let*
-    ((use-only-stylesheets (getOption '(analysis frames use-only-stylesheets)))
-     (ignore-stylesheets (getOption '(analysis frames ignore-stylesheets)))
-     (stylesheet (assq-ref props 'stylesheet))
-     )
-    (or
-     (and (eq? use-only-stylesheets #t) (not stylesheet))
-     (and (list? use-only-stylesheets)
-          (not (null? use-only-stylesheets))
-          (or
-           (not stylesheet)
-           (not (member (string->symbol stylesheet) use-only-stylesheets))))
-     (and (not (null? ignore-stylesheets))
-          (member stylesheet ignore-stylesheets))
-     )
-    ))
-
-
-
-#(define (show-frame props)
-    (and
-     (getOption '(analysis frames active))
-     (not (filtered-by-stylesheet props))))
-
 
 #(define (offset-shorten-pair props)
    "Offset the shorten-pair property by -0.3 on both sides,
@@ -1127,10 +1009,74 @@ defineFrameStylesheet =
       (- (car shorten-pair) 0.3)
       (- (cdr shorten-pair) 0.3))))
 
+genericFrame =
+#(with-property-set define-music-function (mus) (ly:music?)
+   `(analysis frames appearance)
+   (let*
+    ((props (process-calculated-frame-properties props)))
+    (if (use-preset)
+        (let*
+         ((mus-elts (ly:music-property mus 'elements))
+          (frst (first mus-elts)) ; TODO test for list? and ly:music?
+          (lst (last mus-elts)) ; TODO test for list? and ly:music?
+          (frst-artic (ly:music-property frst 'articulations '())) ; look for eventchords ...
+          (lst-artic (ly:music-property lst 'articulations '()))
+          )
+         ;; apply the bracket to the first and last element of the music
+         (ly:music-set-property! frst 'articulations
+           `(,@frst-artic ,(make-music 'NoteGroupingEvent 'span-direction -1)))
+         (ly:music-set-property! lst 'articulations
+           `(,@lst-artic ,(make-music 'NoteGroupingEvent 'span-direction 1)))
+         #{
+           \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
+           #(case (assq-ref props 'hide)
+              ((staff)
+               #{
+                 #(set! props (assq-set! props 'layer 1))
+                 \temporary \override NoteHead.layer = 2
+                 \temporary \override Staff.LedgerLineSpanner.layer = 2
+                 \temporary \override Stem.layer = 2
+                 \temporary \override Beam.layer = 2
+                 \temporary \override Flag.layer = 2
+                 \temporary \override Rest.layer = 2
+                 \temporary \override Accidental.layer = 2
+               #})
+              ((music)
+               #{
+                 #(set! props (assq-set! props 'layer -1))
+                 \temporary \override NoteHead.layer = -2
+                 \temporary \override Staff.LedgerLineSpanner.layer = -2
+                 \temporary \override Stem.layer = -2
+                 \temporary \override Beam.layer = -2
+                 \temporary \override Flag.layer = -2
+                 \temporary \override Rest.layer = -2
+                 \temporary \override Accidental.layer = -2
+               #})
+              ((all)
+               (set! props (assq-set! props 'layer 5))))
+           %      \once \override HorizontalBracket.rotation = #'(45 0 0)
+           \once\override HorizontalBracket.stencil =
+           $(lambda (grob) (make-frame-stencil grob props))
+           % Return the processed music expression
+           #mus
+           #(if (eq? (assq-ref props 'hide) 'staff)
+                #{
+                  \revert NoteHead.layer
+                  \revert Stem.layer
+                  \revert Beam.layer
+                  \revert Flag.layer
+                  \revert Rest.layer
+                  \revert Accidental.layer
+                #})
+         #})
+        mus)))
+
+
+
 % This is the generic music function to create a frame.
 % It takes an optional \with {} block for configuration
 % and a music expression which will be enclosed by the frame.
-genericFrame =
+genericFrameBak =
 #(with-options define-music-function (mus)
    (ly:music?)
    frame-style-propset
@@ -1138,59 +1084,59 @@ genericFrame =
     ((props (process-frame-properties props)))
     (if (show-frame props)
         (let*
-     ((mus-elts (ly:music-property mus 'elements))
-     (frst (first mus-elts)) ; TODO test for list? and ly:music?
-     (lst (last mus-elts)) ; TODO test for list? and ly:music?
-     (frst-artic (ly:music-property frst 'articulations '())) ; look for eventchords ...
-     (lst-artic (ly:music-property lst 'articulations '()))
-     )
-    ;; apply the bracket to the first and last element of the music
-    (ly:music-set-property! frst 'articulations
-      `(,@frst-artic ,(make-music 'NoteGroupingEvent 'span-direction -1)))
-    (ly:music-set-property! lst 'articulations
-      `(,@lst-artic ,(make-music 'NoteGroupingEvent 'span-direction 1)))
-    #{
-      \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
-      #(case (assq-ref props 'hide)
-         ((staff)
-          #{
-            #(set! props (assq-set! props 'layer 1))
-            \temporary \override NoteHead.layer = 2
-            \temporary \override Staff.LedgerLineSpanner.layer = 2
-            \temporary \override Stem.layer = 2
-            \temporary \override Beam.layer = 2
-            \temporary \override Flag.layer = 2
-            \temporary \override Rest.layer = 2
-            \temporary \override Accidental.layer = 2
-          #})
-         ((music)
-          #{
-            #(set! props (assq-set! props 'layer -1))
-            \temporary \override NoteHead.layer = -2
-            \temporary \override Staff.LedgerLineSpanner.layer = -2
-            \temporary \override Stem.layer = -2
-            \temporary \override Beam.layer = -2
-            \temporary \override Flag.layer = -2
-            \temporary \override Rest.layer = -2
-            \temporary \override Accidental.layer = -2
-          #})
-         ((all)
-          (set! props (assq-set! props 'layer 5))))
-      %      \once \override HorizontalBracket.rotation = #'(45 0 0)
-      \once\override HorizontalBracket.stencil =
-      $(lambda (grob) (make-frame-stencil grob props))
-      % Return the processed music expression
-      #mus
-      #(if (eq? (assq-ref props 'hide) 'staff)
-           #{
-             \revert NoteHead.layer
-             \revert Stem.layer
-             \revert Beam.layer
-             \revert Flag.layer
-             \revert Rest.layer
-             \revert Accidental.layer
-           #})
-    #})
+         ((mus-elts (ly:music-property mus 'elements))
+          (frst (first mus-elts)) ; TODO test for list? and ly:music?
+          (lst (last mus-elts)) ; TODO test for list? and ly:music?
+          (frst-artic (ly:music-property frst 'articulations '())) ; look for eventchords ...
+          (lst-artic (ly:music-property lst 'articulations '()))
+          )
+         ;; apply the bracket to the first and last element of the music
+         (ly:music-set-property! frst 'articulations
+           `(,@frst-artic ,(make-music 'NoteGroupingEvent 'span-direction -1)))
+         (ly:music-set-property! lst 'articulations
+           `(,@lst-artic ,(make-music 'NoteGroupingEvent 'span-direction 1)))
+         #{
+           \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
+           #(case (assq-ref props 'hide)
+              ((staff)
+               #{
+                 #(set! props (assq-set! props 'layer 1))
+                 \temporary \override NoteHead.layer = 2
+                 \temporary \override Staff.LedgerLineSpanner.layer = 2
+                 \temporary \override Stem.layer = 2
+                 \temporary \override Beam.layer = 2
+                 \temporary \override Flag.layer = 2
+                 \temporary \override Rest.layer = 2
+                 \temporary \override Accidental.layer = 2
+               #})
+              ((music)
+               #{
+                 #(set! props (assq-set! props 'layer -1))
+                 \temporary \override NoteHead.layer = -2
+                 \temporary \override Staff.LedgerLineSpanner.layer = -2
+                 \temporary \override Stem.layer = -2
+                 \temporary \override Beam.layer = -2
+                 \temporary \override Flag.layer = -2
+                 \temporary \override Rest.layer = -2
+                 \temporary \override Accidental.layer = -2
+               #})
+              ((all)
+               (set! props (assq-set! props 'layer 5))))
+           %      \once \override HorizontalBracket.rotation = #'(45 0 0)
+           \once\override HorizontalBracket.stencil =
+           $(lambda (grob) (make-frame-stencil grob props))
+           % Return the processed music expression
+           #mus
+           #(if (eq? (assq-ref props 'hide) 'staff)
+                #{
+                  \revert NoteHead.layer
+                  \revert Stem.layer
+                  \revert Beam.layer
+                  \revert Flag.layer
+                  \revert Rest.layer
+                  \revert Accidental.layer
+                #})
+         #})
         mus)))
 
 
@@ -2086,29 +2032,6 @@ roundRectSpan = #(define-music-function (y-lower y-upper border-color color bord
    )
 
 % The following music functions will use the above makeDeltaFrame:
-
-genericFrameBak =
-#(define-music-function (y-l-lower y-l-upper y-r-lower y-r-upper border-color l-zigzag-width r-zigzag-width open-on-bottom open-on-top)
-   (number? number? number? number? scheme? number? number? boolean? boolean?)
-   ; Calling this procedure IMMEDIATELY before \startGroup will replace the stencil of HorizontalBracket.
-   ; Some parameters are taken out of HorizontalBracket's properties
-   #{
-     \once\override HorizontalBracket.stencil =
-     $(lambda (grob)
-        (let* (
-                (area (ly:horizontal-bracket::print grob))
-                (thick (ly:grob-property grob 'line-thickness 1))
-                (pad (ly:grob-property grob 'broken-bound-padding 0))
-                (frame-X-extent (ly:stencil-extent area X))
-                (open-on-left  (=  1 (ly:item-break-dir (ly:spanner-bound grob LEFT ))))
-                (open-on-right (= -1 (ly:item-break-dir (ly:spanner-bound grob RIGHT))))
-                )
-          (makeDeltaFrame  y-l-lower y-l-upper y-r-lower y-r-upper border-color l-zigzag-width r-zigzag-width open-on-bottom open-on-top
-            thick pad frame-X-extent open-on-left open-on-right)
-          ))
-     \once\override HorizontalBracket.Y-offset = #0
-   #})
-
 
 tornFrame = #(define-music-function (y-lower y-upper border-color l-zigzag-width r-zigzag-width)
                (number? number? scheme? number? number?)
