@@ -30,9 +30,7 @@
 %}
 
 \include "oll-core/package.ily"
-\loadPackage \with {
-  modules = harmony
-} analysis
+\loadModule analysis.harmony.functional-alternative
 
 
 % ---------------------------------------------------------------

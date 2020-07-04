@@ -16,6 +16,8 @@ modules: [
   arrows
   frames
   highlighters
+  harmony.functional
+  harmony.functional-alternative
   ]
 dependencies: [
   first one

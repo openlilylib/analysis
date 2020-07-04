@@ -31,6 +31,8 @@
 
 \version "2.19.65"
 
+\loadModule analysis.harmony
+
 #(use-modules (ice-9 regex))
 
 #(define-markup-command (function layout props str) (string?)
