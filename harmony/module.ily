@@ -28,4 +28,4 @@
   This module and its submodules implement support for harmony analysis symbols
 %}
 
-\include "key-stanza.ily"
+\include "ref-key.ily"
