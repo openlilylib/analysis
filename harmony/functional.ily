@@ -35,9 +35,13 @@
 
 #(use-modules (ice-9 regex))
 
-#(define-markup-command (function layout props str) (string?)
+\definePropertySet analysis.harmony.functional
+#'()
+
+#(define-markup-command (function-markup layout props str) (string?)
    #:properties ((font-size 0)
                  (font-features '()))
+   `(analysis harmony functional)
    (let* ((F -6)
           (v (if (string-match "/" str) #t #f))
           (kl (if (string-match "\\(" str) #t #f))
@@ -119,4 +123,15 @@
 lyricsToFunctions = \override LyricText.stencil =
 #(lambda (grob)
    (grob-interpret-markup grob
-     (markup #:function (ly:grob-property grob 'text))))
+     (markup #:function-markup (ly:grob-property grob 'text))))
+
+
+function =
+#(with-property-set define-scheme-function (code)(string?)
+   `(analysis harmony functional)
+   (if (use-preset)
+   #{
+     \markup \function-markup #code
+   #}
+
+  (markup "")))
