@@ -49,7 +49,8 @@
    ; original with-property-set calls in \function and \lyricsToFunctions,
    ; *after* processing (i.e. type and preset checking)
    ; this is currently not used within the markup function.
-   (let* ((F -6)
+   (let* ((property (lambda (name) (assq-ref properties name)))
+          (F -6)
           (v (if (string-match "/" str) #t #f))
           (kl (if (string-match "\\(" str) #t #f))
           (kr (if (string-match "\\)" str) #t #f))
