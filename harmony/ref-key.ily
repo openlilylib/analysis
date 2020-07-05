@@ -77,6 +77,7 @@ refKey =
             `(make-stencil-markup
               ,(interpret-markup layout props content))))))))
     #{
+      #(if (not (use-preset)) #{ \once \hide StanzaNumber #} #{ #})
       \set stanza =
       \markup
       \enclose
