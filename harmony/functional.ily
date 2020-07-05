@@ -51,84 +51,87 @@
    ; original with-property-set calls in \function and \lyricsToFunctions,
    ; *after* processing (i.e. type and preset checking)
    ; this is currently not used within the markup function.
-   (let* ((property (lambda (name) (assq-ref properties name)))
-          (number-size (- (property 'number-size) 6))
-          (v (if (string-match "/" str) #t #f))
-          (kl (if (string-match "\\(" str) #t #f))
-          (kr (if (string-match "\\)" str) #t #f))
-          (el (if (string-match "\\[" str) #t #f))
-          (er (if (string-match "\\]" str) #t #f))
-          (f-match (string-match "[A-Za-z]+" str))
-          (f (if f-match (match:substring f-match) " "))
-          (d (and (< 1 (string-length f)) (equal? (string-ref f 0) (string-ref f 1))))
-          (t (if d (markup (string (string-ref f 0)))))
-          (b-match (string-match "_[0-9]+[<>]?" str))
-          (b (if b-match (substring (match:substring b-match) 1) ""))
-          (s-match (string-match "\\^[0-9]+[<>]?" str))
-          (s (if s-match (substring (match:substring s-match) 1) ""))
-          (o-match (list-matches "-([0-9]+[<>]?|n|N|v)" str))
-          (o (map (lambda (x) (substring (match:substring x) 1)) o-match))
-          (kl-markup (cond
-                      (kl "(")
-                      (el "[")
-                      (else (markup #:null))))
-          (kr-markup (cond
-                      (kr ")")
-                      (er "]")
-                      (else (markup #:null))))
-          (v-markup (cond
-                     ((not v)
+   (let*
+    ((property (lambda (name) (assq-ref properties name))) ;; reimplemented from with-property-set
+      (number-size (- (property 'number-size) 6))
+      (short (if (string-match "/" str) #t #f))
+      (has-paren-left (if (string-match "\\(" str) #t #f))
+      (has-paren-right (if (string-match "\\)" str) #t #f))
+      (has-bracket-left (if (string-match "\\[" str) #t #f))
+      (has-bracket-right (if (string-match "\\]" str) #t #f))
+      (function-match (string-match "[A-Za-z]+" str))
+      (function-text (if function-match (match:substring function-match) " "))
+      (is-double-func (and (< 1 (string-length function-text))
+                           (equal? (string-ref function-text 0) (string-ref function-text 1))))
+      (double-func
+       (if is-double-func (markup (string (string-ref function-text 0)))))
+      (bottom-match (string-match "_[0-9]+[<>]?" str))
+      (bottom-text (if bottom-match (substring (match:substring bottom-match) 1) ""))
+      (top-match (string-match "\\^[0-9]+[<>]?" str))
+      (top-text (if top-match (substring (match:substring top-match) 1) ""))
+      (number-match (list-matches "-([0-9]+[<>]?|n|N|v)" str))
+      (number-text (map (lambda (x) (substring (match:substring x) 1)) number-match))
+      (has-paren-left-markup (cond
+                          (has-paren-left "(")
+                          (has-bracket-left "[")
+                          (else (markup #:null))))
+      (has-paren-right-markup (cond
+                           (has-paren-right ")")
+                           (has-bracket-right "]")
+                           (else (markup #:null))))
+      (short-markup (cond
+                     ((not short)
                       (markup #:null))
-                     ((string-index "st" (string-ref f 0))
+                     ((string-index "st" (string-ref function-text 0))
                       (markup #:translate '(0. . 0.0)
                         #:draw-line '(0.9 . 1.1)))
                      (else (markup #:translate '(0.0 . -0.1)
                              #:draw-line '(1.3 . 1.7)))))
-          (f-markup (if d
-                        (markup #:concat
-                          (#:combine
-                           t #:translate (property 'double-letter-offset) t
-                           (substring f 2)))
-                        (markup f)))
-          (b-markup (markup #:fontsize number-size b))
-          (s-markup (markup #:fontsize number-size s))
-          (o-markup (map (lambda (x) (markup #:fontsize number-size x)) o))
-          (o-markups (case (length o-markup)
-                       ((0) (make-list 3 (markup #:null)))
-                       ((1) (list (markup #:null) (list-ref o-markup 0) (markup #:null)))
-                       ((2) (cons (markup #:null) o-markup))
-                       ((3) o-markup))))
-     (interpret-markup layout props
-       #{
-         \markup
-         \scale #(cons (magstep font-size) (magstep font-size))
-         \override #(cons 'font-features (cons "lnum" font-features))
-         \normalsize \concat {
-           #kl-markup
-           \override #(cons 'baseline-skip
-                        (+ 1.2 (if (or d (string-match "[gp]" f)) 0.37 0)))
-           \center-column {
-             \override #(cons 'direction UP)
-             \override #(cons 'baseline-skip
-                          (- 2 (if (string-match "^[acegips]*$" f) 0.47 0)))
-             \dir-column \center-align {
-               \combine #v-markup #f-markup
-               #s-markup
-             }
-             #b-markup
-           }
-           \hspace
-           #(cond
-             ((= 3 (length o-markup)) 0.05)
-             ((= 0 (length o-markup)) 0)
-             (d -0.37)
-             (else -0.1))
-           \override #(cons 'direction UP)
-           \override #(cons 'baseline-skip 1.0)
-           \raise #0.2 \dir-column #o-markups
-           #kr-markup
-         }
-       #})))
+      (function-markup (if is-double-func
+                           (markup #:concat
+                             (#:combine
+                              double-func #:translate (property 'double-letter-offset) double-func
+                              (substring function-text 2)))
+                           (markup function-text)))
+      (bottom-markup (markup #:fontsize number-size bottom-text))
+      (top-markup (markup #:fontsize number-size top-text))
+      (number-markup (map (lambda (x) (markup #:fontsize number-size x)) number-text))
+      (number-markups (case (length number-markup)
+                        ((0) (make-list 3 (markup #:null)))
+                        ((1) (list (markup #:null) (list-ref number-markup 0) (markup #:null)))
+                        ((2) (cons (markup #:null) number-markup))
+                        ((3) number-markup))))
+    (interpret-markup layout props
+      #{
+        \markup
+        \scale #(cons (magstep font-size) (magstep font-size))
+        \override #(cons 'font-features (cons "lnum" font-features))
+        \normalsize \concat {
+          #has-paren-left-markup
+          \override #(cons 'baseline-skip
+                       (+ 1.2 (if (or is-double-func (string-match "[gp]" function-text)) 0.37 0)))
+          \center-column {
+            \override #(cons 'direction UP)
+            \override #(cons 'baseline-skip
+                         (- 2 (if (string-match "^[acegips]*$" function-text) 0.47 0)))
+            \dir-column \center-align {
+              \combine #short-markup #function-markup
+              #top-markup
+            }
+            #bottom-markup
+          }
+          \hspace
+          #(cond
+            ((= 3 (length number-markup)) 0.05)
+            ((= 0 (length number-markup)) 0)
+            (is-double-func -0.37)
+            (else -0.1))
+          \override #(cons 'direction UP)
+          \override #(cons 'baseline-skip 1.0)
+          \raise #0.2 \dir-column #number-markups
+          #has-paren-right-markup
+        }
+      #})))
 
 lyricsToFunctions = \override LyricText.stencil =
 #(with-property-set define-scheme-function (grob)(ly:grob?)
