@@ -38,10 +38,17 @@
 \definePropertySet analysis.harmony.functional
 #'()
 
-#(define-markup-command (function-markup layout props str) (string?)
+#(define-markup-command (function-markup layout props use-preset properties str)
+   (boolean? list? string?)
    #:properties ((font-size 0)
                  (font-features '()))
-   `(analysis harmony functional)
+   ; NOTE/TODO:
+   ; The variable use-presets is passed on from the (use-preset) function
+   ; of the original with-property-set call. It is not respected yet.
+   ; The variable properties holds the properties alist from the
+   ; original with-property-set calls in \function and \lyricsToFunctions,
+   ; *after* processing (i.e. type and preset checking)
+   ; this is currently not used within the markup function.
    (let* ((F -6)
           (v (if (string-match "/" str) #t #f))
           (kl (if (string-match "\\(" str) #t #f))
@@ -121,17 +128,15 @@
        #})))
 
 lyricsToFunctions = \override LyricText.stencil =
-#(lambda (grob)
+#(with-property-set define-scheme-function (grob)(ly:grob?)
+   `(analysis harmony functional)
    (grob-interpret-markup grob
-     (markup #:function-markup (ly:grob-property grob 'text))))
+     (markup #:function-markup (use-preset) props (ly:grob-property grob 'text))))
 
 
 function =
 #(with-property-set define-scheme-function (code)(string?)
    `(analysis harmony functional)
-   (if (use-preset)
    #{
-     \markup \function-markup #code
-   #}
-
-  (markup "")))
+     \markup \function-markup #(use-preset) #props #code
+   #})
