@@ -65,6 +65,8 @@
                            (equal? (string-ref function-text 0) (string-ref function-text 1))))
       (double-func
        (if is-double-func (markup (string (string-ref function-text 0)))))
+      (double-offset-X (car (property 'double-letter-offset)))
+      (double-offset-Y (cdr (property 'double-letter-offset)))
       (bottom-match (string-match "_[0-9]+[<>]?" str))
       (bottom-text (if bottom-match (substring (match:substring bottom-match) 1) ""))
       (top-match (string-match "\\^[0-9]+[<>]?" str))
@@ -109,11 +111,13 @@
         \normalsize \concat {
           #paren-left-markup
           \override #(cons 'baseline-skip
-                       (+ 1.2 (if (or is-double-func (string-match "[gp]" function-text)) 0.37 0)))
+                       (+ 1.2 (if (or is-double-func (string-match "[gp]" function-text))
+                                  (* -1 double-offset-Y) 0)))
           \center-column {
             \override #(cons 'direction UP)
             \override #(cons 'baseline-skip
-                         (- 2 (if (string-match "^[acegips]*$" function-text) 0.47 0)))
+                         (- 2 (if (string-match "^[acegips]*$" function-text)
+                                  (+ (* 1 double-offset-Y) 0.2) 0)))
             \dir-column \center-align {
               \combine #short-markup #function-markup
               #top-markup
