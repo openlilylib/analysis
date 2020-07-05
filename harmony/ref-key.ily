@@ -2,7 +2,8 @@
 
 #(define (box-type? obj)
    (if (member obj
-         '("box"
+         '("none"
+            "box"
             "rounded-box"
             "circle"
             "ellipse"
@@ -66,9 +67,12 @@ refKey =
      )
     (define-markup-command (enclose layout props content)(markup?)
      (let*
-      ((get-scheme-markup-function
+      ((box-type (property 'box-type))
+       ;; selecting "none" as box-type will silently re-apply the font-shape property
+       (func-to-apply (if (string=? box-type "none") (property 'font-shape) box-type))
+       (get-scheme-markup-function
         (lambda (func) (symbol-append 'make- func '-markup)))
-       (box-func (get-scheme-markup-function (string->symbol (property 'box-type)))))
+       (box-func (get-scheme-markup-function (string->symbol func-to-apply))))
       (interpret-markup layout props
         (primitive-eval
          (list 'markup
