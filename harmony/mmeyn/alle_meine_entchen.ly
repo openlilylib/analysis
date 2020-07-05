@@ -1,8 +1,8 @@
 \version "2.19.65"
 \language "deutsch"
 
-\include "analysisFunctions.ily"
-\include "analysisKey.ily"
+\include "oll-core/package.ily"
+\loadModule analysis.harmony.functional
 
 \markup "per \\addlyrics: Hier muß für mehrere Zeichen pro Note getrickst werden (unsichtbare Noten),"
 \markup "dafür müssen die meisten Positionen nicht von Hand angegeben werden."
@@ -67,6 +67,8 @@
 
 \markup "\\lyricsToFunctions kann übrigens per \\undo rückgängig gemacht und mit \\once einmalig eingesetzt werden:"
 
+%\setPresetFilters analysis.harmony.functional require-preset ##t
+
 \relative {
   c'4 c c c c c c c c c c c c c c c c1 \bar "|."
 }
@@ -78,7 +80,7 @@
   ist dann auch mal Schluß!
 }
 
-\markup "Tonarten können per \keyStanza eingegeben werden."
+\markup "Tonarten können per \refKey eingegeben werden."
 \markup \concat { "Versetzungszeichen wie " \teeny \raise #0.8 \sharp " in F" \teeny \raise #0.8 \sharp " werden dabei als < bzw. > eingegeben." }
 <<
   \relative {
@@ -93,19 +95,19 @@
   }
   \addlyrics {
     \lyricsToFunctions
-    \keyStanza "E>"
+    \refKey "E>"
     "S" "D_7" _ "T_3"
   }
   \addlyrics {
     \override Lyrics.VerticalAxisGroup.nonstaff-nonstaff-spacing.basic-distance = 4.5
     \lyricsToFunctions
-    \keyStanza "Es"
+    \refKey "Es"
     "S" "D_7" _ "T_3"
   }
   \lyrics {
     \lyricsToFunctions
     _1
-    \keyStanza "B"
+    \refKey "B"
     "S_3"2 "DD-v_5>" "D-4-6" "-3-5" "T"1
   }
 >>
