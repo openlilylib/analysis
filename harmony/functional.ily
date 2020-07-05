@@ -71,11 +71,11 @@
       (top-text (if top-match (substring (match:substring top-match) 1) ""))
       (number-match (list-matches "-([0-9]+[<>]?|n|N|v)" str))
       (number-text (map (lambda (x) (substring (match:substring x) 1)) number-match))
-      (has-paren-left-markup (cond
+      (paren-left-markup (cond
                           (has-paren-left "(")
                           (has-bracket-left "[")
                           (else (markup #:null))))
-      (has-paren-right-markup (cond
+      (paren-right-markup (cond
                            (has-paren-right ")")
                            (has-bracket-right "]")
                            (else (markup #:null))))
@@ -107,7 +107,7 @@
         \scale #(cons (magstep font-size) (magstep font-size))
         \override #(cons 'font-features (cons "lnum" font-features))
         \normalsize \concat {
-          #has-paren-left-markup
+          #paren-left-markup
           \override #(cons 'baseline-skip
                        (+ 1.2 (if (or is-double-func (string-match "[gp]" function-text)) 0.37 0)))
           \center-column {
@@ -129,7 +129,7 @@
           \override #(cons 'direction UP)
           \override #(cons 'baseline-skip 1.0)
           \raise #0.2 \dir-column #number-markups
-          #has-paren-right-markup
+          #paren-right-markup
         }
       #})))
 
