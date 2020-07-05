@@ -36,7 +36,7 @@
 #(use-modules (ice-9 regex))
 
 \definePropertySet analysis.harmony.functional
-#'()
+#`((double-letter-offset ,number-pair? ,(cons 0.37  -0.37)))
 
 #(define-markup-command (function-markup layout props use-preset properties str)
    (boolean? list? string?)
@@ -85,7 +85,7 @@
           (f-markup (if d
                         (markup #:concat
                           (#:combine
-                           t #:translate '(0.37 . -0.37) t
+                           t #:translate (property 'double-letter-offset) t
                            (substring f 2)))
                         (markup f)))
           (b-markup (markup #:fontsize F b))
