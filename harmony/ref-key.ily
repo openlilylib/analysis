@@ -23,7 +23,7 @@
    (box-thickness ,number? 1)
    (corner-radius ,number? 1)
    ;
-   (color ,color? ,red)
+   (color ,color? ,black)
    (font-name ,string-or-false? #f)
    (font-shape ,string? "upright")
    (font-family ,string? "roman")
