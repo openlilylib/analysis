@@ -36,7 +36,9 @@
 #(use-modules (ice-9 regex))
 
 \definePropertySet analysis.harmony.functional
-#`((double-letter-offset ,number-pair? ,(cons 0.37  -0.37)))
+#`((double-letter-offset ,number-pair? ,(cons 0.37  -0.37))
+   (number-size ,number? 0)
+   )
 
 #(define-markup-command (function-markup layout props use-preset properties str)
    (boolean? list? string?)
@@ -50,7 +52,7 @@
    ; *after* processing (i.e. type and preset checking)
    ; this is currently not used within the markup function.
    (let* ((property (lambda (name) (assq-ref properties name)))
-          (F -6)
+          (number-size (- (property 'number-size) 6))
           (v (if (string-match "/" str) #t #f))
           (kl (if (string-match "\\(" str) #t #f))
           (kr (if (string-match "\\)" str) #t #f))
@@ -88,9 +90,9 @@
                            t #:translate (property 'double-letter-offset) t
                            (substring f 2)))
                         (markup f)))
-          (b-markup (markup #:fontsize F b))
-          (s-markup (markup #:fontsize F s))
-          (o-markup (map (lambda (x) (markup #:fontsize F x)) o))
+          (b-markup (markup #:fontsize number-size b))
+          (s-markup (markup #:fontsize number-size s))
+          (o-markup (map (lambda (x) (markup #:fontsize number-size x)) o))
           (o-markups (case (length o-markup)
                        ((0) (make-list 3 (markup #:null)))
                        ((1) (list (markup #:null) (list-ref o-markup 0) (markup #:null)))
