@@ -74,26 +74,25 @@
       (top-text (if top-match (substring (match:substring top-match) 1) ""))
       (number-match (list-matches "-([0-9]+[<>]?|n|N|v)" str))
       (number-text (map (lambda (x) (substring (match:substring x) 1)) number-match))
-      (forward-arrow-markup 
+      (forward-arrow-markup
        (if has-forward-arrow
-           (markup 
+           (markup
             #:combine
             (markup
-            #:override '(thickness . 2)
-            #:translate '(0 . 0.75)
-            #:draw-line '(1.5 . 0))
-            (markup 
+             #:override '(thickness . 2)
+             #:translate '(0 . 0.75)
+             #:draw-line '(1.5 . 0))
+            (markup
              #:translate '(2 . 0.75)
-             #:arrow-head X RIGHT #f
-             )
+             #:arrow-head X RIGHT #f)
             )
            (markup #:null)))
       (paren-left-markup (cond
                           (has-paren-left "(")
                           (has-bracket-left "[")
                           (else (markup #:null))))
-      (paren-right-markup 
-       (let ((paren 
+      (paren-right-markup
+       (let ((paren
               (cond
                (has-paren-right ")")
                (has-bracket-right "]")
