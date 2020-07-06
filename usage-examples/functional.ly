@@ -17,7 +17,7 @@
     \function SS
     \function t
     \function s
-    
+
     \function tP
     \function Tp
     \function Tg
@@ -25,7 +25,7 @@
     \function TG
     \function Dp
     \function Sp
-    
+
     \function /D
     \function /DD
     \function /T
@@ -35,14 +35,16 @@
     \function []DD_5>-7=>
     \function S-N
     \function s-n
-    
+
     \function D-7
     \function D-7-9>
     \function D-6-7-9>
     \function DD-7_3
     \function DD-v_5>
     \function t_3-7<^5
-    \function ""
+    % Use "-0" for empty rows
+    \function D-4-6-0
+    \function D-3-5-7
     \function Fis
     \function Es^5
     \function As_3
