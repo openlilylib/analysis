@@ -29,8 +29,10 @@
     \function /D
     \function /DD
     \function /T
-    \function ()D
+    \function (D)
     \function [DD-v]
+    \function ()D_7=>
+    \function []DD_5>-7=>
     \function S-N
     \function s-n
     

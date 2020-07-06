@@ -59,6 +59,7 @@
       (has-paren-right (if (string-match "\\)" str) #t #f))
       (has-bracket-left (if (string-match "\\[" str) #t #f))
       (has-bracket-right (if (string-match "\\]" str) #t #f))
+      (has-forward-arrow (if (string-match "=>" str) #t #f))
       (function-match (string-match "[A-Za-z]+" str))
       (function-text (if function-match (match:substring function-match) " "))
       (is-double-func (and (< 1 (string-length function-text))
@@ -73,14 +74,36 @@
       (top-text (if top-match (substring (match:substring top-match) 1) ""))
       (number-match (list-matches "-([0-9]+[<>]?|n|N|v)" str))
       (number-text (map (lambda (x) (substring (match:substring x) 1)) number-match))
+      (forward-arrow-markup 
+       (if has-forward-arrow
+           (markup 
+            #:combine
+            (markup
+            #:override '(thickness . 2)
+            #:translate '(0 . 0.75)
+            #:draw-line '(1.5 . 0))
+            (markup 
+             #:translate '(2 . 0.75)
+             #:arrow-head X RIGHT #f
+             )
+            )
+           (markup #:null)))
       (paren-left-markup (cond
                           (has-paren-left "(")
                           (has-bracket-left "[")
                           (else (markup #:null))))
-      (paren-right-markup (cond
-                           (has-paren-right ")")
-                           (has-bracket-right "]")
-                           (else (markup #:null))))
+      (paren-right-markup 
+       (let ((paren 
+              (cond
+               (has-paren-right ")")
+               (has-bracket-right "]")
+               (else (markup #:null)))))
+         (if has-forward-arrow
+             (if (equal? paren (markup #:null))
+                 forward-arrow-markup
+                 (markup #:combine paren forward-arrow-markup))
+             paren)
+         ))
       (short-markup (cond
                      ((not short)
                       (markup #:null))
