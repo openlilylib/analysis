@@ -38,6 +38,11 @@
 \definePropertySet analysis.harmony.functional
 #`((double-letter-offset ,number-pair? ,(cons 0.37  -0.37))
    (number-size ,number? 0)
+   (arrow-width ,number? 1.5)
+   (arrow-Y-offset ,number? 0)
+   (arrow-thickness ,number? 2)
+   (arrow-head-gap ,number? 0)
+   (arrow-head-filled ,boolean? #f)
    )
 
 #(define-markup-command (function-markup layout props use-preset properties str)
@@ -76,16 +81,28 @@
       (number-text (map (lambda (x) (substring (match:substring x) 1)) number-match))
       (forward-arrow-markup
        (if has-forward-arrow
-           (markup
-            #:combine
+           (let*
+            ((arrow-width (property 'arrow-width))
+             (arrow-thickness (property 'arrow-thickness))
+             (arrow-Y-offset (+ 0.75 (property 'arrow-Y-offset)))
+             (no-gap-offset
+              (+
+               arrow-width
+               0.5
+               ;; adjust for the gap in the arrow-head (only relevant if not filled
+               (* (max 0 (- arrow-thickness 1)) 0.025)))
+             (arrow-head-offset (+ no-gap-offset (property 'arrow-head-gap)))
+             )
             (markup
-             #:override '(thickness . 2)
-             #:translate '(0 . 0.75)
-             #:draw-line '(1.5 . 0))
-            (markup
-             #:translate '(2 . 0.75)
-             #:arrow-head X RIGHT #f)
-            )
+             #:combine
+             (markup
+              #:override `(thickness . ,arrow-thickness)
+              #:translate `(0 . ,arrow-Y-offset)
+              #:draw-line `(,arrow-width . 0))
+             (markup
+              #:translate `(,arrow-head-offset . ,arrow-Y-offset)
+              #:arrow-head X RIGHT (property 'arrow-head-filled))
+             ))
            (markup #:null)))
       (paren-left-markup (cond
                           (has-paren-left "(")
@@ -121,7 +138,7 @@
       (top-markup (markup #:fontsize number-size top-text))
       (number-markup (map (lambda (x)
                             (let ((x (if (string=? x "0") " " x)))
-                            (markup #:fontsize number-size x))) number-text))
+                              (markup #:fontsize number-size x))) number-text))
       (number-markups (case (length number-markup)
                         ((0) (make-list 3 (markup #:null)))
                         ((1) (list (markup #:null) (list-ref number-markup 0) (markup #:null)))
