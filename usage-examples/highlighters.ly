@@ -185,7 +185,7 @@ spc = \markup \vspace #1
   beginning, resulting in a global setting) with
   \typewriter "\\setProperty analysis.highlighters.appearance <property> <value>"
   or by overriding it locally in a with block \typewriter "\\with { <property> = <value> }".
-  A third way, using presets, is discussed below.
+  A third way, using configurations, is discussed below.
 }
 
 \spc
@@ -564,9 +564,9 @@ spc = \markup \vspace #1
 \spc
 
 \markup \justify  {
-  Using \italic presets it is possible to preconfigure a subset of the highlighters'
+  Using \italic configurations it is possible to preconfigure a subset of the highlighters'
   properties and load it with a semantic name. All properties present in the
-  preset will be overridden, the others will use the currently active properties.
+  configuration will be overridden, the others will use the currently active properties.
 }
 
 \pspc
@@ -577,18 +577,18 @@ spc = \markup \vspace #1
   closely. See the \typewriter oll-core documentation for more details.
 }
 
-\definePreset \with {
+\definePropertyConfiguration \with {
   thickness = 0.5
   X-first = #0
 } analysis.highlighters.appearance default
 
-\definePreset \with {
+\definePropertyConfiguration \with {
   parent = default
   X-last  = #0
   color = #green
 } analysis.highlighters.appearance counterpoint
 
-\definePreset \with {
+\definePropertyConfiguration \with {
   parent = default
   color = #darkgreen
   style = #'leftsided-stairs
@@ -597,19 +597,19 @@ spc = \markup \vspace #1
 \spc
 
 \markup \justify {
-  By setting \typewriter "\\setProperty OLL.presets use-presets #'(counterpoint)" or
-  alternatively   \typewriter "\\setProperty OLL.presets ignore-presets #'(counterpoint)"
+  By setting \typewriter "\\setProperty OLL.configurations use-configurations #'(counterpoint)" or
+  alternatively   \typewriter "\\setProperty OLL.configurations ignore-configurations #'(counterpoint)"
   it is possible to control which highlighters are displayed. For more information also
   refer to the   \typewriter oll-core documentation. Keep in mind that this is a global
-  option so unique preset names are required throughout the document in order to avoid
+  option so unique configuration names are required throughout the document in order to avoid
   unexpected behaviour.
 }
 
 \spc
 
 
-% Play around with these to see the effect of en/disabling presets0
-%\setPresetFilters analysis.highlighters.appearance use-only-presets counterpoint
+% Play around with these to see the effect of en/disabling configurations
+%\setPresetFilters analysis.highlighters.appearance use-only-configurations counterpoint
 
 \score {
   \new Staff <<
@@ -623,7 +623,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          preset = #'counterpoint
+          configuration = #'counterpoint
         }
         {
           f2. e4 d c
@@ -637,7 +637,7 @@ spc = \markup \vspace #1
       \relative c''
       {
         \highlight \with {
-          preset = #'counterpoint
+          configuration = #'counterpoint
           color = #blue
         }
         {
@@ -654,7 +654,7 @@ spc = \markup \vspace #1
       \voiceTwo
       \relative c' {
         \highlight \with {
-          preset = #'cantus
+          configuration = #'cantus
         }
         {
           d1 _"cantus" f g a1
@@ -664,7 +664,7 @@ spc = \markup \vspace #1
       \hide r8
       \relative c' {
         \highlight \with {
-          preset = #'cantus
+          configuration = #'cantus
           X-first = #2
         }
         {

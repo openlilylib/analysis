@@ -1014,7 +1014,7 @@ genericFrame =
    `(analysis frames appearance)
    (let*
     ((props (process-calculated-frame-properties props)))
-    (if (use-preset)
+    (if (use-configuration)
         (let*
          ((mus-elts (ly:music-property mus 'elements))
           (frst (first mus-elts)) ; TODO test for list? and ly:music?
