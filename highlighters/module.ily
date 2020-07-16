@@ -96,7 +96,7 @@ highlight =
     (and
      (getProperty '(analysis highlighters config) 'active)
      ;; http://lilypond.1069038.n5.nabble.com/Apply-event-function-within-music-function-tp202841p202847.html
-     (if (use-preset)
+     (if (use-configuration)
          (let*
           ((mus-elts (ly:music-property mus 'elements))
            ; last music-element:

@@ -1222,6 +1222,9 @@ spc = \markup \vspace #1
 
 %{
 
+The following examples don't work anymore. The custom items will first have to be converted
+to property configurations to call. But I (UL) don't really see what these functions had been
+originally doing, so I can't give it a shot right now.
 
 \score {
   \new Staff
@@ -1277,6 +1280,10 @@ spc = \markup \vspace #1
   }
 }
 
+%{
+
+%}
+
 \markup \vspace #1
 
 \score {
@@ -1290,7 +1297,6 @@ spc = \markup \vspace #1
   }
 }
 
-%}
 \layout {
   \override TextScript.staff-padding = #3
   \context {
