@@ -1,3 +1,5 @@
+\version "2.20.0"
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 % This file is part of anaLYsis,                                              %
@@ -33,7 +35,7 @@
 \paper {
   indent = 0
   ragged-right = ##f
-  %page-count = 2
+  % ragged-last-bottom = ##t
   tagline = ##f
   system-system-spacing.basic-distance = 18
 }
@@ -125,6 +127,8 @@ spc = \markup \vspace #1
     r4
   }
 }
+
+\spc
 
 \markup \column {
   \concat { - " " \typewriter border-width " " (0.25) }
@@ -269,7 +273,9 @@ spc = \markup \vspace #1
   }
 }
 
-\pageBreak
+\spc
+
+% \pageBreak
 
 \markup \column {
   \concat { - " " \typewriter hide " " (none / staff / music / all) }
@@ -765,6 +771,7 @@ spc = \markup \vspace #1
   \relative c' {
     \genericFrame \with {
       caption = \markup \with-color #white "default: 0.25"
+      set-caption-extent = ##t
     } {
       c8^"caption-padding:"
       e g c g e
@@ -786,6 +793,7 @@ spc = \markup \vspace #1
     r8
     \genericFrame \with {
       caption = \markup \with-color #white "default: 0.25"
+      set-caption-extent = ##t
     } {
       c8^"caption-radius:"
       e g c g e
@@ -808,9 +816,9 @@ spc = \markup \vspace #1
   }
 }
 
-\pageBreak
+% \pageBreak
 
-% \spc
+\spc
 
 \markup \column {
   \concat { - " " \typewriter caption-translate-x  "  (0)" }
@@ -1067,7 +1075,7 @@ spc = \markup \vspace #1
   }
 }
 
-\spc
+\spc \spc
 
 \markup \justify {
   This behaviour can lead to unwanted results, e.g. when applying markup commands that
@@ -1217,6 +1225,391 @@ spc = \markup \vspace #1
     r4
   }
 }
+
+
+\spc \spc 
+% \pageBreak
+
+\markup \column {
+  \concat { - " " \typewriter set-top-edge " (##f)" }
+  \concat { - " " \typewriter set-bottom-edge " (##f)" }
+  \concat { - " " \typewriter set-left-edge " (##f)" }
+  \concat { - " " \typewriter set-right-edge " (##f)" }
+  \concat { - " " \typewriter set-caption-extent " (##f)" }
+}
+\spc
+
+
+\markup \justify {
+  Frames don't have a horizontal or vertical extent that is "\"visible\"" to LilyPond. That means, 
+  they are not taken into account by LilyPond's spacing calculations and thus don't consume space 
+  of their own. 
+  Usually this behavior is preferable because other notation elements are not influenced by the frame's 
+  presence. 
+}
+
+\pspc
+
+\markup \justify {
+  However, if LilyPond is used to create automatically-cropped images 
+  (e.g. via \concat { \italic lilypond-book-preamble.ly ")," }
+  the frame's borders might be outside the "\"visible\"" area and therefore would be missing in the 
+  resulting image.
+}
+
+\pspc
+
+\markup \justify {
+  Each of the frame's edges can be made "\"visible\"" to LilyPond by adding a hidden null-dimension markup. 
+  This behavior can be turned on independently by setting one or more of the properties 
+  \concat { \typewriter set-top-edge , }
+  \concat { \typewriter set-bottom-edge , }
+  \typewriter set-left-edge and \typewriter set-right-edge to
+  \concat { \typewriter "#t" . }
+}
+
+\pspc
+
+\markup \justify {
+  In a similar way, the extent of the caption markup is ignored by default. 
+  It can be made "\"visible\""  by setting the
+  \typewriter set-caption-extent property to
+  \concat { \typewriter "#t" . }
+}
+
+\spc \spc \spc
+
+\markup \column-lines { 
+  \override #'(line-width . 33)
+  \justify {
+  In this example, the entire bar is decorated with a frame that's big enough to enclose all notation 
+  elements.
+  }
+  \hspace #3
+  \override #'(line-width . 33)
+  \justify {
+  The thin black box shows the "\"visible\"" extent of the score. 
+  All the frame's borders are outside this area. With automatic cropping, they would disappear.
+  }
+  \hspace #3
+  \override #'(line-width . 33)
+  \justify {
+  Here the frame's edges are made "\"visible\"" by turning the corresponding properties to 
+  \concat { \typewriter "#t" . }
+  The red cross marks indicate the position of the invisible null-dimension markups.
+  }
+  } 
+  
+  \pspc
+
+
+  score-I = \markup
+  \score {
+    \relative c'' {
+      \genericFrame \with {
+        y-lower = #'(-10 . -10)
+        y-upper = #'(10 . 10)
+        caption-halign = 1
+        shorten-pair = #'(-10 . -4)
+        color = ##f
+      } {
+        c8 ^"Here's a markup"
+      
+        g c, g\ff  c _"another" _"markup" g' c g'\fermata
+      }
+
+    }
+    \layout { ragged-right = ##t }
+  }
+
+  score-II = \markup
+  \score {
+    \relative c'' {
+      \genericFrame \with {
+        y-lower = #'(-10 . -10)
+        y-upper = #'(10 . 10)
+        caption-halign = 1
+        shorten-pair = #'(-10 . -4)
+        color = ##f
+      } {
+        c8 ^"Here's a markup"
+      
+        g c, g\ff  c _"another" _"markup" g' c g'\fermata
+      }
+
+    }
+  
+    \layout {
+      ragged-right = ##t 
+      \context {
+        \Score
+        \override System.stencil = #box-grob-stencil
+        %% http://lsr.di.unimi.it/LSR/Item?id=257
+      }
+    }
+  }
+
+  score-III = \markup
+  \score {
+    \relative c'' {
+      \genericFrame \with {
+        y-lower = #'(-10 . -10)
+        y-upper = #'(10 . 10)
+        % caption = \markup \with-color #white "Caption"
+        caption-halign = 1
+        shorten-pair = #'(-10 . -4)
+        color = ##f
+      
+        set-top-edge = ##t
+        set-bottom-edge = ##t
+        set-left-edge = ##t
+        set-right-edge = ##t
+        % set-caption-extent = ##t
+      } {
+        c8 ^"Here's a markup"
+        ^\markup 
+        \with-dimensions-from \null
+        \translate #'(-11.4 . -14)
+        % \with-dimensions-from \null 
+        \with-color #red \fontsize #5 \sans x
+      
+        ^\markup 
+        \with-dimensions-from \null
+        \translate #'(6.5 . -4.5)
+        % \with-dimensions-from \null 
+        \with-color #red \fontsize #5 \sans x
+      
+        _\markup 
+        \with-dimensions-from \null
+        \translate #'(6.5 . -0.6)
+        % \with-dimensions-from \null 
+        \with-color #red \fontsize #5 \sans x
+      
+      
+        g c, g\ff  c _"another" _"markup" g' c g'\fermata
+        ^\markup 
+        \with-dimensions-from \null
+        \translate #'(4.8 . -11.5)
+        % \with-dimensions-from \null 
+        \with-color #red \fontsize #5 \sans x
+      }
+
+    }
+  
+    \layout {
+      ragged-right = ##t 
+      \context {
+        \Score
+        \override System.stencil = #box-grob-stencil
+        %% http://lsr.di.unimi.it/LSR/Item?id=257
+      }
+    }
+  }
+
+
+  \markup \fill-line {
+    \score-I
+    \score-II
+    \score-III
+  }
+  
+  \spc
+  
+  \markup \justify {
+    As always, there can be unwanted side effects: 
+  }
+  
+  \noPageBreak
+  \pspc
+  \noPageBreak
+  
+  \markup \justify {
+    As soon as frames have a "\"visible\"" extent, they can push other notation elements outside themselves.
+    The same thing can happen if the caption's extent is no more ignored: 
+  }
+  
+
+  \spc \spc
+
+  \markup \column-lines { 
+    \override #'(line-width . 33)
+    \justify {
+    \typewriter set-caption-extent is \typewriter "#f"
+    (default): Caption has no extent
+    }
+    \hspace #3
+    \override #'(line-width . 33)
+    \justify {
+    \typewriter set-caption-extent set to \typewriter "#t"
+    }
+    \hspace #3
+    \override #'(line-width . 33)
+    \justify {
+    \typewriter set-caption-extent set to \typewriter "#t"
+    }
+    } 
+  
+    \noPageBreak \pspc \noPageBreak
+
+    score-I = \markup
+    \score {
+      \relative c'' {
+        \genericFrame \with {
+          y-lower = #'(-10 . -10)
+          y-upper = #'(10 . 10)
+          caption = \markup \with-color #white "Caption above"
+          caption-halign = 1
+          shorten-pair = #'(-10 . -4)
+          color = ##f
+      
+          % set-top-edge = ##t
+          % set-bottom-edge = ##t
+          % set-left-edge = ##t
+          % set-right-edge = ##t
+          % set-caption-extent = ##t
+        } {
+          c8 ^"Here's a markup"
+          g c, g\ff  c _"another" _"markup" g' c g'\fermata
+        }
+      }
+  
+      \layout {
+        ragged-right = ##t 
+        \context {
+          \Score
+          \override System.stencil = #box-grob-stencil
+          %% http://lsr.di.unimi.it/LSR/Item?id=257
+        }
+      }
+    }
+
+    score-II = \markup
+    \score {
+      \relative c'' {
+        \genericFrame \with {
+          y-lower = #'(-10 . -10)
+          y-upper = #'(10 . 10)
+          caption = \markup \with-color #white "Caption above"
+          caption-halign = 1
+          shorten-pair = #'(-10 . -4)
+          color = ##f
+      
+          % set-top-edge = ##t
+          % set-bottom-edge = ##t
+          % set-left-edge = ##t
+          % set-right-edge = ##t
+          set-caption-extent = ##t
+        } {
+          c8 ^"Here's a markup"
+          g c, g\ff  c _"another" _"markup" g' c g'\fermata
+        }
+      }
+  
+      \layout {
+        ragged-right = ##t 
+        \context {
+          \Score
+          \override System.stencil = #box-grob-stencil
+          %% http://lsr.di.unimi.it/LSR/Item?id=257
+        }
+      }
+    }
+
+    score-III = \markup
+    \score {
+      \relative c'' {
+        \genericFrame \with {
+          y-lower = #'(-10 . -10)
+          y-upper = #'(10 . 10)
+          caption = \markup \with-color #white "Caption below"
+          caption-halign = 1
+          caption-align-bottom = ##t
+          shorten-pair = #'(-10 . -4)
+          color = ##f
+      
+          % set-top-edge = ##t
+          % set-bottom-edge = ##t
+          % set-left-edge = ##t
+          % set-right-edge = ##t
+          set-caption-extent = ##t
+        } {
+          c8 ^"Here's a markup"
+          g c, g\ff  c _"another" _"markup" g' c g'\fermata
+        }
+      }
+  
+      \layout {
+        ragged-right = ##t 
+        \context {
+          \Score
+          \override System.stencil = #box-grob-stencil
+          %% http://lsr.di.unimi.it/LSR/Item?id=257
+        }
+      }
+    }
+
+
+    \markup \fill-line {
+      \score-I
+      \score-II
+      \score-III
+    }
+
+
+    \spc
+    
+    \markup \justify {
+      In most cases it can be recommended only to set \typewriter set-left-edge and 
+      \typewriter set-right-edge to \concat { \typewriter "#t" . } 
+      Additional extent above or below the staff can be achieved by adding some invisible markup, 
+      e.g. with the \typewriter "\markup" \typewriter "\\transparent" command.
+    }
+
+    \spc
+
+    \score {
+      \relative c'' {
+        \genericFrame \with {
+          y-lower = #'(-10 . -10)
+          y-upper = #'(10 . 10)
+          % caption = \markup \with-color #white "Caption"
+          caption-halign = 1
+          shorten-pair = #'(-10 . -4)
+          color = ##f
+      
+          set-left-edge = ##t
+          set-right-edge = ##t
+          % set-caption-extent = ##t
+        } {
+          c8 ^"Here's a markup"
+          ^\markup 
+          \with-dimensions-from \null
+          \translate #'(-11.4 . -3.5)
+          % \with-dimensions-from \null 
+          \with-color #red \fontsize #5 \sans x
+      
+          g
+          _\markup \with-color #grey \rotate #90 \left-column { invisible markup }
+          c, g\ff  c _"another" _"markup" g' c
+          ^\markup \with-color #grey \rotate #90 \left-column { invisible markup }
+          g'\fermata
+          _\markup 
+          \with-dimensions-from \null
+          \translate #'(4.8 . 1.5)
+          % \with-dimensions-from \null 
+          \with-color #red \fontsize #5 \sans x
+        }
+      }
+  
+      \layout {
+        ragged-right = ##t 
+        \context {
+          \Score
+          \override System.stencil = #box-grob-stencil
+          %% http://lsr.di.unimi.it/LSR/Item?id=257
+        }
+      }
+    }
 
 %{
 
