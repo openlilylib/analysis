@@ -580,19 +580,19 @@ spc = \markup \vspace #1
 \definePropertyConfiguration \with {
   thickness = 0.5
   X-first = #0
-} analysis.highlighters.appearance default
+} analysis.highlighters.appearance.default
 
 \definePropertyConfiguration \with {
   parent = default
   X-last  = #0
   color = #green
-} analysis.highlighters.appearance counterpoint
+} analysis.highlighters.appearance.counterpoint
 
 \definePropertyConfiguration \with {
   parent = default
   color = #darkgreen
   style = #'leftsided-stairs
-} analysis.highlighters.appearance cantus
+} analysis.highlighters.appearance.cantus
 
 \spc
 

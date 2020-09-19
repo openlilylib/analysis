@@ -137,7 +137,7 @@
       (bottom-markup (markup #:fontsize number-size bottom-text))
       (top-markup (markup #:fontsize number-size top-text))
       (number-markup (map (lambda (x)
-                            (let ((x (if (string=? x "0") " " x)))
+                            (let ((x (if (string=? x "0") "X" x)))
                               (markup #:fontsize number-size x))) number-text))
       (number-markups (case (length number-markup)
                         ((0) (make-list 3 (markup #:null)))
@@ -189,5 +189,5 @@ function =
 #(with-property-set define-scheme-function (code)(string?)
    `(analysis harmony functional)
    #{
-     \markup \function-markup #(use-preset) #props #code
+     \markup \function-markup #(use-configuration) #props #code
    #})
