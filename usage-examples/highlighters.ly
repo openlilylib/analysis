@@ -159,8 +159,10 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter active " " " (default: ##t)" }
+  \concat { \bold \typewriter active " " " (default: ##t)" \transparent "g" }
 }
+
+\pspc
 
 \markup \justify
 {
@@ -184,7 +186,7 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter color " " " (default: #green)" }
+  \concat { \bold \typewriter color " " " (default: #green)" }
 }
 \pspc
 \markup \justify {
@@ -210,9 +212,11 @@ spc = \markup \vspace #1
 
 
 \markup \column {
-  \concat { \typewriter thickness " " " (default: #2.0)" }
+  \concat { \bold \typewriter thickness " " " (default: #2.0)" }
 }
+\noPageBreak
 \pspc
+\noPageBreak
 \markup \justify {
   The thickness of the highlighting line, measured in staff-spaces, can be adjusted. The minimal value is
   0.5 (This is caused by the behavior of the \typewriter ClusterSpanner grob).
@@ -249,7 +253,7 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter layer " " " (default: #-5)" }
+  \concat { \bold \typewriter layer " " " (default: #-5)" }
 }
 
 \pspc
@@ -280,9 +284,9 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter X-first " " " (default: #-1.0)" }
-  \concat { \typewriter X-last  " " " (default: #1.0)" }
-  \concat { \typewriter X-offset " " " (default: #0.6)" }
+  \concat { \bold \typewriter X-first " " " (default: #-1.0)" }
+  \concat { \bold \typewriter X-last  " " " (default: #1.0)" }
+  \concat { \bold \typewriter X-offset " " " (default: #0.6)" }
 }
 
 \pspc
@@ -362,8 +366,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter Y-first " " " (default: #0)" }
-  \concat { \typewriter Y-last  " " " (default: #0)" }
+  \concat { \bold \typewriter Y-first " " " (default: #0)" }
+  \concat { \bold \typewriter Y-last  " " " (default: #0)" }
 }
 
 \pspc
@@ -404,7 +408,7 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter style  " " " (default: #'ramp)" }
+  \concat { \bold \typewriter style  " " " (default: #'ramp)" }
 }
 
 \pspc
@@ -549,6 +553,8 @@ spc = \markup \vspace #1
   >>
 }
 
+%{
+
 \spc
 
 \markup \bold Stylesheets
@@ -670,8 +676,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { \typewriter use-only-stylesheets  " " " (list or ##t, default: #'())" }
-  \concat { \typewriter ignore-stylesheets  " " " (default: #'())" }
+  \concat { \bold \typewriter use-only-stylesheets  " " " (list or ##t, default: #'())" }
+  \concat { \bold \typewriter ignore-stylesheets  " " " (default: #'())" }
 }
 
 \pspc
@@ -692,6 +698,10 @@ spc = \markup \vspace #1
 }
 
 \spc
+
+%}
+
+%{
 
 \markup \bold { some random stuff (to be removed if it cannot be used to demonstrate something useful): }
 
@@ -761,3 +771,4 @@ spc = \markup \vspace #1
   \layout {}
 }
 
+%}
