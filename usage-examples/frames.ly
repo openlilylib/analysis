@@ -131,9 +131,9 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter border-width " " (0.25) }
-  \concat { - " " \typewriter border-radius " " (0) }
-  \concat { - " " \typewriter shorten-pair " " "#'(0 . 0)" }
+  \concat { \bold  \typewriter border-width " " (0.25) }
+  \concat { \bold \typewriter border-radius " " (0) }
+  \concat { \bold \typewriter shorten-pair " " "#'(0 . 0)" }
 }
 \pspc
 \markup \justify {
@@ -179,8 +179,8 @@ spc = \markup \vspace #1
 }
 
 \markup \column {
-  \concat { - " " \typewriter l-zigzag-width " " (0) }
-  \concat { - " " \typewriter r-zigzag-width " " (0) }
+  \concat { \bold \typewriter l-zigzag-width " " (0) }
+  \concat { \bold \typewriter r-zigzag-width " " (0) }
 }
 \pspc
 \markup \justify {
@@ -226,8 +226,8 @@ spc = \markup \vspace #1
 }
 
 \markup \column {
-  \concat { - " " \typewriter y-lower " " (-4) }
-  \concat { - " " \typewriter y-upper " " (4) }
+  \concat { \bold \typewriter y-lower " " (-4) }
+  \concat { \bold \typewriter y-upper " " (4) }
 }
 \pspc
 \markup \justify {
@@ -278,11 +278,11 @@ spc = \markup \vspace #1
 % \pageBreak
 
 \markup \column {
-  \concat { - " " \typewriter hide " " (none / staff / music / all) }
-  \concat { - " " \typewriter layer " " (-10) }
-  \concat { - " " \typewriter broken-bound-padding " " (4) }
-  \concat { - " " \typewriter open-on-bottom " (##f)" }
-  \concat { - " " \typewriter open-on-top " (##f)" }
+  \concat { \bold \typewriter hide " " (none / staff / music / all) }
+  \concat { \bold \typewriter layer " " (-10) }
+  \concat { \bold \typewriter broken-bound-padding " " (4) }
+  \concat { \bold \typewriter open-on-bottom " (##f)" }
+  \concat { \bold \typewriter open-on-top " (##f)" }
 }
 \pspc
 \markup \justify {
@@ -521,7 +521,7 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter angle " " (0) }
+  \concat { \bold \typewriter angle " " (0) }
 }
 \noPageBreak
 \pspc
@@ -575,8 +575,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter caption " " "(#f)" }
-  \concat { - " " \typewriter caption-color " " "(#f)" }
+  \concat { \bold \typewriter caption " " "(#f)" }
+  \concat { \bold \typewriter caption-color " " "(#f)" }
 }
 \noPageBreak
 \pspc
@@ -640,8 +640,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter caption-halign " " "(-1)" }
-  \concat { - " " \typewriter caption-align-bottom " " "(#f)" }
+  \concat { \bold \typewriter caption-halign " " "(-1)" }
+  \concat { \bold \typewriter caption-align-bottom " " "(#f)" }
 }
 \noPageBreak
 \pspc
@@ -750,8 +750,8 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter caption-padding  "  (0.25)" }
-  \concat { - " " \typewriter caption-radius "  (0.25)" }
+  \concat { \bold \typewriter caption-padding  "  (0.25)" }
+  \concat { \bold \typewriter caption-radius "  (0.25)" }
 }
 \noPageBreak
 \pspc
@@ -821,7 +821,7 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter caption-translate-x  "  (0)" }
+  \concat { \bold \typewriter caption-translate-x  "  (0)" }
 }
 \noPageBreak
 \pspc
@@ -914,7 +914,7 @@ spc = \markup \vspace #1
 \spc
 
 \markup \column {
-  \concat { - " " \typewriter caption-keep-y  "  (#f)" }
+  \concat { \bold \typewriter caption-keep-y  "  (#f)" }
 }
 \noPageBreak
 \pspc
@@ -1231,11 +1231,11 @@ spc = \markup \vspace #1
 % \pageBreak
 
 \markup \column {
-  \concat { - " " \typewriter set-top-edge " (##f)" }
-  \concat { - " " \typewriter set-bottom-edge " (##f)" }
-  \concat { - " " \typewriter set-left-edge " (##f)" }
-  \concat { - " " \typewriter set-right-edge " (##f)" }
-  \concat { - " " \typewriter set-caption-extent " (##f)" }
+  \concat { \bold \typewriter set-top-edge " (##f)" }
+  \concat { \bold \typewriter set-bottom-edge " (##f)" }
+  \concat { \bold \typewriter set-left-edge " (##f)" }
+  \concat { \bold \typewriter set-right-edge " (##f)" }
+  \concat { \bold \typewriter set-caption-extent " (##f)" }
 }
 \spc
 
