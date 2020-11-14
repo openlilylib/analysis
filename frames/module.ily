@@ -90,6 +90,9 @@
       (caption-color ,color-or-false? ,#f)  ; ##f will use border-color
       (caption-keep-y ,boolean? ,#f)
       (caption-translate-x ,number? 0)
+      (caption-before-break ,boolean? ,#t)
+      (caption-between-break ,boolean? ,#t)
+      (caption-after-break ,boolean? ,#t)
       (set-top-edge ,boolean? ,#f)
       (set-bottom-edge ,boolean? ,#f)
       (set-left-edge ,boolean? ,#f)
@@ -212,8 +215,8 @@ defineFrameStylesheet =
    (let ((parent (assq-ref props 'parent)))
      (if parent
          (set! props (update-alist props
-           (getChildOptionWithFallback '(analysis frames stylesheets)
-             (string->symbol parent) '()))))
+                       (getChildOptionWithFallback '(analysis frames stylesheets)
+                         (string->symbol parent) '()))))
      (setChildOption '(analysis frames stylesheets) name props)))
 
 
@@ -349,6 +352,9 @@ defineFrameStylesheet =
      (caption-color (assq-ref props 'caption-color))
      (caption-keep-y (assq-ref props 'caption-keep-y))
      (caption-translate-x (assq-ref props 'caption-translate-x))
+     (caption-before-break  (assq-ref props 'caption-before-break))
+     (caption-between-break (assq-ref props 'caption-between-break))
+     (caption-after-break   (assq-ref props 'caption-after-break))
      (set-top-edge (assq-ref props 'set-top-edge))
      (set-bottom-edge (assq-ref props 'set-bottom-edge))
      (set-left-edge (assq-ref props 'set-left-edge))
@@ -462,7 +468,18 @@ defineFrameStylesheet =
      (need-left-polygon  (and (and (> border-width 0) (not open-on-left))   (color? border-color)))
      (need-right-polygon (and (and (> border-width 0) (not open-on-right))  (color? border-color)))
      (need-inner-polygon (color? color))
-     (need-caption (markup? caption))
+     (need-caption 
+      (and (markup? caption) 
+           (if open-on-left 
+               (if open-on-right 
+                   caption-between-break ;; if open on both sides
+                   caption-after-break   ;; open on left only
+                   )
+               (if open-on-right 
+                   caption-before-break  ;; open on right only
+                   )
+               )
+           ))
 
      ;; stencils to be placed on the topmost/leftmost/... border (ugly hack to set the actual X-extent):
      (top-edge-stencil empty-stencil)
@@ -1114,9 +1131,9 @@ defineFrameStylesheet =
 
 
 #(define (show-frame props)
-    (and
-     (getOption '(analysis frames active))
-     (not (filtered-by-stylesheet props))))
+   (and
+    (getOption '(analysis frames active))
+    (not (filtered-by-stylesheet props))))
 
 
 #(define (offset-shorten-pair props)
@@ -1138,59 +1155,59 @@ genericFrame =
     ((props (process-frame-properties props)))
     (if (show-frame props)
         (let*
-     ((mus-elts (ly:music-property mus 'elements))
-     (frst (first mus-elts)) ; TODO test for list? and ly:music?
-     (lst (last mus-elts)) ; TODO test for list? and ly:music?
-     (frst-artic (ly:music-property frst 'articulations '())) ; look for eventchords ...
-     (lst-artic (ly:music-property lst 'articulations '()))
-     )
-    ;; apply the bracket to the first and last element of the music
-    (ly:music-set-property! frst 'articulations
-      `(,@frst-artic ,(make-music 'NoteGroupingEvent 'span-direction -1)))
-    (ly:music-set-property! lst 'articulations
-      `(,@lst-artic ,(make-music 'NoteGroupingEvent 'span-direction 1)))
-    #{
-      \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
-      #(case (assq-ref props 'hide)
-         ((staff)
-          #{
-            #(set! props (assq-set! props 'layer 1))
-            \temporary \override NoteHead.layer = 2
-            \temporary \override Staff.LedgerLineSpanner.layer = 2
-            \temporary \override Stem.layer = 2
-            \temporary \override Beam.layer = 2
-            \temporary \override Flag.layer = 2
-            \temporary \override Rest.layer = 2
-            \temporary \override Accidental.layer = 2
-          #})
-         ((music)
-          #{
-            #(set! props (assq-set! props 'layer -1))
-            \temporary \override NoteHead.layer = -2
-            \temporary \override Staff.LedgerLineSpanner.layer = -2
-            \temporary \override Stem.layer = -2
-            \temporary \override Beam.layer = -2
-            \temporary \override Flag.layer = -2
-            \temporary \override Rest.layer = -2
-            \temporary \override Accidental.layer = -2
-          #})
-         ((all)
-          (set! props (assq-set! props 'layer 5))))
-      %      \once \override HorizontalBracket.rotation = #'(45 0 0)
-      \once\override HorizontalBracket.stencil =
-      $(lambda (grob) (make-frame-stencil grob props))
-      % Return the processed music expression
-      #mus
-      #(if (eq? (assq-ref props 'hide) 'staff)
-           #{
-             \revert NoteHead.layer
-             \revert Stem.layer
-             \revert Beam.layer
-             \revert Flag.layer
-             \revert Rest.layer
-             \revert Accidental.layer
-           #})
-    #})
+         ((mus-elts (ly:music-property mus 'elements))
+          (frst (first mus-elts)) ; TODO test for list? and ly:music?
+          (lst (last mus-elts)) ; TODO test for list? and ly:music?
+          (frst-artic (ly:music-property frst 'articulations '())) ; look for eventchords ...
+          (lst-artic (ly:music-property lst 'articulations '()))
+          )
+         ;; apply the bracket to the first and last element of the music
+         (ly:music-set-property! frst 'articulations
+           `(,@frst-artic ,(make-music 'NoteGroupingEvent 'span-direction -1)))
+         (ly:music-set-property! lst 'articulations
+           `(,@lst-artic ,(make-music 'NoteGroupingEvent 'span-direction 1)))
+         #{
+           \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
+           #(case (assq-ref props 'hide)
+              ((staff)
+               #{
+                 #(set! props (assq-set! props 'layer 1))
+                 \temporary \override NoteHead.layer = 2
+                 \temporary \override Staff.LedgerLineSpanner.layer = 2
+                 \temporary \override Stem.layer = 2
+                 \temporary \override Beam.layer = 2
+                 \temporary \override Flag.layer = 2
+                 \temporary \override Rest.layer = 2
+                 \temporary \override Accidental.layer = 2
+               #})
+              ((music)
+               #{
+                 #(set! props (assq-set! props 'layer -1))
+                 \temporary \override NoteHead.layer = -2
+                 \temporary \override Staff.LedgerLineSpanner.layer = -2
+                 \temporary \override Stem.layer = -2
+                 \temporary \override Beam.layer = -2
+                 \temporary \override Flag.layer = -2
+                 \temporary \override Rest.layer = -2
+                 \temporary \override Accidental.layer = -2
+               #})
+              ((all)
+               (set! props (assq-set! props 'layer 5))))
+           %      \once \override HorizontalBracket.rotation = #'(45 0 0)
+           \once\override HorizontalBracket.stencil =
+           $(lambda (grob) (make-frame-stencil grob props))
+           % Return the processed music expression
+           #mus
+           #(if (eq? (assq-ref props 'hide) 'staff)
+                #{
+                  \revert NoteHead.layer
+                  \revert Stem.layer
+                  \revert Beam.layer
+                  \revert Flag.layer
+                  \revert Rest.layer
+                  \revert Accidental.layer
+                #})
+         #})
         mus)))
 
 
