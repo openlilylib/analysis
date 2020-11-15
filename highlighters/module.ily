@@ -242,15 +242,20 @@ highlight =
                              ;       0)
                              ;      )
                              ;  )
+                             (obj (if (pair? siblings)
+                                      (ly:grob-object 
+                                       (car (cdr siblings))
+                                       'columns)
+                                      ) ; the array of ClusterSpannerBeacons
+                               )
                              (col
                               (if (pair? siblings)
                                   (ly:grob-array-ref
-                                   (ly:grob-object 
-                                    (car (cdr siblings))
-                                    'columns)
+                                   obj
                                    0)
-                                  )
+                                  ) ; first element of array
                               )
+                             
                              )
                         (if (pair? siblings)
                             (begin
