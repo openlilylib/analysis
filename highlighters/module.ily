@@ -226,8 +226,47 @@ highlight =
                         (/ thickness 2))
                    \once \override ClusterSpanner.layer = $layer
                    \once \override ClusterSpanner.X-offset = $X-offset
-                   \once \override ClusterSpannerBeacon.X-offset = $X-first
+                   % \once \override ClusterSpannerBeacon.X-offset = $X-first
                    \once \override ClusterSpannerBeacon.Y-offset = $Y-first
+                   % -----------------------------------------------------------
+                   \override ClusterSpanner.after-line-breaking = 
+                   #(lambda (grob)
+                      (let* ((orig (ly:grob-original grob))
+                             (siblings (if (ly:grob? orig)
+                                           (ly:spanner-broken-into orig)
+                                           '()))
+                             ; (col
+                             ;  (if (pair? siblings)
+                             ;      (ly:grob-array-ref
+                             ;       (ly:grob-object (car siblings) 'columns)
+                             ;       0)
+                             ;      )
+                             ;  )
+                             (col
+                              (if (pair? siblings)
+                                  (ly:grob-array-ref
+                                   (ly:grob-object 
+                                    (car (cdr siblings))
+                                    'columns)
+                                   0)
+                                  )
+                              )
+                             )
+                        (if (pair? siblings)
+                            (begin
+                             (display "----------------------\n")
+                             (display siblings)
+                             (display "\n")
+                             (display col)
+                             (display "\n")
+                             (display "----------------------\n")
+                             ; (ly:grob-set-property! col 'X-offset -4)
+                             (ly:grob-translate-axis! col -5 X)
+                             )
+                            )
+                        )
+                      )
+                   % -----------------------------------------------------------
                    <<
                      $mus
                      {
