@@ -235,36 +235,45 @@ highlight =
                              (siblings (if (ly:grob? orig)
                                            (ly:spanner-broken-into orig)
                                            '()))
-                             ; (col
-                             ;  (if (pair? siblings)
-                             ;      (ly:grob-array-ref
-                             ;       (ly:grob-object (car siblings) 'columns)
-                             ;       0)
-                             ;      )
-                             ;  )
-                             (obj (if (pair? siblings)
-                                      (ly:grob-object 
-                                       (car (cdr siblings))
-                                       'columns)
-                                      ) ; the array of ClusterSpannerBeacons
-                               )
+                             ; "columns" array of ClusterSpannerBeacons:
                              (col
                               (if (pair? siblings)
+                                  ; second part of broken grob (at line begin):
                                   (ly:grob-array-ref
-                                   obj
+                                   (ly:grob-object 
+                                    (car (cdr siblings))
+                                    'columns)
                                    0)
-                                  ) ; first element of array
-                              )
-                             
+                                  ; whole original grob
+                                  (ly:grob-object 
+                                   orig
+                                   'columns
+                                   )
+                                  )
+                              ) 
+                             ; first element of array:
+                             (obj-I  (ly:grob-array-ref col 0))
+                             ; Y-extent: (lower . upper)
+                             (ext (ly:grob-property obj-I 'Y-extent))
                              )
+                        (display "======================\n")
+                        ;(display orig)
+                        ;(display "\n")
+                        ;(display col)
+                        ;(display "\n")
+                        ;(display obj-I)
+                        ;(display "\n")
+                        (display ext)
+                        (display "\n")
+                        (display "======================\n")
                         (if (pair? siblings)
                             (begin
-                             (display "----------------------\n")
-                             (display siblings)
-                             (display "\n")
-                             (display col)
-                             (display "\n")
-                             (display "----------------------\n")
+                             ;(display "----------------------\n")
+                             ;(display siblings)
+                             ;(display "\n")
+                             ;(display col)
+                             ;(display "\n")
+                             ;(display "----------------------\n")
                              ; (ly:grob-set-property! col 'X-offset -4)
                              (ly:grob-translate-axis! col -5 X)
                              )
