@@ -213,14 +213,18 @@ highlight =
                               (col (ly:grob-object grob 'columns))
                               ; first (leftmost) beacon:
                               (first-col (ly:grob-array-ref col 0))
-                              (last-col (ly:grob-array-ref col 
-                                          (- (ly:grob-array-length col) 1)
-                                          ))
+                              (last-col-index (ly:grob-array-length col))
+                              (last-col (ly:grob-array-ref col (- last-col-index 1)))
                               ; Y-extent (lower . upper) at first column:
                               (ext (ly:grob-property first-col 'Y-extent))
                               ; calculate X-ext for a rectangle from -1 to the left edge
                               ; of the broken spanner (overlap by 0.5 spaces):
-                              (X-ext (cons -1 (+ (car (ly:stencil-extent orig-stil X)) 0.5)))
+                              (X-ext (cons -1 
+                                       (+ 
+                                        (car (ly:stencil-extent orig-stil X)) 
+                                        ; if cluster ends at first note after line break, 
+                                        ; move right edge further by X-last:
+                                        (+ 0.5 (if (= last-col-index 1) X-last 0 )))))
                               (Y-ext (cons (- (car ext) (/ thickness 2)) (+ (cdr ext) (/ thickness 2))))
                               )
                         (if (not open-on-left)
