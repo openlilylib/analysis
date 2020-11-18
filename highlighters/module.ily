@@ -228,8 +228,6 @@ highlight =
                    \once \override ClusterSpanner.padding = #(/ thickness 2)
                    \once \override ClusterSpanner.layer = $layer
                    \once \override ClusterSpanner.X-offset = $X-offset
-                   \once \override ClusterSpannerBeacon.X-offset = $X-first
-                   \once \override ClusterSpannerBeacon.Y-offset = $Y-first
                    % -----------------------------------------------------------
                    \override ClusterSpanner.stencil = 
                    #(lambda (grob)
@@ -242,6 +240,9 @@ highlight =
                               (col (ly:grob-object grob 'columns))
                               ; first (leftmost) beacon:
                               (first-col (ly:grob-array-ref col 0))
+                              (last-col (ly:grob-array-ref col 
+                                          (- (ly:grob-array-length col) 1)
+                                          ))
                               ; Y-extent (lower . upper) at first column:
                               (ext (ly:grob-property first-col 'Y-extent))
                               ; calculate X-ext for a rectangle from -1 to the left edge
@@ -249,6 +250,17 @@ highlight =
                               (X-ext (cons -1 (+ (car (ly:stencil-extent orig-stil X)) 0.5)))
                               (Y-ext (cons (- (car ext) (/ thickness 2)) (+ (cdr ext) (/ thickness 2))))
                               )
+                        (if (not open-on-left)
+                            (begin
+                             (ly:grob-translate-axis! first-col X-first X)
+                             (ly:grob-translate-axis! first-col Y-first Y)
+                             ))
+                        (if (not open-on-right)
+                            (begin
+                             (ly:grob-translate-axis! last-col X-last X)
+                             (ly:grob-translate-axis! last-col Y-last Y)
+                             ))
+                        
                         (ly:stencil-add
                          ; for debugging, the additional rectangle can be given a different color:
                          #!
@@ -259,23 +271,12 @@ highlight =
                          ; additional rectangle at left edge of broken spanners: 
                          (if open-on-left (ly:round-filled-box X-ext Y-ext 0.5) empty-stencil)
                          ; original cluster stencil:
-                         orig-stil
+                         (ly:cluster::print grob)
                          )
-                        
-                        
                         )
                       )
-                   % -----------------------------------------------------------
-                   <<
-                     $mus
-                     {
-                       % skip until last element starts:
-                       #(if (not (equal? first-skip (ly:make-moment 0/1 0/1))) ; skip with zero length would cause error
-                            (make-music 'SkipEvent 'duration (custom-moment->duration first-skip)))
-                       \once \override ClusterSpannerBeacon.X-offset = $X-last
-                       \once \override ClusterSpannerBeacon.Y-offset = $Y-last
-                     }
-                   >>
+                   % We are still inside "\makeClusters"...
+                   $mus
                  }
                >>
              #})))))
