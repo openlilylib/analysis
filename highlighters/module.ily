@@ -240,7 +240,7 @@ highlight =
                               (open-on-right (= -1 (ly:item-break-dir (ly:spanner-bound grob RIGHT))))
                               ; "columns" array of ClusterSpannerBeacons:
                               (col (ly:grob-object grob 'columns))
-                              ; first (leftmost) column:
+                              ; first (leftmost) beacon:
                               (first-col (ly:grob-array-ref col 0))
                               ; Y-extent (lower . upper) at first column:
                               (ext (ly:grob-property first-col 'Y-extent))
