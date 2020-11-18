@@ -211,6 +211,12 @@ highlight =
             (Y-last (property 'Y-last))
             (style (string->symbol (property 'style)))
             )
+           (if (< thickness 0.5)
+               (begin 
+                (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
+                (set! thickness 0.5)
+                )
+               )
            (make-relative (mus) mus  ;; see http://lilypond.1069038.n5.nabble.com/Current-octave-in-relative-mode-tp232869p232870.html  (thanks, David!)
              #{
                <<
@@ -219,65 +225,44 @@ highlight =
                  \makeClusters {
                    \once \override ClusterSpanner.style = $style
                    \once \override ClusterSpanner.color = $color
-                   \once \override ClusterSpanner.padding =
-                   #(if (< thickness 0.5)
-                        (begin (ly:warning "\"thickness\" parameter for \\highlight is below minimum value 0.5 - Replacing with 0.5")
-                          0.25)
-                        (/ thickness 2))
+                   \once \override ClusterSpanner.padding = #(/ thickness 2)
                    \once \override ClusterSpanner.layer = $layer
                    \once \override ClusterSpanner.X-offset = $X-offset
-                   % \once \override ClusterSpannerBeacon.X-offset = $X-first
+                   \once \override ClusterSpannerBeacon.X-offset = $X-first
                    \once \override ClusterSpannerBeacon.Y-offset = $Y-first
                    % -----------------------------------------------------------
-                   \override ClusterSpanner.after-line-breaking = 
+                   \override ClusterSpanner.stencil = 
                    #(lambda (grob)
-                      (let* ((orig (ly:grob-original grob))
-                             (siblings (if (ly:grob? orig)
-                                           (ly:spanner-broken-into orig)
-                                           '()))
-                             ; "columns" array of ClusterSpannerBeacons:
-                             (col
-                              (if (pair? siblings)
-                                  ; second part of broken grob (at line begin):
-                                  (ly:grob-array-ref
-                                   (ly:grob-object 
-                                    (car (cdr siblings))
-                                    'columns)
-                                   0)
-                                  ; whole original grob
-                                  (ly:grob-object 
-                                   orig
-                                   'columns
-                                   )
-                                  )
-                              ) 
-                             ; first element of array:
-                             (obj-I  (ly:grob-array-ref col 0))
-                             ; Y-extent: (lower . upper)
-                             (ext (ly:grob-property obj-I 'Y-extent))
-                             )
-                        (display "======================\n")
-                        ;(display orig)
-                        ;(display "\n")
-                        ;(display col)
-                        ;(display "\n")
-                        ;(display obj-I)
-                        ;(display "\n")
-                        (display ext)
-                        (display "\n")
-                        (display "======================\n")
-                        (if (pair? siblings)
-                            (begin
-                             ;(display "----------------------\n")
-                             ;(display siblings)
-                             ;(display "\n")
-                             ;(display col)
-                             ;(display "\n")
-                             ;(display "----------------------\n")
-                             ; (ly:grob-set-property! col 'X-offset -4)
-                             (ly:grob-translate-axis! col -5 X)
-                             )
-                            )
+                      (let* ( ; original stencil: 
+                              (orig-stil (ly:cluster::print grob))
+                              ; detect if the spanner has been broken:
+                              (open-on-left  (=  1 (ly:item-break-dir (ly:spanner-bound grob LEFT ))))
+                              (open-on-right (= -1 (ly:item-break-dir (ly:spanner-bound grob RIGHT))))
+                              ; "columns" array of ClusterSpannerBeacons:
+                              (col (ly:grob-object grob 'columns))
+                              ; first (leftmost) column:
+                              (first-col (ly:grob-array-ref col 0))
+                              ; Y-extent (lower . upper) at first column:
+                              (ext (ly:grob-property first-col 'Y-extent))
+                              ; calculate X-ext for a rectangle from -1 to the left edge
+                              ; of the broken spanner (overlap by 0.5 spaces):
+                              (X-ext (cons -1 (+ (car (ly:stencil-extent orig-stil X)) 0.5)))
+                              (Y-ext (cons (- (car ext) (/ thickness 2)) (+ (cdr ext) (/ thickness 2))))
+                              )
+                        (ly:stencil-add
+                         ; for debugging, the additional rectangle can be given a different color:
+                         #!
+                         (ly:make-stencil (list 'color red
+                                            (ly:stencil-expr (ly:round-filled-box X-ext Y-ext 0.5))
+                                            X-ext Y-ext))
+                         !#
+                         ; additional rectangle at left edge of broken spanners: 
+                         (if open-on-left (ly:round-filled-box X-ext Y-ext 0.5) empty-stencil)
+                         ; original cluster stencil:
+                         orig-stil
+                         )
+                        
+                        
                         )
                       )
                    % -----------------------------------------------------------
