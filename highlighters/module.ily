@@ -125,33 +125,6 @@ setHighlightingStyle =
    highlighting-style-propset
    (setChildOption '(analysis highlighters stylesheets) name props))
 
-#(define (moment->duration moment)
-   ;; see duration.cc in Lilypond sources (Duration::Duration)
-   ;; http://lsr.di.unimi.it/LSR/Item?id=542
-   (let* ((p (ly:moment-main-numerator moment))
-          (q (ly:moment-main-denominator moment))
-          (k (- (ly:intlog2 q) (ly:intlog2 p)))
-          (dots 0))
-     ;(ash p k) = p * 2^k
-     (if (< (ash p k) q) (set! k (1+ k)))
-     (set! p (- (ash p k) q))
-     (while (begin (set! p (ash p 1))(>= p q))
-       (set! p (- p q))
-       (set! dots (1+ dots)))
-     (if (> k 6)
-         (ly:make-duration 6 0)
-         (ly:make-duration k dots))
-     ))
-
-
-#(define (custom-moment->duration moment)
-   ;; adapted version to convert ANY moment p/q into duration 1*p/q
-   (let* ((p (ly:moment-main-numerator moment))
-          (q (ly:moment-main-denominator moment))
-          )
-     (ly:make-duration 0 0 p q)
-     ))
-
 #(define (filtered-by-stylesheet props)
    "Test if the highlighter can be useignored due to stylesheet configuration.
     Returns ##t (highlighting filtered/suppressed) if
