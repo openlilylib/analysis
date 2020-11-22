@@ -28,9 +28,7 @@
 
 
 \include "oll-core/package.ily"
-\loadPackage \with {
-  modules = frames
-} analysis
+\loadModule analysis.frames
 
 \paper {
   indent = 0
