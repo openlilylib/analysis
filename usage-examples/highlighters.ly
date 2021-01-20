@@ -27,9 +27,7 @@
 \version "2.19.83"
 
 \include "oll-core/package.ily"
-\loadPackage \with {
-  modules = highlighters
-} analysis
+\loadModule analysis.highlighters
 
 \paper {
   indent = 0
