@@ -1210,6 +1210,24 @@ genericFrame =
          #})
         mus)))
 
+% This is version of \genericFrame that uses the original 
+% 'startGroup' and 'stopGroup' syntax for HorizontalBracket.
+% It does not support the 'hide' property.
+prepareGenericFrame =
+#(with-options define-music-function (mus)
+   (ly:music?)
+   frame-style-propset
+   (let*
+    ((props (process-frame-properties props)))
+    #{
+      \once \override HorizontalBracket.shorten-pair = #(offset-shorten-pair props)
+      \once\override HorizontalBracket.stencil =
+      $(lambda (grob) (make-frame-stencil grob props))
+      #mus
+    #}
+    )
+   )
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Original implementation and original "client" functions
