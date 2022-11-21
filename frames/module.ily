@@ -71,7 +71,7 @@
       (padding ,number? 0)
       (broken-bound-padding ,number? 4)
       (border-radius ,number? 0)
-      (shorten-pair ,number-pair? #'(0 . 0))
+      (shorten-pair ,number-pair? (0 . 0))
       (y-lower ,number? -4)
       (y-upper ,number? 4)
       (l-zigzag-width ,number? 0)
