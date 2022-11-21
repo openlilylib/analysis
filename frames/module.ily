@@ -1,3 +1,4 @@
+\version "2.23.80"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 % This file is part of anaLYsis,                                              %
@@ -1034,7 +1035,7 @@ defineFrameStylesheet =
      (if need-upper-polygon
          (ly:make-stencil (list 'color border-color
                             (ly:stencil-expr (ly:stencil-rotate-absolute
-                                              (ly:round-filled-polygon points-up border-radius 0)
+                                              (ly:round-polygon points-up border-radius 0 #t)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
@@ -1042,7 +1043,7 @@ defineFrameStylesheet =
      (if need-lower-polygon
          (ly:make-stencil (list 'color border-color
                             (ly:stencil-expr (ly:stencil-rotate-absolute
-                                              (ly:round-filled-polygon points-lo border-radius 0)
+                                              (ly:round-polygon points-lo border-radius 0 #t)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
@@ -1050,7 +1051,7 @@ defineFrameStylesheet =
      (if need-left-polygon
          (ly:make-stencil (list 'color border-color
                             (ly:stencil-expr (ly:stencil-rotate-absolute
-                                              (ly:round-filled-polygon points-l  border-radius 0)
+                                              (ly:round-polygon points-l  border-radius 0 #t)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
@@ -1058,7 +1059,7 @@ defineFrameStylesheet =
      (if need-right-polygon
          (ly:make-stencil (list 'color border-color
                             (ly:stencil-expr (ly:stencil-rotate-absolute
-                                              (ly:round-filled-polygon points-r  border-radius 0)
+                                              (ly:round-polygon points-r  border-radius 0 #t)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
@@ -1066,7 +1067,7 @@ defineFrameStylesheet =
      (if need-inner-polygon
          (ly:make-stencil (list 'color color
                             (ly:stencil-expr (ly:stencil-rotate-absolute
-                                              (ly:round-filled-polygon points-i  border-radius 0)
+                                              (ly:round-polygon points-i  border-radius 0 #t)
                                               frame-angle rotation-center-x rotation-center-y))
                             X-ext Y-ext))
          empty-stencil)
@@ -1512,13 +1513,13 @@ genericFrame =
       ; draw outer polygon:
       (if (color? border-color)  ; only add stencil if set to a valid color (could also be set to ##f)
           (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points border-radius))
+                             (ly:stencil-expr (ly:round-polygon points border-radius #t))
                              X-ext Y-ext))
           empty-stencil)
       ; draw inner polygon:
       (if (color? color)   ; only add stencil if set to a valid color (could also be set to ##f)
           (ly:make-stencil (list 'color color
-                             (ly:stencil-expr (ly:round-filled-polygon points-i border-radius))
+                             (ly:stencil-expr (ly:round-polygon points-i border-radius #t))
                              X-ext Y-ext))
           empty-stencil)
       )
@@ -2060,25 +2061,25 @@ roundRectSpan = #(define-music-function (y-lower y-upper border-color color bord
       ; draw upper edge:
       (if (and (and (> thick 0) (not open-on-top)) (color? border-color))
           (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points-up 0))
+                             (ly:stencil-expr (ly:round-polygon points-up 0 #t))
                              X-ext Y-ext))
           empty-stencil)
       ; draw lower edge:
       (if (and (and (> thick 0) (not open-on-bottom)) (color? border-color))
           (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points-lo 0))
+                             (ly:stencil-expr (ly:round-polygon points-lo 0 #t))
                              X-ext Y-ext))
           empty-stencil)
       ; draw left edge:
       (if (and (and (> thick 0) (not open-on-left)) (color? border-color))
           (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points-l 0))
+                             (ly:stencil-expr (ly:round-polygon points-l 0 #t))
                              X-ext Y-ext))
           empty-stencil)
       ; draw right edge:
       (if (and (and (> thick 0) (not open-on-right)) (color? border-color))
           (ly:make-stencil (list 'color border-color
-                             (ly:stencil-expr (ly:round-filled-polygon points-r 0))
+                             (ly:stencil-expr (ly:round-polygon points-r 0 #t))
                              X-ext Y-ext))
           empty-stencil)
       )
