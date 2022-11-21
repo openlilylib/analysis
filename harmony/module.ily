@@ -33,6 +33,7 @@
 % http://www.mail-archive.com/lilypond-user%40gnu.org/msg60732.html
 % Contributed by Klaus Blum
 
+\version "2.23.80"
 \paper {
   indent = 0
   ragged-right = ##f
@@ -91,13 +92,13 @@
 % ---------------------------------------------------------------
 
 fExtend =
-#(define-music-function (parser location fText) (string?)
+#(define-music-function (fText) (string?)
    #{
-     \once \override TextSpanner #'direction = #DOWN
-     \once \override TextSpanner #'style = #'line
-     \once \override TextSpanner #'outside-staff-priority = ##f
-     \once \override TextSpanner #'padding = #-0.6 % sets the distance of the line from the lyrics
-     \once \override TextSpanner #'bound-details =
+     \once \override TextSpanner.direction = #DOWN
+     \once \override TextSpanner.style = #'line
+     \once \override TextSpanner.outside-staff-priority = ##f
+     \once \override TextSpanner.padding = #-0.6 % sets the distance of the line from the lyrics
+     \once \override TextSpanner.bound-details =
      #`((left . ((Y . 0)
                  (padding . 0)
                  (attach-dir . ,LEFT)))
