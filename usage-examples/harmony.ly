@@ -29,6 +29,7 @@
   and shows some examples
 %}
 
+\version "2.23.80"
 \include "oll-core/package.ily"
 \loadPackage \with {
   modules = harmony
@@ -85,7 +86,7 @@ bassmelhidden =
   \stemDown
   \global
   \override NoteHead.color = #red
-  \override NoteColumn #'ignore-collision = ##t
+  \override NoteColumn.ignore-collision = ##t
   f,4 cis'4 d d
   f4 fis4 g g
   gis4 gis8 gis bes4 a8 g
@@ -172,7 +173,7 @@ lyr = \lyricmode {
     {
       <<
         \sopranmel \\
-        \partcombine \altmel \tenormel
+        \partCombine \altmel \tenormel
       >>
     }
     \new Staff = lower
