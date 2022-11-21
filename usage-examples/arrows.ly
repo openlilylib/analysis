@@ -29,6 +29,7 @@
   currently only the annotate module is implemented
 %}
 
+\version "2.23.80"
 \include "oll-core/package.ily"
 \loadPackage \with {
   modules = arrows
@@ -62,7 +63,7 @@
         \new Voice {R1    c,4_\markup \with-color #green "Imitation" d e c   R1}
         \new Voice
         {
-          \override NoteColumn #'ignore-collision = ##t
+          \override NoteColumn.ignore-collision = ##t
           % Cross-staff arrows use an additional voice with hidden notes between them.
           % To make these notes visible, uncomment the following line:
           %     \override NoteHead.color = #cyan \override NoteHead.layer = #2
