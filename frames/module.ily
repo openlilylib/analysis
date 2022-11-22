@@ -2259,4 +2259,28 @@ colorFrame = #(define-music-function (y-lower y-upper border-color)
     \Voice
     \consists "Horizontal_bracket_engraver"
   }
+  \context {
+    \DrumVoice
+    \consists "Horizontal_bracket_engraver"
+  }
+  \context {
+    \GregorianTranscriptionVoice
+    \consists "Horizontal_bracket_engraver"
+  }
+  \context {
+    \KievanVoice
+    \consists "Horizontal_bracket_engraver"
+  }
+  \context {
+    \MensuralVoice
+    \consists "Horizontal_bracket_engraver"
+  }
+  \context {
+    \PetrucciVoice
+    \consists "Horizontal_bracket_engraver"
+  }
+  \context {
+    \VaticanaVoice
+    \consists "Horizontal_bracket_engraver"
+  }
 }
